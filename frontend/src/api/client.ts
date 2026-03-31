@@ -1,0 +1,35 @@
+import type { Digest } from '../types'
+
+const BASE_URL = '/api'
+
+export async function getDigest(
+  personaId: string,
+  phaseOverride?: string,
+): Promise<Digest> {
+  const params = new URLSearchParams()
+  if (phaseOverride) {
+    params.set('phase_override', phaseOverride)
+  }
+  const query = params.toString() ? `?${params.toString()}` : ''
+  const response = await fetch(`${BASE_URL}/digest/${personaId}${query}`)
+  if (!response.ok) {
+    throw new Error(`Failed to fetch digest: ${response.statusText}`)
+  }
+  return response.json()
+}
+
+export async function runPipeline(): Promise<{ status: string }> {
+  const response = await fetch(`${BASE_URL}/pipeline/run`, { method: 'POST' })
+  if (!response.ok) {
+    throw new Error(`Failed to run pipeline: ${response.statusText}`)
+  }
+  return response.json()
+}
+
+export async function healthCheck(): Promise<{ status: string }> {
+  const response = await fetch(`${BASE_URL}/health`)
+  if (!response.ok) {
+    throw new Error(`Health check failed: ${response.statusText}`)
+  }
+  return response.json()
+}
