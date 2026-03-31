@@ -120,9 +120,7 @@ bd close <id> --reason="<1-line summary of what was built and tested>"
 
 # Stage and commit only the files you changed
 git add <specific files>
-git commit -m "<descriptive message>
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+git commit -m "<descriptive message>"
 ```
 
 ### Step 6: Check What Unblocked
