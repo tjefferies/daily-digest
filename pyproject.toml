@@ -24,6 +24,7 @@ dev = [
     "ruff>=0.11",
     "radon>=6.0",
     "ty>=0.0.1a7",
+    "interrogate>=1.7.0",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -78,3 +79,19 @@ branch = true
 [tool.coverage.report]
 show_missing = true
 skip_empty = true
+
+[tool.interrogate]
+fail-under = 95
+ignore-init-method = true
+ignore-init-module = true
+ignore-magic = true
+ignore-semiprivate = true
+ignore-private = true
+ignore-nested-functions = true
+ignore-nested-classes = true
+ignore-property-decorators = true
+ignore-setters = true
+ignore-overloaded-functions = true
+color = true
+verbose = 1
+exclude = ["tests", "docs", ".venv"]

@@ -103,6 +103,11 @@ if [ -d "src" ]; then
   gate "Maintainability index (A rating)" check_maintainability
 fi
 
+# Gate 7: Docstring coverage (interrogate)
+if [ -d "src" ]; then
+  gate "Docstring coverage (≥95%)" uv run interrogate src/ --fail-under 95
+fi
+
 echo "═══════════════════════════════════════"
 if [ "$FAILED" -ne 0 ]; then
   printf "${RED}  QUALITY GATES FAILED${NC}\n"
