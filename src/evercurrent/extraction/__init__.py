@@ -5,5 +5,6 @@ using the Anthropic Claude API.
 """
 
 from evercurrent.extraction.prompt import build_extraction_prompt
+from evercurrent.extraction.runner import ExtractionRunner
 
-__all__ = ["build_extraction_prompt"]
+__all__ = ["ExtractionRunner", "build_extraction_prompt"]
