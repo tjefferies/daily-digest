@@ -1,24 +1,28 @@
-"""Extraction runner: batch ContextWindows through LLM API (sync and async).
+"""Two-stage extraction runner: coarse extract → enrich (sync and async).
 
-Processes context windows through an LLM using instructor for structured
-output to extract typed Atom objects directly. The async runner processes
-windows concurrently via asyncio.gather with a semaphore.
+Stage 1 identifies events (type, summary, detail, source) using a focused
+prompt. Stage 2 enriches each event with metadata (workstreams, urgency,
+confidence, implicit_decision, phase_relevance) in a separate LLM call.
+
+This two-stage approach replaces the monolithic single-prompt extraction,
+reducing cognitive load per LLM call and improving extraction quality.
 """
 
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 from typing import TYPE_CHECKING
 
 from evercurrent.config.loader import get_config
-from evercurrent.extraction.prompt import build_extraction_prompt
-from evercurrent.models.responses import ExtractionResponse
+from evercurrent.extraction.prompt import build_coarse_prompt, build_enrichment_prompt
+from evercurrent.models.atom import Atom, AtomSource
+from evercurrent.models.responses import CoarseExtractionResponse, EnrichmentResponse
 
 if TYPE_CHECKING:
     from evercurrent.ingestion.context_window import ContextWindow
     from evercurrent.llm.types import AsyncLLMClient, LLMClient
-    from evercurrent.models.atom import Atom
 
 logger = logging.getLogger(__name__)
 
@@ -27,11 +31,36 @@ _MODEL = _pipeline_cfg["model"]
 _MAX_TOKENS = _pipeline_cfg["extraction_max_tokens"]
 
 
-class ExtractionRunner:
-    """Runs LLM extraction on context windows to produce Atoms.
+def _merge_atom(raw: dict, enrichment: EnrichmentResponse) -> Atom:
+    """Merge a coarse atom dict with enrichment metadata into a full Atom."""
+    return Atom(
+        atom_id=raw["atom_id"],
+        type=raw["type"],
+        summary=raw["summary"],
+        detail=raw["detail"],
+        source=AtomSource(**raw["source"]),
+        workstreams=enrichment.workstreams,
+        urgency=enrichment.urgency,
+        confidence=enrichment.confidence,
+        implicit_decision=enrichment.implicit_decision,
+        phase_relevance=enrichment.phase_relevance,
+    )
 
-    Uses instructor for structured output, returning typed Atom objects
-    directly from the LLM without manual JSON parsing.
+
+def _build_enrichment_message(raw_atom: dict, thread_text: str) -> str:
+    """Build the user message for Stage 2 enrichment."""
+    return (
+        f"## Thread Context\n\n{thread_text}\n\n"
+        f"## Event to Enrich\n\n```json\n{json.dumps(raw_atom, indent=2)}\n```"
+    )
+
+
+class ExtractionRunner:
+    """Two-stage extraction runner: coarse extract then enrich.
+
+    Stage 1 calls the LLM with CoarseExtractionResponse to identify events.
+    Stage 2 calls the LLM with EnrichmentResponse for each event to assign
+    metadata. The results are merged into full Atom objects.
 
     Attributes:
         stats: Dict tracking windows_processed and atoms_produced.
@@ -44,14 +73,15 @@ class ExtractionRunner:
             client: LLMClient-compatible adapter instance.
         """
         self._client = client
-        self._system_prompt = build_extraction_prompt()
+        self._coarse_prompt = build_coarse_prompt()
+        self._enrichment_prompt = build_enrichment_prompt()
         self.stats: dict[str, int] = {
             "windows_processed": 0,
             "atoms_produced": 0,
         }
 
     def extract(self, windows: list[ContextWindow]) -> list[Atom]:
-        """Extract atoms from a list of context windows.
+        """Extract atoms from context windows via two-stage pipeline.
 
         Args:
             windows: ContextWindow objects from Layer 1.
@@ -68,37 +98,50 @@ class ExtractionRunner:
         return all_atoms
 
     def _process_window(self, window: ContextWindow) -> list[Atom]:
-        """Process a single context window through structured output.
-
-        Args:
-            window: A single ContextWindow to extract from.
-
-        Returns:
-            List of Atom objects from the structured API response.
-        """
+        """Process a single window through Stage 1 → Stage 2."""
+        # Stage 1: coarse extraction
         try:
-            response = self._client.create_structured_message(
+            coarse = self._client.create_structured_message(
                 model=_MODEL,
                 max_tokens=_MAX_TOKENS,
-                system=self._system_prompt,
+                system=self._coarse_prompt,
                 messages=[{"role": "user", "content": window.thread_text}],
-                response_model=ExtractionResponse,
+                response_model=CoarseExtractionResponse,
             )
         except Exception:
-            logger.warning("Structured extraction failed for window")
+            logger.warning("Stage 1 extraction failed for window")
             return []
-        return response.atoms
+
+        # Stage 2: enrich each coarse atom
+        atoms: list[Atom] = []
+        for raw_atom in coarse.atoms:
+            try:
+                enrichment = self._client.create_structured_message(
+                    model=_MODEL,
+                    max_tokens=_MAX_TOKENS,
+                    system=self._enrichment_prompt,
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": _build_enrichment_message(raw_atom, window.thread_text),
+                        }
+                    ],
+                    response_model=EnrichmentResponse,
+                )
+                atoms.append(_merge_atom(raw_atom, enrichment))
+            except Exception:
+                logger.warning("Stage 2 enrichment failed for atom")
+                continue
+        return atoms
 
 
 _DEFAULT_CONCURRENCY = 10
 
 
 class AsyncExtractionRunner:
-    """Async runner that extracts atoms from context windows concurrently.
+    """Async two-stage extraction runner with concurrency control.
 
-    Uses asyncio.gather with a semaphore to limit concurrent LLM calls,
-    avoiding rate-limit errors while maximizing throughput. Uses instructor
-    for structured output.
+    Uses asyncio.gather with a semaphore to limit concurrent LLM calls.
 
     Attributes:
         stats: Dict tracking windows_processed and atoms_produced.
@@ -116,7 +159,8 @@ class AsyncExtractionRunner:
             max_concurrency: Maximum concurrent LLM calls.
         """
         self._client = client
-        self._system_prompt = build_extraction_prompt()
+        self._coarse_prompt = build_coarse_prompt()
+        self._enrichment_prompt = build_enrichment_prompt()
         self._semaphore = asyncio.Semaphore(max_concurrency)
         self.stats: dict[str, int] = {
             "windows_processed": 0,
@@ -146,24 +190,39 @@ class AsyncExtractionRunner:
         return all_atoms
 
     async def _process_window(self, window: ContextWindow) -> list[Atom]:
-        """Process a single context window through async structured output.
-
-        Args:
-            window: A single ContextWindow to extract from.
-
-        Returns:
-            List of Atom objects from the structured API response.
-        """
+        """Process a single window through async Stage 1 → Stage 2."""
         async with self._semaphore:
+            # Stage 1: coarse extraction
             try:
-                response = await self._client.create_structured_message(
+                coarse = await self._client.create_structured_message(
                     model=_MODEL,
                     max_tokens=_MAX_TOKENS,
-                    system=self._system_prompt,
+                    system=self._coarse_prompt,
                     messages=[{"role": "user", "content": window.thread_text}],
-                    response_model=ExtractionResponse,
+                    response_model=CoarseExtractionResponse,
                 )
             except Exception:
-                logger.warning("Structured extraction failed for window")
+                logger.warning("Stage 1 extraction failed for window")
                 return []
-            return response.atoms
+
+            # Stage 2: enrich each coarse atom
+            atoms: list[Atom] = []
+            for raw_atom in coarse.atoms:
+                try:
+                    enrichment = await self._client.create_structured_message(
+                        model=_MODEL,
+                        max_tokens=_MAX_TOKENS,
+                        system=self._enrichment_prompt,
+                        messages=[
+                            {
+                                "role": "user",
+                                "content": _build_enrichment_message(raw_atom, window.thread_text),
+                            }
+                        ],
+                        response_model=EnrichmentResponse,
+                    )
+                    atoms.append(_merge_atom(raw_atom, enrichment))
+                except Exception:
+                    logger.warning("Stage 2 enrichment failed for atom")
+                    continue
+            return atoms

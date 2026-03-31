@@ -1,8 +1,8 @@
-"""Tests for the extraction runner (sync and async).
+"""Tests for the two-stage extraction runner (sync and async).
 
 Validates that the ExtractionRunner processes ContextWindows through
-the LLM API using instructor for structured output and parses
-responses into Atom objects. Uses a mock client to avoid real API calls.
+a two-stage LLM pipeline (coarse extract → enrich) using instructor
+for structured output and merges responses into Atom objects.
 """
 
 from __future__ import annotations
@@ -12,8 +12,8 @@ from uuid import uuid4
 
 from evercurrent.extraction.runner import AsyncExtractionRunner, ExtractionRunner
 from evercurrent.ingestion.context_window import ContextWindow
-from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
-from evercurrent.models.responses import ExtractionResponse
+from evercurrent.models.atom import Atom, AtomWorkstreams
+from evercurrent.models.responses import CoarseExtractionResponse, EnrichmentResponse
 
 
 def _make_context_window(
@@ -31,28 +31,38 @@ def _make_context_window(
     )
 
 
-def _make_atom(
-    atom_type: str = "DECISION",
-    summary: str = "Decided to use magnesium housing",
-) -> Atom:
-    """Create a valid Atom object for testing."""
-    return Atom(
-        atom_id=uuid4(),
-        type=atom_type,
-        summary=summary,
-        detail="Team agreed on magnesium for weight reduction",
-        source=AtomSource(
-            channel="#chassis-design",
-            thread_ts="1000.001",
-            message_range=[0, 5],
-            key_participants=["U001", "U002"],
-        ),
+def _make_coarse_response(count: int = 1) -> CoarseExtractionResponse:
+    """Create a CoarseExtractionResponse with `count` atom dicts."""
+    atoms = [
+        {
+            "atom_id": str(uuid4()),
+            "type": "DECISION",
+            "summary": f"Decision {i}",
+            "detail": f"Detail for decision {i}",
+            "source": {
+                "channel": "#chassis-design",
+                "thread_ts": "1000.001",
+                "message_range": [0, 5],
+                "key_participants": ["U001", "U002"],
+            },
+        }
+        for i in range(count)
+    ]
+    return CoarseExtractionResponse(atoms=atoms)
+
+
+def _make_enrichment_response(
+    urgency: str = "high",
+    confidence: float = 0.85,
+) -> EnrichmentResponse:
+    """Create an EnrichmentResponse with configurable fields."""
+    return EnrichmentResponse(
         workstreams=AtomWorkstreams(
             originating="chassis",
             affected=["supply-chain", "thermal"],
         ),
-        urgency="high",
-        confidence=0.85,
+        urgency=urgency,
+        confidence=confidence,
         implicit_decision=True,
         phase_relevance=["DVT"],
     )
@@ -69,28 +79,30 @@ class TestExtractionRunnerInit:
 
 
 class TestExtractionRunnerExtract:
-    """Tests for the extract method."""
+    """Tests for the extract method with two-stage pipeline."""
 
     def test_extracts_atoms_from_single_window(self) -> None:
-        """Single context window produces atoms from structured API response."""
+        """Single context window produces atoms via two-stage pipeline."""
         client = MagicMock()
-        atom = _make_atom()
-        client.create_structured_message.return_value = ExtractionResponse(atoms=[atom])
+        client.create_structured_message.side_effect = [
+            _make_coarse_response(1),
+            _make_enrichment_response(),
+        ]
         runner = ExtractionRunner(client=client)
-        window = _make_context_window()
-        atoms = runner.extract([window])
+        atoms = runner.extract([_make_context_window()])
         assert len(atoms) == 1
         assert isinstance(atoms[0], Atom)
         assert atoms[0].type == "DECISION"
+        assert atoms[0].urgency == "high"
 
     def test_extracts_from_multiple_windows(self) -> None:
         """Multiple context windows each produce atoms."""
         client = MagicMock()
-        atom1 = _make_atom(summary="Atom 1")
-        atom2 = _make_atom(summary="Atom 2")
         client.create_structured_message.side_effect = [
-            ExtractionResponse(atoms=[atom1]),
-            ExtractionResponse(atoms=[atom2]),
+            _make_coarse_response(1),
+            _make_enrichment_response(),
+            _make_coarse_response(1),
+            _make_enrichment_response(),
         ]
         runner = ExtractionRunner(client=client)
         windows = [_make_context_window(), _make_context_window(thread_ts="2000.001")]
@@ -98,9 +110,9 @@ class TestExtractionRunnerExtract:
         assert len(atoms) == 2
 
     def test_empty_response_produces_no_atoms(self) -> None:
-        """Empty atom list from structured response produces no atoms."""
+        """Empty atom list from coarse response produces no atoms."""
         client = MagicMock()
-        client.create_structured_message.return_value = ExtractionResponse(atoms=[])
+        client.create_structured_message.return_value = CoarseExtractionResponse()
         runner = ExtractionRunner(client=client)
         atoms = runner.extract([_make_context_window()])
         assert atoms == []
@@ -114,33 +126,48 @@ class TestExtractionRunnerExtract:
         client.create_structured_message.assert_not_called()
 
     def test_multiple_atoms_per_window(self) -> None:
-        """Single window can produce multiple atoms."""
+        """Single window can produce multiple atoms via multiple enrichments."""
         client = MagicMock()
-        atoms_list = [_make_atom(summary=f"Atom {i}") for i in range(3)]
-        client.create_structured_message.return_value = ExtractionResponse(atoms=atoms_list)
+        client.create_structured_message.side_effect = [
+            _make_coarse_response(3),
+            _make_enrichment_response(),
+            _make_enrichment_response(),
+            _make_enrichment_response(),
+        ]
         runner = ExtractionRunner(client=client)
         atoms = runner.extract([_make_context_window()])
         assert len(atoms) == 3
 
 
 class TestExtractionRunnerErrorHandling:
-    """Tests for structured output error handling."""
+    """Tests for two-stage error handling."""
 
-    def test_instructor_failure_skips_window(self) -> None:
-        """Exception from structured output skips that window gracefully."""
+    def test_stage1_failure_skips_window(self) -> None:
+        """Exception from Stage 1 skips that window gracefully."""
         client = MagicMock()
-        client.create_structured_message.side_effect = Exception("Instructor retry failed")
+        client.create_structured_message.side_effect = Exception("LLM error")
+        runner = ExtractionRunner(client=client)
+        atoms = runner.extract([_make_context_window()])
+        assert atoms == []
+
+    def test_stage2_failure_skips_atom(self) -> None:
+        """Exception from Stage 2 skips that atom, not the whole window."""
+        client = MagicMock()
+        client.create_structured_message.side_effect = [
+            _make_coarse_response(1),
+            Exception("Enrichment failed"),
+        ]
         runner = ExtractionRunner(client=client)
         atoms = runner.extract([_make_context_window()])
         assert atoms == []
 
     def test_validation_error_skips_window(self) -> None:
-        """Pydantic ValidationError from instructor skips the window."""
+        """Pydantic ValidationError from Stage 1 skips the window."""
         from pydantic import ValidationError
 
         client = MagicMock()
         client.create_structured_message.side_effect = ValidationError.from_exception_data(
-            title="ExtractionResponse",
+            title="CoarseExtractionResponse",
             line_errors=[],
         )
         runner = ExtractionRunner(client=client)
@@ -149,14 +176,17 @@ class TestExtractionRunnerErrorHandling:
 
 
 class TestExtractionRunnerStats:
-    """Tests for extraction statistics logging."""
+    """Tests for extraction statistics tracking."""
 
     def test_stats_tracks_windows_processed(self) -> None:
         """Stats include count of windows processed."""
         client = MagicMock()
-        client.create_structured_message.return_value = ExtractionResponse(
-            atoms=[_make_atom()],
-        )
+        client.create_structured_message.side_effect = [
+            _make_coarse_response(1),
+            _make_enrichment_response(),
+            _make_coarse_response(1),
+            _make_enrichment_response(),
+        ]
         runner = ExtractionRunner(client=client)
         runner.extract([_make_context_window(), _make_context_window(thread_ts="2000.001")])
         assert runner.stats["windows_processed"] == 2
@@ -164,37 +194,54 @@ class TestExtractionRunnerStats:
     def test_stats_tracks_atoms_produced(self) -> None:
         """Stats include count of atoms produced."""
         client = MagicMock()
-        atoms_list = [_make_atom() for _ in range(3)]
-        client.create_structured_message.return_value = ExtractionResponse(atoms=atoms_list)
+        client.create_structured_message.side_effect = [
+            _make_coarse_response(3),
+            _make_enrichment_response(),
+            _make_enrichment_response(),
+            _make_enrichment_response(),
+        ]
         runner = ExtractionRunner(client=client)
         runner.extract([_make_context_window()])
         assert runner.stats["atoms_produced"] == 3
 
 
 class TestExtractionRunnerUsesResponseModel:
-    """Tests that extraction runner passes correct response_model to instructor."""
+    """Tests that runner passes correct response_model for each stage."""
 
-    def test_passes_extraction_response_model(self) -> None:
-        """Runner passes ExtractionResponse as the response_model."""
+    def test_stage1_uses_coarse_response_model(self) -> None:
+        """Stage 1 passes CoarseExtractionResponse as the response_model."""
         client = MagicMock()
-        client.create_structured_message.return_value = ExtractionResponse(atoms=[])
+        client.create_structured_message.return_value = CoarseExtractionResponse()
         runner = ExtractionRunner(client=client)
         runner.extract([_make_context_window()])
         call_kwargs = client.create_structured_message.call_args.kwargs
-        assert call_kwargs["response_model"] is ExtractionResponse
+        assert call_kwargs["response_model"] is CoarseExtractionResponse
+
+    def test_stage2_uses_enrichment_response_model(self) -> None:
+        """Stage 2 passes EnrichmentResponse as the response_model."""
+        client = MagicMock()
+        client.create_structured_message.side_effect = [
+            _make_coarse_response(1),
+            _make_enrichment_response(),
+        ]
+        runner = ExtractionRunner(client=client)
+        runner.extract([_make_context_window()])
+        second_call = client.create_structured_message.call_args_list[1]
+        assert second_call.kwargs["response_model"] is EnrichmentResponse
 
 
 class TestAsyncExtractionRunnerExtract:
-    """Tests for the async extract method with concurrent processing."""
+    """Tests for the async extract method with two-stage pipeline."""
 
     async def test_extracts_atoms_from_single_window(self) -> None:
-        """Async runner extracts atoms from a single window."""
+        """Async runner extracts atoms via two-stage pipeline."""
         client = AsyncMock()
-        atom = _make_atom()
-        client.create_structured_message.return_value = ExtractionResponse(atoms=[atom])
+        client.create_structured_message.side_effect = [
+            _make_coarse_response(1),
+            _make_enrichment_response(),
+        ]
         runner = AsyncExtractionRunner(client=client)
-        window = _make_context_window()
-        atoms = await runner.extract([window])
+        atoms = await runner.extract([_make_context_window()])
         assert len(atoms) == 1
         assert isinstance(atoms[0], Atom)
         assert atoms[0].type == "DECISION"
@@ -202,11 +249,11 @@ class TestAsyncExtractionRunnerExtract:
     async def test_extracts_from_multiple_windows_concurrently(self) -> None:
         """Async runner processes multiple windows via asyncio.gather."""
         client = AsyncMock()
-        atom1 = _make_atom(summary="Atom 1")
-        atom2 = _make_atom(summary="Atom 2")
         client.create_structured_message.side_effect = [
-            ExtractionResponse(atoms=[atom1]),
-            ExtractionResponse(atoms=[atom2]),
+            _make_coarse_response(1),
+            _make_enrichment_response(),
+            _make_coarse_response(1),
+            _make_enrichment_response(),
         ]
         runner = AsyncExtractionRunner(client=client)
         windows = [_make_context_window(), _make_context_window(thread_ts="2000.001")]
@@ -224,8 +271,12 @@ class TestAsyncExtractionRunnerExtract:
     async def test_multiple_atoms_per_window(self) -> None:
         """Single window can produce multiple atoms in async runner."""
         client = AsyncMock()
-        atoms_list = [_make_atom(summary=f"Atom {i}") for i in range(3)]
-        client.create_structured_message.return_value = ExtractionResponse(atoms=atoms_list)
+        client.create_structured_message.side_effect = [
+            _make_coarse_response(3),
+            _make_enrichment_response(),
+            _make_enrichment_response(),
+            _make_enrichment_response(),
+        ]
         runner = AsyncExtractionRunner(client=client)
         atoms = await runner.extract([_make_context_window()])
         assert len(atoms) == 3
@@ -233,9 +284,12 @@ class TestAsyncExtractionRunnerExtract:
     async def test_stats_tracks_windows_processed(self) -> None:
         """Async runner stats include count of windows processed."""
         client = AsyncMock()
-        client.create_structured_message.return_value = ExtractionResponse(
-            atoms=[_make_atom()],
-        )
+        client.create_structured_message.side_effect = [
+            _make_coarse_response(1),
+            _make_enrichment_response(),
+            _make_coarse_response(1),
+            _make_enrichment_response(),
+        ]
         runner = AsyncExtractionRunner(client=client)
         await runner.extract([_make_context_window(), _make_context_window(thread_ts="2000.001")])
         assert runner.stats["windows_processed"] == 2
@@ -243,16 +297,20 @@ class TestAsyncExtractionRunnerExtract:
     async def test_stats_tracks_atoms_produced(self) -> None:
         """Async runner stats include count of atoms produced."""
         client = AsyncMock()
-        atoms_list = [_make_atom() for _ in range(3)]
-        client.create_structured_message.return_value = ExtractionResponse(atoms=atoms_list)
+        client.create_structured_message.side_effect = [
+            _make_coarse_response(3),
+            _make_enrichment_response(),
+            _make_enrichment_response(),
+            _make_enrichment_response(),
+        ]
         runner = AsyncExtractionRunner(client=client)
         await runner.extract([_make_context_window()])
         assert runner.stats["atoms_produced"] == 3
 
-    async def test_instructor_failure_skips_window(self) -> None:
-        """Exception from structured output is handled in async runner."""
+    async def test_stage1_failure_skips_window(self) -> None:
+        """Exception from Stage 1 is handled in async runner."""
         client = AsyncMock()
-        client.create_structured_message.side_effect = Exception("Instructor retry failed")
+        client.create_structured_message.side_effect = Exception("LLM error")
         runner = AsyncExtractionRunner(client=client)
         atoms = await runner.extract([_make_context_window()])
         assert atoms == []
@@ -260,9 +318,11 @@ class TestAsyncExtractionRunnerExtract:
     async def test_respects_concurrency_limit(self) -> None:
         """Async runner limits concurrent LLM calls via semaphore."""
         client = AsyncMock()
-        client.create_structured_message.return_value = ExtractionResponse(
-            atoms=[_make_atom()],
-        )
+        side_effects = []
+        for _ in range(5):
+            side_effects.append(_make_coarse_response(1))
+            side_effects.append(_make_enrichment_response())
+        client.create_structured_message.side_effect = side_effects
         runner = AsyncExtractionRunner(client=client, max_concurrency=2)
         windows = [_make_context_window(thread_ts=f"{i}.001") for i in range(5)]
         atoms = await runner.extract(windows)
