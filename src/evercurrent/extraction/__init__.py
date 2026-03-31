@@ -7,10 +7,12 @@ using the Anthropic Claude API.
 from evercurrent.extraction.filter import FilterResult, confidence_filter
 from evercurrent.extraction.prompt import build_extraction_prompt
 from evercurrent.extraction.runner import ExtractionRunner
+from evercurrent.extraction.validation import validate_atoms
 
 __all__ = [
     "ExtractionRunner",
     "FilterResult",
     "build_extraction_prompt",
     "confidence_filter",
+    "validate_atoms",
 ]
