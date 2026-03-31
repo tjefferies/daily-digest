@@ -5,5 +5,6 @@ SlackMessage objects that all downstream pipeline layers consume.
 """
 
 from evercurrent.ingestion.loader import load_message_stream
+from evercurrent.ingestion.threads import ThreadBundle, group_by_thread
 
-__all__ = ["load_message_stream"]
+__all__ = ["ThreadBundle", "group_by_thread", "load_message_stream"]
