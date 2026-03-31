@@ -153,37 +153,9 @@ can be traced to specific design decisions.
 The system consists of five layers. Each has a defined responsibility and
 interface contract.
 
-::
-
-    ┌─────────────────────────────────────────────────────────────────────┐
-    │                        LAYER 5: DIGEST UI                         │
-    │    Persona selector · Sectioned digest · Attention flags          │
-    │    "Requires Action" · "Decisions" · "Progress" · "Context"      │
-    └────────────────────────────────┬────────────────────────────────────┘
-                                     │ ranked, clustered atoms + generated prose
-    ┌────────────────────────────────┴────────────────────────────────────┐
-    │                    LAYER 4: RELEVANCE SCORING                     │
-    │    Multi-dimensional scoring · Phase-aware weighting              │
-    │    Persona matching · Urgency detection · Adaptive feedback       │
-    └────────────────────────────────┬────────────────────────────────────┘
-                                     │ atoms + persona + phase context
-    ┌────────────────────────────────┴────────────────────────────────────┐
-    │                    LAYER 3: CONTEXT BACKBONE                      │
-    │    Team roster + roles · Project/workstream registry              │
-    │    Phase vectors · Component-to-workstream mapping                │
-    └────────────────────────────────┬────────────────────────────────────┘
-                                     │ structured world model
-    ┌────────────────────────────────┴────────────────────────────────────┐
-    │                  LAYER 2: EXTRACTION PIPELINE                     │
-    │    Thread reconstruction · LLM extraction · Atom typing          │
-    │    Entity linking · Confidence scoring                           │
-    └────────────────────────────────┬────────────────────────────────────┘
-                                     │ raw messages + thread structure
-    ┌────────────────────────────────┴────────────────────────────────────┐
-    │                     LAYER 1: INGESTION                            │
-    │    Slack event capture · Thread reconstruction                   │
-    │    Append-only event log · Channel metadata                      │
-    └─────────────────────────────────────────────────────────────────────┘
+.. image:: _static/architecture.svg
+   :alt: EverCurrent five-layer pipeline architecture
+   :width: 100%
 
 
 3.2 Data Flow

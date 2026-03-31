@@ -773,6 +773,22 @@ bd dep add "$NEXT_STEPS" "$MAKEFILE"
 
 echo "    NEXT_STEPS=$NEXT_STEPS"
 
+# ─── SVG Architecture Diagram ────────────────────────────────────────────────
+echo ""
+echo "==> Creating SVG Architecture Diagram issue"
+
+SVG_ARCH=$(bd create \
+  --title="Create static SVG architecture diagram for README and docs" \
+  --type=task \
+  --priority=2 \
+  --description="Replace the ASCII/text architecture diagram in README.md (Architecture section) and docs/design-document.rst Section 3.1 Architecture Overview with a proper static SVG diagram. Create docs/_static/ folder and place the SVG there. Update README.md and design-document.rst to reference the SVG instead of inline text diagrams." \
+  --silent)
+
+# Must wait until Next Steps is done (all docs finalized)
+bd dep add "$SVG_ARCH" "$NEXT_STEPS"
+
+echo "    SVG_ARCH=$SVG_ARCH"
+
 # ─── SUMMARY ─────────────────────────────────────────────────────────────────
 echo ""
 echo "✓ Epic hierarchy created successfully."
@@ -802,3 +818,4 @@ echo "    Sphinx Docs:         $SPHINX_DOCS"
 echo "    GH Actions:          $GH_ACTIONS"
 echo "    Makefile:            $MAKEFILE"
 echo "    Next Steps:          $NEXT_STEPS"
+echo "    SVG Arch Diagram:    $SVG_ARCH"

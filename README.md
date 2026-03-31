@@ -14,38 +14,7 @@ them.
 EverCurrent is a five-layer pipeline that transforms raw Slack messages into
 persona-specific daily digests:
 
-```
- Slack Messages
-      |
-      v
- ┌─────────────────────┐
- │  L1  Ingestion       │  Channel routing, thread grouping, context windows
- └─────────┬────────────┘
-           v
- ┌─────────────────────┐
- │  L2  Extraction      │  LLM-powered atom extraction (spec changes, risks,
- │                      │  decisions, blockers, action items, test results)
- └─────────┬────────────┘
-           v
- ┌─────────────────────┐
- │  L3  Context         │  Team roster, workstream registry, per-workstream
- │      Backbone        │  phase vectors, persona models
- └─────────┬────────────┘
-           v
- ┌─────────────────────┐
- │  L4  Relevance       │  Five-dimension composite scoring:
- │      Scoring         │  workstream proximity, role alignment,
- │                      │  phase alignment, urgency, social signal
- └─────────┬────────────┘
-           v
- ┌─────────────────────┐
- │  L5  Digest          │  LLM generation with briefing tone,
- │      Generation      │  four priority-tiered sections
- └───────────────────────┘
-      |
-      v
- Personalized Daily Digest
-```
+![EverCurrent Architecture](docs/_static/architecture.svg)
 
 ### Scoring Dimensions
 
