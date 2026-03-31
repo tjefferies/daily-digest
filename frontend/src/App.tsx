@@ -4,6 +4,7 @@ import DigestDisplay from './components/DigestDisplay'
 import PersonaSelector, {
   DEMO_PERSONAS,
 } from './components/PersonaSelector'
+import PhaseToggle from './components/PhaseToggle'
 import type { Digest } from './types'
 
 function App() {
@@ -13,23 +14,40 @@ function App() {
   const [digest, setDigest] = useState<Digest | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [phaseOverride, setPhaseOverride] = useState<string | null>(null)
 
-  const fetchDigest = useCallback(async (personaId: string) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const data = await getDigest(personaId)
-      setDigest(data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load digest')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const fetchDigest = useCallback(
+    async (personaId: string, override?: string | null) => {
+      setLoading(true)
+      setError(null)
+      try {
+        const data = await getDigest(personaId, override ?? undefined)
+        setDigest(data)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load digest')
+      } finally {
+        setLoading(false)
+      }
+    },
+    [],
+  )
 
   useEffect(() => {
-    fetchDigest(selectedPersona)
-  }, [selectedPersona, fetchDigest])
+    fetchDigest(selectedPersona, phaseOverride)
+  }, [selectedPersona, phaseOverride, fetchDigest])
+
+  const handlePersonaSelect = (personaId: string) => {
+    setSelectedPersona(personaId)
+    setPhaseOverride(null)
+  }
+
+  const handlePhaseApply = (override: string) => {
+    setPhaseOverride(override)
+  }
+
+  const handlePhaseClear = () => {
+    setPhaseOverride(null)
+  }
 
   const currentPersona = DEMO_PERSONAS.find(
     (p) => p.user_id === selectedPersona,
@@ -46,10 +64,18 @@ function App() {
         </div>
       </header>
 
-      <PersonaSelector
-        selectedId={selectedPersona}
-        onSelect={setSelectedPersona}
-      />
+      <div className="max-w-7xl mx-auto">
+        <PersonaSelector
+          selectedId={selectedPersona}
+          onSelect={handlePersonaSelect}
+        />
+
+        <PhaseToggle
+          onApply={handlePhaseApply}
+          activeOverride={phaseOverride}
+          onClear={handlePhaseClear}
+        />
+      </div>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <DigestDisplay
