@@ -533,6 +533,22 @@ bd dep add "$PRUNE_CATALYST" "$EPIC_UI"
 
 echo "    PRUNE_CATALYST=$PRUNE_CATALYST"
 
+# ─── STANDALONE: Abstract config into YAML files ────────────────────────
+echo ""
+echo "==> Creating standalone task: Abstract config into YAML files"
+
+YAML_CONFIG=$(bd create \
+  --title="Abstract as much config as possible into .yml files" \
+  --type=task \
+  --priority=2 \
+  --description="Audit the entire codebase for hardcoded configuration values (channel lists, roster data, workstream phase mappings, scoring weights, prompt templates, API URLs, thresholds, etc.) and extract them into .yml config files. Use a config/ directory at the project root. Load YAML at startup and inject into the relevant services. This reduces code churn for config changes and makes the system easier to tune for demos. Cover: channel registry, team roster, workstream phases, scoring dimension weights, digest preferences defaults, role-type alignment matrix, phase-alignment matrix, prompt templates." \
+  --silent)
+
+# Can be done anytime after the core pipeline is built
+bd dep add "$YAML_CONFIG" "$EPIC_L5"
+
+echo "    YAML_CONFIG=$YAML_CONFIG"
+
 # ─── EPIC 9: Evaluation & Demo Validation ────────────────────────────────────
 echo ""
 echo "==> Creating Epic 9: Evaluation & Demo Validation"
@@ -645,6 +661,70 @@ bd dep add "$EVAL_3" "$L4_3"
 # Eval criterion 1 (differential relevance) needs full composite scoring wired
 bd dep add "$EVAL_1" "$L4_6"
 
+# ─── STANDALONE: Comprehensive README ────────────────────────────────────
+echo ""
+echo "==> Creating standalone task: Write comprehensive README.md"
+
+README=$(bd create \
+  --title="Write comprehensive README.md once all other issues are complete" \
+  --type=task \
+  --priority=3 \
+  --description="Write a thorough README.md covering: project overview and thesis (context-aware daily digest for robotics teams), architecture diagram (5-layer pipeline), quick start instructions (uv sync, run backend, run frontend), API endpoints, the three demo personas and what to look for, how to run quality gates, design decisions and trade-offs, and evaluation criteria from section 10.1. This MUST wait until all development and evaluation work is finished so the README accurately reflects the final state of the project." \
+  --silent)
+
+# Must wait until evaluation is done (all development complete)
+bd dep add "$README" "$EPIC_EVAL"
+
+echo "    README=$README"
+
+# ─── STANDALONE: Integrate interrogate into quality gates ─────────────────────
+echo ""
+echo "==> Creating standalone task: Integrate interrogate into quality gates"
+
+INTERROGATE=$(bd create \
+  --title="Integrate interrogate docstring coverage into quality gates" \
+  --type=task \
+  --priority=3 \
+  --description="Add interrogate to the dev dependency group and integrate it into scripts/quality-gates.sh as a new gate. Configure in pyproject.toml under [tool.interrogate] to match existing project conventions: style='google' (matches [tool.ruff.lint.pydocstyle] convention), line-length 99 (matches [tool.ruff] line-length), --fail-under=95, ignore-init-method=true, ignore-init-module=true, ignore-magic=true, ignore-semiprivate=true, ignore-private=true, ignore-nested-functions=true, ignore-nested-classes=true, ignore-property-decorators=true, ignore-setters=true, ignore-overloaded-functions=true, color=true, verbose=1, exclude=['tests/', 'docs/', '.venv/']. Add a 7th quality gate to scripts/quality-gates.sh that runs 'uv run interrogate src/ --fail-under 95'. This MUST run after README is written so that all public API docstrings exist." \
+  --silent)
+
+# Must wait until README is done (all docstrings finalized)
+bd dep add "$INTERROGATE" "$README"
+
+echo "    INTERROGATE=$INTERROGATE"
+
+# ─── STANDALONE: Multistage Dockerfiles and Docker Compose ───────────────────
+echo ""
+echo "==> Creating standalone task: Multistage Dockerfiles and Docker Compose"
+
+DOCKER=$(bd create \
+  --title="Build multistage Dockerfiles and Docker Compose for local development" \
+  --type=task \
+  --priority=3 \
+  --description="Create multistage Dockerfiles for each part of the application: (1) backend/Dockerfile — Python FastAPI backend with uv for dependency management, multistage build (builder stage installs deps, runtime stage copies venv and src), (2) frontend/Dockerfile — Node/React frontend with multistage build (builder stage runs npm build, runtime stage serves with nginx or node), (3) docker-compose.yml — Orchestrates all services for local development: backend (port 8000), frontend (port 3000), with environment variables for ANTHROPIC_API_KEY, health checks, volume mounts for development hot-reload, and proper networking between services. Each Dockerfile should use slim/alpine base images, non-root users, .dockerignore files, and follow Docker best practices for layer caching. This MUST wait until README is written so the Docker setup can reference final project structure." \
+  --silent)
+
+# Must wait until README is done (project structure finalized)
+bd dep add "$DOCKER" "$README"
+
+echo "    DOCKER=$DOCKER"
+
+# ─── STANDALONE: Sphinx documentation site ───────────────────────────────────
+echo ""
+echo "==> Creating standalone task: Build Sphinx documentation site"
+
+SPHINX_DOCS=$(bd create \
+  --title="Build Sphinx documentation site including design-document.rst" \
+  --type=task \
+  --priority=3 \
+  --description="Set up Sphinx documentation for the project. Add sphinx, sphinx-rtd-theme, and sphinx-autodoc-typehints to dev dependencies. Create docs/ directory with conf.py, index.rst, and Makefile. Configure autodoc to generate API reference from src/evercurrent/ docstrings (Google style via napoleon extension). Include design-document.rst in the generated site via a toctree entry (symlink or copy into docs/). Configure sphinx-rtd-theme for clean presentation. Add a 'make docs' or 'uv run sphinx-build' command. The generated site should include: project overview, full API reference auto-generated from code docstrings, the design document, and architecture diagrams if present. This MUST wait until interrogate has been integrated (ensuring docstring coverage is enforced before docs are generated)." \
+  --silent)
+
+# Must wait until interrogate is done (docstring coverage enforced)
+bd dep add "$SPHINX_DOCS" "$INTERROGATE"
+
+echo "    SPHINX_DOCS=$SPHINX_DOCS"
+
 # ─── SUMMARY ─────────────────────────────────────────────────────────────────
 echo ""
 echo "✓ Epic hierarchy created successfully."
@@ -666,3 +746,8 @@ echo "    E7 Layer 5 Digest:    $EPIC_L5"
 echo "    E8 Frontend UI:       $EPIC_UI"
 echo "    E9 Evaluation:        $EPIC_EVAL"
 echo "    Prune Catalyst:      $PRUNE_CATALYST"
+echo "    YAML Config:         $YAML_CONFIG"
+echo "    README:              $README"
+echo "    Interrogate:         $INTERROGATE"
+echo "    Docker:              $DOCKER"
+echo "    Sphinx Docs:         $SPHINX_DOCS"
