@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# quality-gates.sh — Full quality gate runner for EverCurrent
+# quality-gates.sh - Full quality gate runner for EverCurrent
 # Used by pre-commit hook and manual invocation.
 # Exit codes: 0 = all pass, 1 = gate failed
 
@@ -29,14 +29,14 @@ if [ "${IN_PRE_COMMIT:-0}" = "1" ]; then
   # In pre-commit context: check if any .py files are staged
   STAGED_PY=$(git diff --cached --name-only --diff-filter=ACMR -- '*.py' 2>/dev/null || true)
   if [ -z "$STAGED_PY" ]; then
-    echo "No Python files staged — skipping quality gates."
+    echo "No Python files staged - skipping quality gates."
     exit 0
   fi
 fi
 
 # Check that src/ and tests/ exist before running
 if [ ! -d "src" ] && [ ! -d "tests" ]; then
-  echo "No src/ or tests/ directories found — skipping quality gates."
+  echo "No src/ or tests/ directories found - skipping quality gates."
   exit 0
 fi
 

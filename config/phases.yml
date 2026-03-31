@@ -1,5 +1,5 @@
 # Default per-workstream phase assignments (design document section 6.3).
-# "Late EVT" for thermal is modeled as "EVT" — the scoring matrix
+# "Late EVT" for thermal is modeled as "EVT" - the scoring matrix
 # treats it identically for atom-type relevance.
 
 default_phases:

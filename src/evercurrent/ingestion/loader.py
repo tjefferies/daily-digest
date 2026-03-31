@@ -1,6 +1,6 @@
 """Message loader: parse fixture dicts into a typed SlackMessage stream.
 
-This is the ingestion boundary — all downstream layers work with
+This is the ingestion boundary - all downstream layers work with
 SlackMessage objects, not raw JSON dicts.
 """
 

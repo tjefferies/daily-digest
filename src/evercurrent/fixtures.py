@@ -2,7 +2,7 @@
 
 Loads synthetic JSON fixture files from a directory at startup and
 provides typed accessor functions for all pipeline layers. This is the
-single data source for the prototype — no database needed (section 9.2).
+single data source for the prototype - no database needed (section 9.2).
 """
 
 import json

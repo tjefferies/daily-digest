@@ -89,7 +89,7 @@ def _build_chassis_messages() -> list[SlackMessage]:
             "#chassis-design",
             "U001",
             "Yes, rev C. The issue is the draft angle on the retention "
-            "hook — 3deg is too aggressive for PA66-GF30.",
+            "hook - 3deg is too aggressive for PA66-GF30.",
             thread=t1,
         )
     )
@@ -137,7 +137,7 @@ def _build_chassis_messages() -> list[SlackMessage]:
             "1711900420.000008",
             "#chassis-design",
             "U008",
-            "I can run the drop sim tonight. What's the impact energy spec — 1.5J at 1m?",
+            "I can run the drop sim tonight. What's the impact energy spec - 1.5J at 1m?",
             thread=t1,
         )
     )
@@ -188,7 +188,7 @@ def _build_chassis_messages() -> list[SlackMessage]:
             "1711900720.000013",
             "#chassis-design",
             "U008",
-            "Drop sim results: 2.5mm wall passes at 1.8J — 20% margin "
+            "Drop sim results: 2.5mm wall passes at 1.8J - 20% margin "
             "above spec. Corner impact stress at 85% of yield.",
             thread=t1,
         )
@@ -256,7 +256,7 @@ def _build_chassis_messages() -> list[SlackMessage]:
             "U013",
             "FYI the new aluminum extrusion supplier quoted 30% lower "
             "than current. But we should also consider magnesium for the "
-            "main housing — 35% weight savings at similar strength.",
+            "main housing - 35% weight savings at similar strength.",
         )
     )
     msgs.append(
@@ -275,7 +275,7 @@ def _build_chassis_messages() -> list[SlackMessage]:
             "#chassis-design",
             "U013",
             "Micro-arc oxidation coating handles IP54. But the real "
-            "question is supply chain — mag die casting has longer lead "
+            "question is supply chain - mag die casting has longer lead "
             "times and fewer qualified vendors.",
             thread=t3,
         )
@@ -358,7 +358,7 @@ def _build_drivetrain_messages() -> list[SlackMessage]:
             "#drivetrain",
             "U002",
             "It's a 15s peak during obstacle climbing. Thermal margin "
-            "on the motor is the concern — @U003 can you check the "
+            "on the motor is the concern - @U003 can you check the "
             "thermal derating at 3.1Nm continuous equiv?",
             thread=t1,
         )
@@ -369,7 +369,7 @@ def _build_drivetrain_messages() -> list[SlackMessage]:
             "#drivetrain",
             "U003",
             "Running the thermal model now. At 3.1Nm equiv the winding "
-            "temp hits 142C — max rated is 155C. Only 13C margin.",
+            "temp hits 142C - max rated is 155C. Only 13C margin.",
             thread=t1,
         )
     )
@@ -503,7 +503,7 @@ def _build_thermal_messages() -> list[SlackMessage]:
     msgs: list[SlackMessage] = []
 
     # Thread 1: Thermal interface material investigation
-    # (BURIED SIGNAL #2 setup — root cause from motor overheating)
+    # (BURIED SIGNAL #2 setup - root cause from motor overheating)
     t1 = "1711902000.000200"
     msgs.append(
         _msg(
@@ -544,7 +544,7 @@ def _build_thermal_messages() -> list[SlackMessage]:
             "U003",
             "Found it. The motor flange has a 0.3mm step that creates "
             "an air gap under the thermal pad. The pad can't conform "
-            "to the step — it's too stiff.",
+            "to the step - it's too stiff.",
             thread=t1,
             reactions=[_r("eyes", ["U001", "U002", "U018"])],
         )
@@ -566,7 +566,7 @@ def _build_thermal_messages() -> list[SlackMessage]:
             "#thermal-management",
             "U003",
             "Good call. But the root cause is actually the chassis "
-            "machining — that 0.3mm step shouldn't be there. @U001 "
+            "machining - that 0.3mm step shouldn't be there. @U001 "
             "can you check the chassis drawing tolerance?",
             thread=t1,
         )
@@ -612,7 +612,7 @@ def _build_thermal_messages() -> list[SlackMessage]:
             "1711902540.000209",
             "#thermal-management",
             "U002",
-            "Confirming — motor 4 showed elevated temps too (148C) "
+            "Confirming - motor 4 showed elevated temps too (148C) "
             "during the same test. Was about to hit shutdown.",
             thread=t1,
         )
@@ -645,7 +645,7 @@ def _build_thermal_messages() -> list[SlackMessage]:
             "1711912120.000212",
             "#thermal-management",
             "U018",
-            "22C ambient. Good point — I'll add 35C ambient test to "
+            "22C ambient. Good point - I'll add 35C ambient test to "
             "the DVT thermal validation matrix.",
             thread=t2,
         )
@@ -856,7 +856,7 @@ def _build_sensor_messages() -> list[SlackMessage]:
             "1711904120.000402",
             "#sensors",
             "U016",
-            "Factory cal. Good catch — lab was 28C, calibrated at "
+            "Factory cal. Good catch - lab was 28C, calibrated at "
             "22C. The APD gain drifts with temp. Running our thermal "
             "compensation routine.",
             thread=t1,
@@ -879,7 +879,7 @@ def _build_sensor_messages() -> list[SlackMessage]:
             "#sensors",
             "U005",
             "Nice. Make sure the IMU temp sensor feeds into the comp "
-            "algorithm — it's closer to the LIDAR than the board sensor.",
+            "algorithm - it's closer to the LIDAR than the board sensor.",
             thread=t1,
         )
     )
@@ -924,7 +924,7 @@ def _build_sensor_messages() -> list[SlackMessage]:
             "U016",
             "Front camera FOV measured at 118 deg on the EVT "
             "prototype. Spec is 120 min. Edge distortion is higher "
-            "than expected — barrel at 4.2% vs 3% design target.",
+            "than expected - barrel at 4.2% vs 3% design target.",
         )
     )
     msgs.append(
@@ -1025,7 +1025,7 @@ def _build_firmware_messages() -> list[SlackMessage]:
             "U006",
             "200MHz motor control clock. Adding a pipeline stage means "
             "5ns additional latency. The control loop can tolerate it "
-            "— sample rate is 20kHz so 5ns is negligible.",
+            "- sample rate is 20kHz so 5ns is negligible.",
             thread=t1,
         )
     )
@@ -1135,7 +1135,7 @@ def _build_firmware_messages() -> list[SlackMessage]:
             "1711925120.000512",
             "#firmware",
             "U014",
-            "Good idea. Also the logging buffer is 32KB — we can "
+            "Good idea. Also the logging buffer is 32KB - we can "
             "compress logs in-place and halve that.",
             thread=t3,
         )
@@ -1178,7 +1178,7 @@ def _build_supply_chain_messages() -> list[SlackMessage]:
             "#supply-chain",
             "U017",
             "LIDAR at 8 weeks is the long pole. I've got a PO "
-            "ready for Velodyne — just need engineering sign-off "
+            "ready for Velodyne - just need engineering sign-off "
             "on the final part number.",
             thread=t1,
         )
@@ -1224,7 +1224,7 @@ def _build_supply_chain_messages() -> list[SlackMessage]:
         )
     )
 
-    # Thread 2: FPGA supply alert (BURIED SIGNAL #3 — supply chain impact)
+    # Thread 2: FPGA supply alert (BURIED SIGNAL #3 - supply chain impact)
     t2 = "1711916000.000606"
     msgs.append(
         _msg(
@@ -1254,7 +1254,7 @@ def _build_supply_chain_messages() -> list[SlackMessage]:
             "#supply-chain",
             "U017",
             "Checking brokers. Also the XC7A50T is pin-compatible "
-            "and in stock — 800 pcs at Arrow. Higher capacity but "
+            "and in stock - 800 pcs at Arrow. Higher capacity but "
             "same footprint. @U006 can firmware use the 50T?",
             thread=t2,
         )
@@ -1302,7 +1302,7 @@ def _build_supply_chain_messages() -> list[SlackMessage]:
             "1711926060.000612",
             "#supply-chain",
             "U007",
-            "DyCast is preferred for prototype — domestic simplifies "
+            "DyCast is preferred for prototype - domestic simplifies "
             "quality audits. What's their MOQ for prototypes?",
             thread=t3,
         )
@@ -1338,7 +1338,7 @@ def _build_supply_chain_messages() -> list[SlackMessage]:
             "#supply-chain",
             "U017",
             "Weekly supplier scorecard: 94% on-time delivery this "
-            "month. Two late shipments — both from the connector "
+            "month. Two late shipments - both from the connector "
             "vendor (Molex). Escalating.",
         )
     )
@@ -1408,7 +1408,7 @@ def _build_general_messages() -> list[SlackMessage]:
             "U007",
             "Supply chain is conditional go. The FPGA situation is "
             "resolved (switched to XC7A50T) but the LIDAR lead time "
-            "is tight — 8 weeks with no float.",
+            "is tight - 8 weeks with no float.",
             thread=t1,
         )
     )
@@ -1419,7 +1419,7 @@ def _build_general_messages() -> list[SlackMessage]:
             "U001",
             "Chassis is conditional go. The snap-fit redesign is done "
             "and tested. Magnesium housing decision is pending vendor "
-            "quotes — won't affect DVT timeline either way.",
+            "quotes - won't affect DVT timeline either way.",
             thread=t1,
         )
     )
@@ -1522,7 +1522,7 @@ def _build_general_messages() -> list[SlackMessage]:
             t3,
             "#amr-general",
             "U019",
-            "Team — great progress this sprint. Customer demo is "
+            "Team - great progress this sprint. Customer demo is "
             "scheduled for 6 weeks after DVT build starts. Need "
             "the core navigation loop running by then.",
         )
@@ -1588,7 +1588,7 @@ def _build_general_messages() -> list[SlackMessage]:
 
 
 def _build_day2_chassis() -> list[SlackMessage]:
-    """Day 2 chassis discussions — test results and design updates."""
+    """Day 2 chassis discussions - test results and design updates."""
     msgs: list[SlackMessage] = []
     t1 = "1711990000.001000"
     msgs.append(
@@ -1597,7 +1597,7 @@ def _build_day2_chassis() -> list[SlackMessage]:
             "#chassis-design",
             "U008",
             "Updated topology-optimized motor mount STEP uploaded. "
-            "Mass savings: 148g. Total chassis now at 4.58kg — within "
+            "Mass savings: 148g. Total chassis now at 4.58kg - within "
             "2% of the 4.5kg budget.",
         )
     )
@@ -1706,7 +1706,7 @@ def _build_day2_chassis() -> list[SlackMessage]:
             "U001",
             "The motor excitation is primarily at 150-180Hz range. "
             "Make sure the sine sweep has fine resolution through "
-            "that band — 0.5Hz steps.",
+            "that band - 0.5Hz steps.",
             thread=t3,
         )
     )
@@ -1716,7 +1716,7 @@ def _build_day2_chassis() -> list[SlackMessage]:
             "#chassis-design",
             "U015",
             "Noted. Also adding shock test: half-sine 30g 11ms "
-            "per IEC 60068-2-27. Test fixturing designed — need "
+            "per IEC 60068-2-27. Test fixturing designed - need "
             "3D printed adapter for shaker table.",
             thread=t3,
         )
@@ -1884,7 +1884,7 @@ def _build_day2_drivetrain() -> list[SlackMessage]:
             "#drivetrain",
             "U004",
             "Ke measured at 0.0285 V/rpm vs spec 0.029. Within 2%. "
-            "I've added temperature compensation in the FOC loop — "
+            "I've added temperature compensation in the FOC loop - "
             "recalibrates Ke every 60 seconds using the motor temp "
             "sensor.",
             thread=t3,
@@ -1936,7 +1936,7 @@ def _build_day2_thermal() -> list[SlackMessage]:
             "U003",
             "Fujipoly XR-Um test results: thermal resistance dropped "
             "from 2.8 C/W to 1.1 C/W with the softer pad. Motor "
-            "winding temp now peaks at 138C — 17C margin to limit.",
+            "winding temp now peaks at 138C - 17C margin to limit.",
             reactions=[_r("tada", ["U001", "U002", "U018"])],
         )
     )
@@ -2008,7 +2008,7 @@ def _build_day2_thermal() -> list[SlackMessage]:
             "#thermal-management",
             "U003",
             "Estimated 48dBA at 1m based on the fan curve. Well "
-            "under the 55dBA spec. The duct redesign helped — better "
+            "under the 55dBA spec. The duct redesign helped - better "
             "flow path means less turbulent noise.",
             thread=t2,
             reactions=[_r("white_check_mark", ["U015"])],
@@ -2114,7 +2114,7 @@ def _build_day2_power() -> list[SlackMessage]:
             "1712003060.001303",
             "#power-systems",
             "U004",
-            "Cell balancing during charge — are we seeing any cell "
+            "Cell balancing during charge - are we seeing any cell "
             "voltage spread at end of charge?",
             thread=t2,
         )
@@ -2397,7 +2397,7 @@ def _build_day2_firmware() -> list[SlackMessage]:
             "#firmware",
             "U006",
             "38% LUT utilization, 22% BRAM. Tons of room. Added "
-            "the ILA debug core — 4K sample depth on the motor "
+            "the ILA debug core - 4K sample depth on the motor "
             "control signals.",
             thread=t1,
         )
@@ -2477,7 +2477,7 @@ def _build_day2_firmware() -> list[SlackMessage]:
             "U014",
             "That eats 48KB of the 200KB RAM though. Given our 85% "
             "RAM usage that's tight. What about the compressed log "
-            "buffer — did we implement that yet?",
+            "buffer - did we implement that yet?",
             thread=t3,
         )
     )
@@ -2539,7 +2539,7 @@ def _build_day2_supply_chain() -> list[SlackMessage]:
             "1711996060.001601",
             "#supply-chain",
             "U007",
-            "Excellent. @U011 please update the risk register — "
+            "Excellent. @U011 please update the risk register - "
             "FPGA supply moved from red to green.",
             thread=t1,
         )
@@ -2572,7 +2572,7 @@ def _build_day2_supply_chain() -> list[SlackMessage]:
             "1712006060.001604",
             "#supply-chain",
             "U017",
-            "Within the $55k budget with $5.2k contingency. That's about 10% — adequate for DVT.",
+            "Within the $55k budget with $5.2k contingency. That's about 10% - adequate for DVT.",
             thread=t2,
         )
     )
@@ -2581,7 +2581,7 @@ def _build_day2_supply_chain() -> list[SlackMessage]:
             "1712006120.001605",
             "#supply-chain",
             "U007",
-            "The magnesium housing prototypes are separate — $12k "
+            "The magnesium housing prototypes are separate - $12k "
             "tooling + ~$800/part for 3 test samples. That's an "
             "additional $14.4k from the NRE budget.",
             thread=t2,
@@ -2724,7 +2724,7 @@ def _build_day2_general() -> list[SlackMessage]:
             "#amr-general",
             "U009",
             "Updated the test schedule in Confluence. Critical path "
-            "is thermal cycling — takes 2 full weeks.",
+            "is thermal cycling - takes 2 full weeks.",
             thread=t2,
         )
     )
@@ -2816,7 +2816,7 @@ def _build_day2_general() -> list[SlackMessage]:
             "#amr-general",
             "U009",
             "EMC pre-scan results are clean at conducted emissions. "
-            "Radiated is borderline at 230MHz — the motor PWM "
+            "Radiated is borderline at 230MHz - the motor PWM "
             "switching frequency harmonic. Adding ferrite bead.",
         )
     )
@@ -2900,7 +2900,7 @@ def _build_extra_threads() -> list[SlackMessage]:
             "U002",
             "500-hour endurance test on wheels 1&2 complete. Zero "
             "failures. Bearing wear within spec. Tire compound shows "
-            "0.3mm tread wear — well within the 2mm budget.",
+            "0.3mm tread wear - well within the 2mm budget.",
             reactions=[_r("tada", ["U010", "U012"])],
         )
     )
@@ -3190,7 +3190,7 @@ def _build_extra_threads() -> list[SlackMessage]:
             "#chassis-design",
             "U009",
             "Torque audit complete. All 47 fasteners within spec. "
-            "3 were at lower bound — tightened to nominal.",
+            "3 were at lower bound - tightened to nominal.",
         )
     )
     msgs.append(

@@ -18,7 +18,7 @@ def _get_persona(user_id: str):  # noqa: ANN202
     return next(p for p in DEMO_PERSONAS if p.user_id == user_id)
 
 
-MAYA = _get_persona("U001")  # IC ME — chassis + thermal
+MAYA = _get_persona("U001")  # IC ME - chassis + thermal
 ELENA = _get_persona("U007")  # Supply Chain
 RYAN = _get_persona("U010")  # Eng Manager
 
@@ -79,7 +79,7 @@ SIGNAL_3_FPGA = _make_atom(
     "firmware",
     affected=["supply-chain"],
     urgency="high",
-    summary="FPGA lead time risk — may extend to 16 weeks",
+    summary="FPGA lead time risk - may extend to 16 weeks",
 )
 
 # Filler atoms to create realistic scoring competition

@@ -2,7 +2,7 @@
 
 Defines Maya Chen (IC ME), Elena Vasquez (Supply Chain Lead), and
 Ryan Torres (Engineering Manager) per design document section 6.1.
-These personas drive the relevance scoring demo — same atoms, different
+These personas drive the relevance scoring demo - same atoms, different
 digests based on role, workstream affinities, and phase context.
 """
 

@@ -100,7 +100,7 @@ class TestBackReferenceContinuation:
         thread = _bundle(
             root=_msg("1000.001", "Magnesium housing weight analysis"),
         )
-        standalone = _msg("1000.003", "re: magnesium housing — updated the spreadsheet")
+        standalone = _msg("1000.003", "re: magnesium housing - updated the spreadsheet")
         result = detect_continuations([thread], [standalone])
         assert len(result) == 1
 
@@ -109,7 +109,7 @@ class TestBackReferenceContinuation:
         thread = _bundle(
             root=_msg("1000.001", "FPGA timing closure failing"),
         )
-        standalone = _msg("1000.003", "Following up on the FPGA timing issue — resolved")
+        standalone = _msg("1000.003", "Following up on the FPGA timing issue - resolved")
         result = detect_continuations([thread], [standalone])
         assert len(result) == 1
 

@@ -92,7 +92,7 @@ def _check_back_reference(
     match = _BACKREF_PATTERN.search(msg.text)
     if not match:
         return False
-    after = msg.text[match.end() :].lower().split("—")[0].split(".")[0].strip()
+    after = msg.text[match.end() :].lower().split("-")[0].split(".")[0].strip()
     if not after:
         return False
     thread_text = _get_thread_text(bundle)

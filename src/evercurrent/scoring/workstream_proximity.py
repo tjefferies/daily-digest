@@ -1,7 +1,7 @@
 """Dimension 1: workstream proximity scoring (weight 0.30).
 
 Score = max(persona.workstream_affinities[ws] for ws in all atom workstreams).
-Cross-workstream affected tags make this powerful — a spec change that
+Cross-workstream affected tags make this powerful - a spec change that
 affects your workstream scores high even from a channel you don't follow.
 """
 
@@ -22,7 +22,7 @@ def score_workstream_proximity(atom: Atom, persona: Persona) -> float:
         persona: The persona to score against.
 
     Returns:
-        Float in [0, 1] — max affinity across originating + affected.
+        Float in [0, 1] - max affinity across originating + affected.
     """
     workstreams = [atom.workstreams.originating, *atom.workstreams.affected]
     affinities = persona.workstream_affinities

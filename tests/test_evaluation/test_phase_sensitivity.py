@@ -47,7 +47,7 @@ def _make_atom(
     )
 
 
-# Atoms with different phase relevance — some EVT, some DVT
+# Atoms with different phase relevance - some EVT, some DVT
 EVT_ATOM = _make_atom(
     "SPEC_CHANGE",
     "thermal",

@@ -6,7 +6,7 @@ EverCurrent solves the critical information loss problem in hardware engineering
 a missed Slack thread about a spec change can cost weeks, dollars, and physical
 waste. The system ingests team communication, extracts structured atoms of
 information, scores them against each engineer's context, and generates
-personalized daily digests — so every team member sees exactly what matters to
+personalized daily digests - so every team member sees exactly what matters to
 them.
 
 ## Architecture
@@ -109,7 +109,7 @@ curl "http://localhost:8000/digest/U001?phase_override=thermal:DVT"
 
 ## Demo Personas
 
-Three personas demonstrate differential relevance — the same data produces
+Three personas demonstrate differential relevance - the same data produces
 meaningfully different digests for each:
 
 | Persona         | ID   | Role                      | Top Workstreams                    |
@@ -239,7 +239,7 @@ evercurrent/
   critical to the chassis engineer and irrelevant to the firmware developer.
   Scoring is always (atom, persona) pairs.
 - **Briefing tone, not newsletter**: Digests read like a competent chief of
-  staff's briefing — terse, specific, no editorializing. The moment the digest
+  staff's briefing - terse, specific, no editorializing. The moment the digest
   adds opinions, it loses engineering team trust.
 - **Critical threshold overflow**: Atoms scoring above 0.85 always appear in the
   digest, even beyond the top-N limit, ensuring urgent items are never dropped.

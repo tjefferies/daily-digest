@@ -1,4 +1,4 @@
-"""Layer 1: Ingestion — parse fixture data into typed message streams.
+"""Layer 1: Ingestion - parse fixture data into typed message streams.
 
 Converts raw JSON dicts from the FixtureStore into validated, time-ordered
 SlackMessage objects that all downstream pipeline layers consume.

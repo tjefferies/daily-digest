@@ -1,4 +1,4 @@
-# Makefile — Local equivalents of all GitHub Actions pipeline jobs.
+# Makefile - Local equivalents of all GitHub Actions pipeline jobs.
 # Usage: make <target> or make all
 
 .PHONY: help lint format typecheck test complexity maintainability interrogate \

@@ -1,4 +1,4 @@
-"""Layer 2: Extraction Pipeline — LLM-powered atom extraction.
+"""Layer 2: Extraction Pipeline - LLM-powered atom extraction.
 
 Transforms ingested context windows into structured Atom objects
 using the Anthropic Claude API.

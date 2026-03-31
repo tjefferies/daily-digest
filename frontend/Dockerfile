@@ -1,4 +1,4 @@
-# frontend/Dockerfile — Multistage build for React frontend
+# frontend/Dockerfile - Multistage build for React frontend
 # Build: docker build -f frontend/Dockerfile -t evercurrent-frontend frontend/
 
 # ─── Stage 1: Builder ────────────────────────────────────────────────────────

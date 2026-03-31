@@ -1,4 +1,4 @@
-"""Layer 4: Relevance Scoring — five-dimension scoring pipeline.
+"""Layer 4: Relevance Scoring - five-dimension scoring pipeline.
 
 Scores atoms against personas using workstream proximity, role-type
 alignment, phase alignment, urgency, and social signals. Assembles

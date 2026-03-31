@@ -1,4 +1,4 @@
-# backend.Dockerfile — Multistage build for FastAPI backend
+# backend.Dockerfile - Multistage build for FastAPI backend
 # Build: docker build -f backend.Dockerfile -t evercurrent-backend .
 
 # ─── Stage 1: Builder ────────────────────────────────────────────────────────

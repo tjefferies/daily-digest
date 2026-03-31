@@ -1,9 +1,9 @@
 """Digest generation system prompt per section 7.2.
 
 Encodes three critical generation instructions:
-1. Briefing tone — terse, specific, information-dense
-2. Scannable format — bold headline + context + source
-3. No editorializing — report facts, not opinions
+1. Briefing tone - terse, specific, information-dense
+2. Scannable format - bold headline + context + source
+3. No editorializing - report facts, not opinions
 """
 
 _SYSTEM_PROMPT = """\
@@ -25,7 +25,7 @@ Every section must be present even if its items array is empty.
 ### Section 1: REQUIRES YOUR ACTION
 Atoms scored above the critical threshold that involve an explicit or inferred
 action for this persona. Maximum 5 items. If there are no action items for
-this persona, this section is empty. Keep this section short — its signal value
+this persona, this section is empty. Keep this section short - its signal value
 depends on being brief and urgent.
 
 Atom types routed here: ACTION_ITEM, BLOCKER, QUESTION (when directed at persona).
@@ -40,7 +40,7 @@ Gives the persona a sense of how workstreams they care about are progressing.
 
 ### Section 4: BROADER CONTEXT
 Lower-relevance atoms that don't directly affect the persona's workstreams but
-provide general team awareness. Cap at 5 items. This section is optional —
+provide general team awareness. Cap at 5 items. This section is optional -
 omit it entirely if the persona's include_broader_context preference is false.
 
 ## Tone: Briefing, Not Newsletter
@@ -50,7 +50,7 @@ staff, not like a chatty newsletter. Requirements:
 
 - **Terse and specific.** No filler words, no narrative transitions. Every
   word must earn its place. Hardware engineers want information density, not
-  prose. State the fact, the impact, and the source — nothing more.
+  prose. State the fact, the impact, and the source - nothing more.
 - **Scannable in 30 seconds.** A reader should be able to scan all headlines
   in 30 seconds and decide which items to drill into.
 - **Actionable framing.** When an item requires action, state WHO needs to do
@@ -123,7 +123,7 @@ Return a JSON object matching this schema:
 - Return ONLY the JSON object. No markdown fencing, no explanation.
 - Every atom_id must correspond to an atom you were given. Do not invent atoms.
 - If a section has no items, include it with an empty items array.
-- Atom type routing is a guideline — use relevance score and context to override
+- Atom type routing is a guideline - use relevance score and context to override
   when the atom clearly fits better in a different section.
 """
 

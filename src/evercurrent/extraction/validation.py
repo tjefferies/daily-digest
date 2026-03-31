@@ -122,7 +122,7 @@ def _demote_atom(atom: Atom, reason: str) -> Atom:
     Returns:
         New Atom with halved confidence and warning in detail.
     """
-    logger.warning("Atom demoted: %s — %s", atom.summary, reason)
+    logger.warning("Atom demoted: %s - %s", atom.summary, reason)
     return atom.model_copy(
         update={
             "confidence": atom.confidence * 0.5,

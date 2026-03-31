@@ -1,4 +1,4 @@
-# docker-compose.yml — Local development orchestration
+# docker-compose.yml - Local development orchestration
 # Usage: docker compose up --build
 
 services:

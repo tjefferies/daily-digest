@@ -116,7 +116,7 @@ def _get_persona(user_id: str):  # noqa: ANN202
     return next(p for p in DEMO_PERSONAS if p.user_id == user_id)
 
 
-MAYA = _get_persona("U001")  # IC ME — chassis + thermal
+MAYA = _get_persona("U001")  # IC ME - chassis + thermal
 ELENA = _get_persona("U007")  # Supply Chain
 RYAN = _get_persona("U010")  # Eng Manager
 

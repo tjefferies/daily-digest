@@ -2,7 +2,7 @@
 
 Models development phase as a vector (dict[workstream, Phase]) rather
 than a project-wide scalar. Different subsystems occupy different
-phases simultaneously — e.g. chassis is in DVT while sensors are
+phases simultaneously - e.g. chassis is in DVT while sensors are
 still in EVT.
 
 Supports get_phase/set_phase for the frontend phase-override demo

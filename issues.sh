@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-# issues.sh — Create the full beads epic hierarchy for EverCurrent Daily Digest Tool
+# issues.sh - Create the full beads epic hierarchy for EverCurrent Daily Digest Tool
 #
 # Architecture (design-document.rst, 5-layer pipeline):
 #   E0 Python Tooling & Quality Infra ← must come first (pyproject.toml, ruff, pytest, ty, radon)
 #   E1 Foundation & Infrastructure    ← depends on E0
 #   E2 Synthetic Dataset              ← data drives all demo value
-#   E3 Layer 1 — Ingestion            ← needs E2
-#   E4 Layer 2 — Extraction Pipeline  ← needs E3
-#   E5 Layer 3 — Context Backbone     ← needs E1, parallel to E4
-#   E6 Layer 4 — Relevance Scoring    ← needs E4 + E5
-#   E7 Layer 5 — Digest Generation    ← needs E6
+#   E3 Layer 1 - Ingestion            ← needs E2
+#   E4 Layer 2 - Extraction Pipeline  ← needs E3
+#   E5 Layer 3 - Context Backbone     ← needs E1, parallel to E4
+#   E6 Layer 4 - Relevance Scoring    ← needs E4 + E5
+#   E7 Layer 5 - Digest Generation    ← needs E6
 #   E8 Frontend UI                    ← needs E7
 #   E9 Evaluation & Demo Validation   ← needs E8 + E4
 #
@@ -36,7 +36,7 @@ EPIC_TOOL=$(bd create \
   --title="Python Tooling & Quality Infrastructure" \
   --type=epic \
   --priority=0 \
-  --description="Set up the Python development toolchain that enforces code quality gates before any production code is written. Configures pyproject.toml with uv for dependency management, ruff for linting and formatting (Google docstrings, mccabe complexity cap at 8), pytest with coverage floor at 90%, ty for static type checking, and radon for maintainability auditing. Every subsequent epic inherits these quality constraints. This must be the very first thing built — the loop-dev.txt CI/CD process depends on all these tools being configured and passing before any issue can be closed." \
+  --description="Set up the Python development toolchain that enforces code quality gates before any production code is written. Configures pyproject.toml with uv for dependency management, ruff for linting and formatting (Google docstrings, mccabe complexity cap at 8), pytest with coverage floor at 90%, ty for static type checking, and radon for maintainability auditing. Every subsequent epic inherits these quality constraints. This must be the very first thing built - the loop-dev.txt CI/CD process depends on all these tools being configured and passing before any issue can be closed." \
   --silent)
 
 TOOL_1=$(bd create \
@@ -60,7 +60,7 @@ TOOL_3=$(bd create \
   --type=task \
   --priority=0 \
   --parent="$EPIC_TOOL" \
-  --description="Add pytest configuration to pyproject.toml. [tool.pytest.ini_options]: asyncio_mode='auto', testpaths=['tests'], addopts='--cov=src --cov-report=term-missing --cov-fail-under=90 -v --strict-markers'. Register custom markers if needed. Verify 'uv run pytest' runs and exits 0 with 'no tests ran' (not an error, just no tests yet — coverage check is skipped when no tests exist)." \
+  --description="Add pytest configuration to pyproject.toml. [tool.pytest.ini_options]: asyncio_mode='auto', testpaths=['tests'], addopts='--cov=src --cov-report=term-missing --cov-fail-under=90 -v --strict-markers'. Register custom markers if needed. Verify 'uv run pytest' runs and exits 0 with 'no tests ran' (not an error, just no tests yet - coverage check is skipped when no tests exist)." \
   --silent)
 
 TOOL_4=$(bd create \
@@ -76,7 +76,7 @@ TOOL_5=$(bd create \
   --type=task \
   --priority=0 \
   --parent="$EPIC_TOOL" \
-  --description="Set up ty (astral-sh type checker) configuration. Add [tool.ty] section to pyproject.toml if supported, or verify ty works with defaults against the src/ layout. Verify: 'uv run ty check src/' exits 0 on the empty package. Also verify radon CLI works: 'uv run radon cc src/ -a -nc' and 'uv run radon mi src/ -nc' both exit 0. These two tools are the cyclomatic complexity and maintainability index auditors referenced in the quality gates. No configuration files needed — they run from CLI flags." \
+  --description="Set up ty (astral-sh type checker) configuration. Add [tool.ty] section to pyproject.toml if supported, or verify ty works with defaults against the src/ layout. Verify: 'uv run ty check src/' exits 0 on the empty package. Also verify radon CLI works: 'uv run radon cc src/ -a -nc' and 'uv run radon mi src/ -nc' both exit 0. These two tools are the cyclomatic complexity and maintainability index auditors referenced in the quality gates. No configuration files needed - they run from CLI flags." \
   --silent)
 
 TOOL_6=$(bd create \
@@ -124,7 +124,7 @@ INFRA_2=$(bd create \
   --type=task \
   --priority=0 \
   --parent="$EPIC_INFRA" \
-  --description="Bootstrap Vite + React + TypeScript project with Tailwind CSS. Configure vite.config.ts proxy to FastAPI on :8000. Set up folder structure: components/, pages/, types/, api/. Generate TypeScript types mirroring backend Pydantic models (Atom, Persona, DigestSection). No UI components yet — just the skeleton." \
+  --description="Bootstrap Vite + React + TypeScript project with Tailwind CSS. Configure vite.config.ts proxy to FastAPI on :8000. Set up folder structure: components/, pages/, types/, api/. Generate TypeScript types mirroring backend Pydantic models (Atom, Persona, DigestSection). No UI components yet - just the skeleton." \
   --silent)
 
 INFRA_3=$(bd create \
@@ -157,7 +157,7 @@ EPIC_DATA=$(bd create \
   --title="Synthetic Dataset" \
   --type=epic \
   --priority=0 \
-  --description="Design and hand-craft the two-day synthetic Slack dataset for an AMR robotics team across 8 channels, 20-30 team members, 300-500 messages. This is the core demo artifact — if the data feels fake, the entire demo falls apart. Must exhibit: (1) engineer-register prose, (2) three deliberately buried cross-workstream signals from section 9.4, (3) per-workstream phase diversity per section 6.3, (4) thread depth variety from 2-msg to 50-msg narrative arcs." \
+  --description="Design and hand-craft the two-day synthetic Slack dataset for an AMR robotics team across 8 channels, 20-30 team members, 300-500 messages. This is the core demo artifact - if the data feels fake, the entire demo falls apart. Must exhibit: (1) engineer-register prose, (2) three deliberately buried cross-workstream signals from section 9.4, (3) per-workstream phase diversity per section 6.3, (4) thread depth variety from 2-msg to 50-msg narrative arcs." \
   --silent)
 
 DATA_1=$(bd create \
@@ -173,7 +173,7 @@ DATA_2=$(bd create \
   --type=task \
   --priority=1 \
   --parent="$EPIC_DATA" \
-  --description="Write 300-500 synthetic messages that read like engineers talking — not LLM filler. Engineer-register means: terse and technical ('pull-out force on snap fit measured at 12N, spec is 15N min'), cross-referential ('re: James thermal concern from yesterday'), jargon-dense (EVT, DVT, STEP files, Parasolid, torque spec, thermal interface material). Include both shallow 2-3 msg exchanges and deep 30-50 msg threads with a full narrative arc (problem to investigation to root cause to resolution)." \
+  --description="Write 300-500 synthetic messages that read like engineers talking - not LLM filler. Engineer-register means: terse and technical ('pull-out force on snap fit measured at 12N, spec is 15N min'), cross-referential ('re: James thermal concern from yesterday'), jargon-dense (EVT, DVT, STEP files, Parasolid, torque spec, thermal interface material). Include both shallow 2-3 msg exchanges and deep 30-50 msg threads with a full narrative arc (problem to investigation to root cause to resolution)." \
   --silent)
 
 DATA_3=$(bd create \
@@ -181,7 +181,7 @@ DATA_3=$(bd create \
   --type=task \
   --priority=0 \
   --parent="$EPIC_DATA" \
-  --description="Deliberately embed the three key buried signals from section 9.4: (1) In #chassis-design, a weight-reduction thread where someone casually says 'let's just go with magnesium for the housing' — implicit DECISION with procurement and certification impact; (2) In #testing, a motor overheating failure whose root cause implicates chassis/thermal thermal interface material — originating workstream is testing but affected workstreams are chassis and thermal; (3) In #supply-chain, an FPGA lead time update to 16 weeks that blocks a drivetrain milestone. Each signal must be buried in message 5+ of a thread, not in the opener." \
+  --description="Deliberately embed the three key buried signals from section 9.4: (1) In #chassis-design, a weight-reduction thread where someone casually says 'let's just go with magnesium for the housing' - implicit DECISION with procurement and certification impact; (2) In #testing, a motor overheating failure whose root cause implicates chassis/thermal thermal interface material - originating workstream is testing but affected workstreams are chassis and thermal; (3) In #supply-chain, an FPGA lead time update to 16 weeks that blocks a drivetrain milestone. Each signal must be buried in message 5+ of a thread, not in the opener." \
   --silent)
 
 DATA_4=$(bd create \
@@ -199,9 +199,9 @@ bd dep add "$DATA_4" "$DATA_2"
 
 echo "    EPIC_DATA=$EPIC_DATA  DATA_1=$DATA_1  DATA_2=$DATA_2  DATA_3=$DATA_3  DATA_4=$DATA_4"
 
-# ─── EPIC 3: Layer 1 — Ingestion ──────────────────────────────────────────────
+# ─── EPIC 3: Layer 1 - Ingestion ──────────────────────────────────────────────
 echo ""
-echo "==> Creating Epic 3: Layer 1 — Ingestion"
+echo "==> Creating Epic 3: Layer 1 - Ingestion"
 
 EPIC_L1=$(bd create \
   --title="Layer 1: Ingestion" \
@@ -215,7 +215,7 @@ L1_1=$(bd create \
   --type=task \
   --priority=1 \
   --parent="$EPIC_L1" \
-  --description="Write an ingestion loader that reads from the in-memory fixture store and emits a flat, time-ordered stream of typed SlackMessage objects (message_ts, thread_ts, channel, user_id, text, reactions). This is the ingestion boundary — all downstream layers work with SlackMessage, not raw JSON dicts." \
+  --description="Write an ingestion loader that reads from the in-memory fixture store and emits a flat, time-ordered stream of typed SlackMessage objects (message_ts, thread_ts, channel, user_id, text, reactions). This is the ingestion boundary - all downstream layers work with SlackMessage, not raw JSON dicts." \
   --silent)
 
 L1_2=$(bd create \
@@ -249,9 +249,9 @@ bd dep add "$L1_4" "$L1_3"
 
 echo "    EPIC_L1=$EPIC_L1  L1_1=$L1_1  L1_2=$L1_2  L1_3=$L1_3  L1_4=$L1_4"
 
-# ─── EPIC 4: Layer 2 — Extraction Pipeline ────────────────────────────────────
+# ─── EPIC 4: Layer 2 - Extraction Pipeline ────────────────────────────────────
 echo ""
-echo "==> Creating Epic 4: Layer 2 — Extraction Pipeline"
+echo "==> Creating Epic 4: Layer 2 - Extraction Pipeline"
 
 EPIC_L2=$(bd create \
   --title="Layer 2: Extraction Pipeline" \
@@ -273,7 +273,7 @@ L2_2=$(bd create \
   --type=task \
   --priority=1 \
   --parent="$EPIC_L2" \
-  --description="Write the extraction system prompt per section 4.3. Three critical instructions: (1) Extract conclusions not discussions — a 30-msg debate produces one DECISION atom, not a debate summary; (2) Flag implicit decisions — 'let's just go with magnesium' is an implicit DECISION with confidence < 1.0; (3) Tag affected workstreams beyond just originating — a material change in #chassis-design also affects supply-chain, tooling, certification. Include the full Atom JSON schema in the prompt so output is structured JSON." \
+  --description="Write the extraction system prompt per section 4.3. Three critical instructions: (1) Extract conclusions not discussions - a 30-msg debate produces one DECISION atom, not a debate summary; (2) Flag implicit decisions - 'let's just go with magnesium' is an implicit DECISION with confidence < 1.0; (3) Tag affected workstreams beyond just originating - a material change in #chassis-design also affects supply-chain, tooling, certification. Include the full Atom JSON schema in the prompt so output is structured JSON." \
   --silent)
 
 L2_3=$(bd create \
@@ -289,7 +289,7 @@ L2_4=$(bd create \
   --type=task \
   --priority=2 \
   --parent="$EPIC_L2" \
-  --description="For all atoms where type is SPEC_CHANGE or DECISION: run a second Anthropic API call with (original ContextWindow text + extracted Atom JSON) and ask: 'Does this atom accurately represent what was said? Is anything overstated, understated, or fabricated?' Demote invalid atoms (confidence *= 0.5, add validation_warning field). Doubles cost for ~30% of atoms but justified — a hallucinated spec value in hardware means 500 wrong injection-molded parts (section 4.4)." \
+  --description="For all atoms where type is SPEC_CHANGE or DECISION: run a second Anthropic API call with (original ContextWindow text + extracted Atom JSON) and ask: 'Does this atom accurately represent what was said? Is anything overstated, understated, or fabricated?' Demote invalid atoms (confidence *= 0.5, add validation_warning field). Doubles cost for ~30% of atoms but justified - a hallucinated spec value in hardware means 500 wrong injection-molded parts (section 4.4)." \
   --silent)
 
 L2_5=$(bd create \
@@ -308,9 +308,9 @@ bd dep add "$L2_5" "$L2_3"
 
 echo "    EPIC_L2=$EPIC_L2  L2_1=$L2_1  L2_2=$L2_2  L2_3=$L2_3  L2_4=$L2_4  L2_5=$L2_5"
 
-# ─── EPIC 5: Layer 3 — Context Backbone ──────────────────────────────────────
+# ─── EPIC 5: Layer 3 - Context Backbone ──────────────────────────────────────
 echo ""
-echo "==> Creating Epic 5: Layer 3 — Context Backbone"
+echo "==> Creating Epic 5: Layer 3 - Context Backbone"
 
 EPIC_L3=$(bd create \
   --title="Layer 3: Context Backbone" \
@@ -348,7 +348,7 @@ L3_4=$(bd create \
   --type=task \
   --priority=1 \
   --parent="$EPIC_L3" \
-  --description="Create three Persona fixture objects per schema in section 6.1: (1) Maya Chen, Senior ME — chassis:1.0, thermal:0.85, drivetrain:0.4, supply-chain:0.3; (2) Supply Chain Lead — supply-chain:1.0, all workstreams 0.4-0.7; (3) Engineering Manager — all workstreams 0.6-0.9, Eng Manager archetype. Include workstream_affinities, phase_context, scoring_weights (default 0.30/0.20/0.20/0.15/0.15), collaborator_graph (3-5 user_ids), and digest_preferences (max_items=25, critical_threshold=0.85)." \
+  --description="Create three Persona fixture objects per schema in section 6.1: (1) Maya Chen, Senior ME - chassis:1.0, thermal:0.85, drivetrain:0.4, supply-chain:0.3; (2) Supply Chain Lead - supply-chain:1.0, all workstreams 0.4-0.7; (3) Engineering Manager - all workstreams 0.6-0.9, Eng Manager archetype. Include workstream_affinities, phase_context, scoring_weights (default 0.30/0.20/0.20/0.15/0.15), collaborator_graph (3-5 user_ids), and digest_preferences (max_items=25, critical_threshold=0.85)." \
   --silent)
 
 # L3 internal ordering: roster → workstreams → phase vector → personas
@@ -358,15 +358,15 @@ bd dep add "$L3_4" "$L3_3"
 
 echo "    EPIC_L3=$EPIC_L3  L3_1=$L3_1  L3_2=$L3_2  L3_3=$L3_3  L3_4=$L3_4"
 
-# ─── EPIC 6: Layer 4 — Relevance Scoring ─────────────────────────────────────
+# ─── EPIC 6: Layer 4 - Relevance Scoring ─────────────────────────────────────
 echo ""
-echo "==> Creating Epic 6: Layer 4 — Relevance Scoring"
+echo "==> Creating Epic 6: Layer 4 - Relevance Scoring"
 
 EPIC_L4=$(bd create \
   --title="Layer 4: Relevance Scoring" \
   --type=epic \
   --priority=1 \
-  --description="Implement the five-dimension relevance scoring engine (section 5.2) that produces a per-persona, per-atom composite score. Relevance is relational — the same SPEC_CHANGE atom is critical to the power systems engineer and irrelevant to the enclosure ME (section 5.1). Dimensions: workstream proximity (0.30), role-type alignment (0.20), phase alignment (0.20), urgency (0.15), social signal (0.15). Adaptive weight learning is stubbed per section 5.4 note." \
+  --description="Implement the five-dimension relevance scoring engine (section 5.2) that produces a per-persona, per-atom composite score. Relevance is relational - the same SPEC_CHANGE atom is critical to the power systems engineer and irrelevant to the enclosure ME (section 5.1). Dimensions: workstream proximity (0.30), role-type alignment (0.20), phase alignment (0.20), urgency (0.15), social signal (0.15). Adaptive weight learning is stubbed per section 5.4 note." \
   --silent)
 
 L4_1=$(bd create \
@@ -398,7 +398,7 @@ L4_4=$(bd create \
   --type=task \
   --priority=1 \
   --parent="$EPIC_L4" \
-  --description="Urgency is an atom-level property, not persona-specific. Normalize: high=1.0, medium=0.6, low=0.3. Urgency boosts relevance but does not override workstream proximity — an urgent firmware atom is still near-zero relevance for a chassis ME with no firmware involvement. Default weight 0.15." \
+  --description="Urgency is an atom-level property, not persona-specific. Normalize: high=1.0, medium=0.6, low=0.3. Urgency boosts relevance but does not override workstream proximity - an urgent firmware atom is still near-zero relevance for a chassis ME with no firmware involvement. Default weight 0.15." \
   --silent)
 
 L4_5=$(bd create \
@@ -406,7 +406,7 @@ L4_5=$(bd create \
   --type=task \
   --priority=2 \
   --parent="$EPIC_L4" \
-  --description="Score based on overlap between atom.key_participants and persona.collaborator_graph. Boost if a collaborator used escalation language ('this is a blocker', reaction count > threshold, @channel). This dimension proxies the informal trust network — if your closest collaborator flagged something, you probably want to know about it too. Default weight 0.15." \
+  --description="Score based on overlap between atom.key_participants and persona.collaborator_graph. Boost if a collaborator used escalation language ('this is a blocker', reaction count > threshold, @channel). This dimension proxies the informal trust network - if your closest collaborator flagged something, you probably want to know about it too. Default weight 0.15." \
   --silent)
 
 L4_6=$(bd create \
@@ -426,15 +426,15 @@ bd dep add "$L4_6" "$L4_5"
 
 echo "    EPIC_L4=$EPIC_L4  L4_1=$L4_1  L4_2=$L4_2  L4_3=$L4_3  L4_4=$L4_4  L4_5=$L4_5  L4_6=$L4_6"
 
-# ─── EPIC 7: Layer 5 — Digest Generation ─────────────────────────────────────
+# ─── EPIC 7: Layer 5 - Digest Generation ─────────────────────────────────────
 echo ""
-echo "==> Creating Epic 7: Layer 5 — Digest Generation"
+echo "==> Creating Epic 7: Layer 5 - Digest Generation"
 
 EPIC_L5=$(bd create \
   --title="Layer 5: Digest Generation" \
   --type=epic \
   --priority=2 \
-  --description="Implement the generation LLM pass (section 7.1-7.2) that converts ranked, scored atoms into natural-language digest prose. The generated digest has four priority-tiered sections: Requires Your Action (score >= 0.85, max 5 items), Decisions and Changes, Progress and Risks, Broader Context. Tone: briefing not newsletter — terse, specific, scannable. Each item: bold headline + 1-2 sentence context + source link back to Slack thread." \
+  --description="Implement the generation LLM pass (section 7.1-7.2) that converts ranked, scored atoms into natural-language digest prose. The generated digest has four priority-tiered sections: Requires Your Action (score >= 0.85, max 5 items), Decisions and Changes, Progress and Risks, Broader Context. Tone: briefing not newsletter - terse, specific, scannable. Each item: bold headline + 1-2 sentence context + source link back to Slack thread." \
   --silent)
 
 L5_1=$(bd create \
@@ -442,7 +442,7 @@ L5_1=$(bd create \
   --type=task \
   --priority=2 \
   --parent="$EPIC_L5" \
-  --description="Write the digest generation system prompt per section 7.2. Three tone instructions: (1) Briefing not newsletter — terse, specific, information-dense, like a competent chief of staff; (2) Scannable format — bold headline + 1-2 sentence context + source reference per item, scannable in 30 seconds; (3) No editorializing — report what happened, not whether the decision was good. The moment the digest starts adding opinions it loses engineering team trust." \
+  --description="Write the digest generation system prompt per section 7.2. Three tone instructions: (1) Briefing not newsletter - terse, specific, information-dense, like a competent chief of staff; (2) Scannable format - bold headline + 1-2 sentence context + source reference per item, scannable in 30 seconds; (3) No editorializing - report what happened, not whether the decision was good. The moment the digest starts adding opinions it loses engineering team trust." \
   --silent)
 
 L5_2=$(bd create \
@@ -458,7 +458,7 @@ L5_3=$(bd create \
   --type=task \
   --priority=2 \
   --parent="$EPIC_L5" \
-  --description="Wire together the full pipeline into GET /digest/{persona_id}. Implement GET /digest/{persona_id}?phase_override={ws}:{phase} — temporarily calls L3 set_phase(ws, phase) before scoring, enabling the frontend phase-transition toggle demo. Response model: DigestResponse {persona, generated_at, sections: List[DigestSection]}. This endpoint is what the frontend calls for every persona switch and phase toggle (Evaluation Criterion 3 depends on this)." \
+  --description="Wire together the full pipeline into GET /digest/{persona_id}. Implement GET /digest/{persona_id}?phase_override={ws}:{phase} - temporarily calls L3 set_phase(ws, phase) before scoring, enabling the frontend phase-transition toggle demo. Response model: DigestResponse {persona, generated_at, sections: List[DigestSection]}. This endpoint is what the frontend calls for every persona switch and phase toggle (Evaluation Criterion 3 depends on this)." \
   --silent)
 
 # L5 internal ordering: prompt → runner → endpoint
@@ -475,7 +475,7 @@ EPIC_UI=$(bd create \
   --title="Frontend UI: Persona Switcher, Digest Display, Phase Toggle" \
   --type=epic \
   --priority=2 \
-  --description="Build the React frontend that demonstrates the core thesis interactively (section 9.1): switch personas and watch the digest change; toggle a workstream's phase and watch content shift. The UI must be a readable, professionally styled digest — not a dev debug panel. Four components: persona selector, sectioned digest display, phase-transition toggle, and pipeline run trigger." \
+  --description="Build the React frontend that demonstrates the core thesis interactively (section 9.1): switch personas and watch the digest change; toggle a workstream's phase and watch content shift. The UI must be a readable, professionally styled digest - not a dev debug panel. Four components: persona selector, sectioned digest display, phase-transition toggle, and pipeline run trigger." \
   --silent)
 
 UI_1=$(bd create \
@@ -557,7 +557,7 @@ EPIC_EVAL=$(bd create \
   --title="Evaluation and Demo Validation" \
   --type=epic \
   --priority=3 \
-  --description="Validate the three success criteria from section 10.1 against the running prototype: (1) Differential relevance — same data, meaningfully different digests for different personas; (2) Signal surfacing — buried cross-workstream signals appear in the right persona's digest; (3) Phase sensitivity — phase-toggle produces visible digest content change. These tests serve double duty as integration tests and reviewer demo scripts." \
+  --description="Validate the three success criteria from section 10.1 against the running prototype: (1) Differential relevance - same data, meaningfully different digests for different personas; (2) Signal surfacing - buried cross-workstream signals appear in the right persona's digest; (3) Phase sensitivity - phase-toggle produces visible digest content change. These tests serve double duty as integration tests and reviewer demo scripts." \
   --silent)
 
 EVAL_1=$(bd create \
@@ -637,7 +637,7 @@ bd dep add "$L2_1"   "$INFRA_1"
 # L3 roster loader reads from the fixture store
 bd dep add "$L3_1"   "$INFRA_3"
 
-# L4 phase alignment calls L3 get_phase() — hard runtime dependency
+# L4 phase alignment calls L3 get_phase() - hard runtime dependency
 bd dep add "$L4_3"   "$L3_3"
 
 # L4 workstream proximity uses persona affinity vectors from L3 personas
@@ -701,7 +701,7 @@ DOCKER=$(bd create \
   --title="Build multistage Dockerfiles and Docker Compose for local development" \
   --type=task \
   --priority=3 \
-  --description="Create multistage Dockerfiles for each part of the application: (1) backend/Dockerfile — Python FastAPI backend with uv for dependency management, multistage build (builder stage installs deps, runtime stage copies venv and src), (2) frontend/Dockerfile — Node/React frontend with multistage build (builder stage runs npm build, runtime stage serves with nginx or node), (3) docker-compose.yml — Orchestrates all services for local development: backend (port 8000), frontend (port 3000), with environment variables for ANTHROPIC_API_KEY, health checks, volume mounts for development hot-reload, and proper networking between services. Each Dockerfile should use slim/alpine base images, non-root users, .dockerignore files, and follow Docker best practices for layer caching. This MUST wait until README is written so the Docker setup can reference final project structure." \
+  --description="Create multistage Dockerfiles for each part of the application: (1) backend/Dockerfile - Python FastAPI backend with uv for dependency management, multistage build (builder stage installs deps, runtime stage copies venv and src), (2) frontend/Dockerfile - Node/React frontend with multistage build (builder stage runs npm build, runtime stage serves with nginx or node), (3) docker-compose.yml - Orchestrates all services for local development: backend (port 8000), frontend (port 3000), with environment variables for ANTHROPIC_API_KEY, health checks, volume mounts for development hot-reload, and proper networking between services. Each Dockerfile should use slim/alpine base images, non-root users, .dockerignore files, and follow Docker best practices for layer caching. This MUST wait until README is written so the Docker setup can reference final project structure." \
   --silent)
 
 # Must wait until README is done (project structure finalized)
@@ -733,7 +733,7 @@ GH_ACTIONS=$(bd create \
   --title="Create GitHub Actions CI/CD pipeline with quality gates, security scanning, and SBOM" \
   --type=task \
   --priority=3 \
-  --description="Create .github/workflows/quality-gate.yml modeled off the local scripts/quality-gates.sh and the metalog_jax reference pipeline. Jobs: (1) quality-gates — ruff lint, ruff format, ty check, pytest with coverage >=90%, radon cc <=8, radon mi A rating, interrogate >=95%; (2) license-check — pip-licenses with allowed list (MIT, BSD, Apache, PSF, ISC, Unlicense, Public Domain, CC0, Zlib, Mozilla, 0BSD); (3) semgrep — scan with p/python, p/security-audit, p/owasp-top-ten, p/cwe-top-25, p/secrets configs, fail on ERROR severity; (4) bandit — scan src/ with medium severity/confidence, fail on high; (5) sbom — generate CycloneDX and SPDX SBOMs with syft, scan with grype, fail on critical vulnerabilities; (6) docs — build Sphinx documentation site and deploy as artifact. Trigger on push to main and pull_request. Use astral-sh/setup-uv@v4 for uv. Upload all scan results and SBOM reports as artifacts." \
+  --description="Create .github/workflows/quality-gate.yml modeled off the local scripts/quality-gates.sh and the metalog_jax reference pipeline. Jobs: (1) quality-gates - ruff lint, ruff format, ty check, pytest with coverage >=90%, radon cc <=8, radon mi A rating, interrogate >=95%; (2) license-check - pip-licenses with allowed list (MIT, BSD, Apache, PSF, ISC, Unlicense, Public Domain, CC0, Zlib, Mozilla, 0BSD); (3) semgrep - scan with p/python, p/security-audit, p/owasp-top-ten, p/cwe-top-25, p/secrets configs, fail on ERROR severity; (4) bandit - scan src/ with medium severity/confidence, fail on high; (5) sbom - generate CycloneDX and SPDX SBOMs with syft, scan with grype, fail on critical vulnerabilities; (6) docs - build Sphinx documentation site and deploy as artifact. Trigger on push to main and pull_request. Use astral-sh/setup-uv@v4 for uv. Upload all scan results and SBOM reports as artifacts." \
   --silent)
 
 # Must wait until Sphinx docs are done (all local tools configured)
@@ -749,7 +749,7 @@ MAKEFILE=$(bd create \
   --title="Create Makefile that runs all local commands matching GitHub Actions jobs" \
   --type=task \
   --priority=3 \
-  --description="Create a Makefile at the project root that provides local equivalents of every GitHub Actions pipeline job. Targets: (1) make lint — ruff check src/ tests/; (2) make format — ruff format --check src/ tests/; (3) make typecheck — ty check src/; (4) make test — pytest with coverage >=90%; (5) make complexity — radon cc and mi checks; (6) make interrogate — interrogate src/ --fail-under 95; (7) make license-check — pip-licenses with allowed list; (8) make semgrep — semgrep scan with security configs; (9) make bandit — bandit scan src/; (10) make sbom — syft + grype scan; (11) make docs — sphinx-build docs; (12) make quality — runs all quality gates (lint, format, typecheck, test, complexity, interrogate); (13) make security — runs all security gates (license-check, semgrep, bandit, sbom); (14) make all — runs quality + security + docs; (15) make ci — mirrors the full GitHub Actions pipeline locally. Each target should use 'uv run' prefix for Python tools. Include .PHONY declarations. This MUST wait until the GitHub Actions pipeline issue is closed so the Makefile accurately mirrors the CI jobs." \
+  --description="Create a Makefile at the project root that provides local equivalents of every GitHub Actions pipeline job. Targets: (1) make lint - ruff check src/ tests/; (2) make format - ruff format --check src/ tests/; (3) make typecheck - ty check src/; (4) make test - pytest with coverage >=90%; (5) make complexity - radon cc and mi checks; (6) make interrogate - interrogate src/ --fail-under 95; (7) make license-check - pip-licenses with allowed list; (8) make semgrep - semgrep scan with security configs; (9) make bandit - bandit scan src/; (10) make sbom - syft + grype scan; (11) make docs - sphinx-build docs; (12) make quality - runs all quality gates (lint, format, typecheck, test, complexity, interrogate); (13) make security - runs all security gates (license-check, semgrep, bandit, sbom); (14) make all - runs quality + security + docs; (15) make ci - mirrors the full GitHub Actions pipeline locally. Each target should use 'uv run' prefix for Python tools. Include .PHONY declarations. This MUST wait until the GitHub Actions pipeline issue is closed so the Makefile accurately mirrors the CI jobs." \
   --silent)
 
 # Must wait until GitHub Actions pipeline is done
@@ -765,7 +765,7 @@ NEXT_STEPS=$(bd create \
   --title="Write next-steps.rst covering follow-on work, stakeholder questions, and production path" \
   --type=task \
   --priority=3 \
-  --description="Write docs/next-steps.rst documenting recommended follow-on work after the prototype is delivered. Include in the Sphinx toctree. Sections: (1) Stakeholder Questions — expand section 11 of design-document.rst: IP classification for cloud vs on-prem LLM, PM tool integration for automated phase detection, multi-source ingestion beyond Slack, user interview findings, organizational structure clarity; (2) Live Data Integration — replacing static synthetic dataset with Slack OAuth bot, real-time message ingestion, webhook vs polling, message deduplication, handling edits/deletes; (3) Configuration Interface — web-based UI for editing YAML configs, real-time preview of scoring changes, admin panel for managing personas; (4) Adaptive Feedback Loop — implementing the stubbed feedback mechanism (section 5.4), user implicit signals, weight learning, A/B testing; (5) Production Hardening — persistent storage, auth, observability, error handling, rate limiting, caching; (6) Scaling Path — batch to stream (Kafka), parallelized extraction, searchable atom index; (7) Additional Integrations — PLM/ERP/PM tool connectors, email, CAD comments, ticket sync; (8) Phase Transition Detection — automated inference from language patterns; (9) Evaluation in Production — section 10.2 metrics; (10) Security and Compliance — on-prem inference, data retention, audit logging, SOC2." \
+  --description="Write docs/next-steps.rst documenting recommended follow-on work after the prototype is delivered. Include in the Sphinx toctree. Sections: (1) Stakeholder Questions - expand section 11 of design-document.rst: IP classification for cloud vs on-prem LLM, PM tool integration for automated phase detection, multi-source ingestion beyond Slack, user interview findings, organizational structure clarity; (2) Live Data Integration - replacing static synthetic dataset with Slack OAuth bot, real-time message ingestion, webhook vs polling, message deduplication, handling edits/deletes; (3) Configuration Interface - web-based UI for editing YAML configs, real-time preview of scoring changes, admin panel for managing personas; (4) Adaptive Feedback Loop - implementing the stubbed feedback mechanism (section 5.4), user implicit signals, weight learning, A/B testing; (5) Production Hardening - persistent storage, auth, observability, error handling, rate limiting, caching; (6) Scaling Path - batch to stream (Kafka), parallelized extraction, searchable atom index; (7) Additional Integrations - PLM/ERP/PM tool connectors, email, CAD comments, ticket sync; (8) Phase Transition Detection - automated inference from language patterns; (9) Evaluation in Production - section 10.2 metrics; (10) Security and Compliance - on-prem inference, data retention, audit logging, SOC2." \
   --silent)
 
 # Must wait until Makefile is done (all tooling finalized)
@@ -777,10 +777,10 @@ echo "    NEXT_STEPS=$NEXT_STEPS"
 echo ""
 echo "✓ Epic hierarchy created successfully."
 echo ""
-echo "  bd ready                        — see what to start (Foundation tasks will be first)"
-echo "  bd dep tree \$EPIC_INFRA          — visualize Foundation epic"
-echo "  bd dep tree \$EPIC_L4             — visualize Scoring epic dependencies"
-echo "  bd stats                        — project overview"
+echo "  bd ready                        - see what to start (Foundation tasks will be first)"
+echo "  bd dep tree \$EPIC_INFRA          - visualize Foundation epic"
+echo "  bd dep tree \$EPIC_L4             - visualize Scoring epic dependencies"
+echo "  bd stats                        - project overview"
 echo ""
 echo "  Epic IDs:"
 echo "    E0 Tooling:           $EPIC_TOOL"

@@ -179,7 +179,7 @@ class TestTeamMember:
 
 
 class TestTeamRoster:
-    """Tests for the TeamRoster — the full 20-person team."""
+    """Tests for the TeamRoster - the full 20-person team."""
 
     def test_roster_has_20_members(self) -> None:
         """Exactly 20 team members are defined per the issue spec."""

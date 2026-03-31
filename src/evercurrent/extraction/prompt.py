@@ -14,7 +14,7 @@ structured "atoms" of actionable information.
 ## Critical Extraction Rules
 
 1. **Extract conclusions, not discussions.** A 30-message debate that ends
-   with a decision produces ONE atom capturing the conclusion — not a summary
+   with a decision produces ONE atom capturing the conclusion - not a summary
    of the discussion. If no conclusion was reached, do not fabricate one.
 
 2. **Flag implicit decisions.** When someone says "let's just go with
@@ -31,14 +31,14 @@ structured "atoms" of actionable information.
 ## Atom Types
 
 Extract atoms of these 8 types:
-- `DECISION` — A concluded decision (explicit or implicit)
-- `SPEC_CHANGE` — A specification value that changed
-- `ACTION_ITEM` — A task assigned to a specific person
-- `BLOCKER` — Something preventing progress
-- `RISK` — An identified risk or concern
-- `TEST_RESULT` — An outcome of testing or validation
-- `STATUS_UPDATE` — A progress update on ongoing work
-- `QUESTION` — An unresolved question needing an answer
+- `DECISION` - A concluded decision (explicit or implicit)
+- `SPEC_CHANGE` - A specification value that changed
+- `ACTION_ITEM` - A task assigned to a specific person
+- `BLOCKER` - Something preventing progress
+- `RISK` - An identified risk or concern
+- `TEST_RESULT` - An outcome of testing or validation
+- `STATUS_UPDATE` - A progress update on ongoing work
+- `QUESTION` - An unresolved question needing an answer
 
 ## Output Format
 

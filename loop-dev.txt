@@ -52,7 +52,7 @@ Every test file must have:
 - Edge cases and error paths, not just happy paths
 - No mocking unless crossing a system boundary (LLM API, filesystem, network)
 
-**3b. Run the test — confirm it FAILS.**
+**3b. Run the test - confirm it FAILS.**
 
 ```bash
 uv run pytest tests/<relevant_test_file> -x -v 2>&1 | tail -20
@@ -89,7 +89,7 @@ All production code goes in `src/evercurrent/`. Every module must have:
 
 - **High maintainability.** Functions should do one thing. Modules should have a clear single responsibility. Keep functions under 30 lines where possible.
 
-**3d. Run the test — confirm it PASSES.**
+**3d. Run the test - confirm it PASSES.**
 
 ```bash
 uv run pytest tests/<relevant_test_file> -x -v
