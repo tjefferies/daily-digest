@@ -5,10 +5,12 @@ team roster with role archetypes, workstream registry, phase vectors,
 and persona definitions.
 """
 
+from evercurrent.context.phases import PhaseVector
 from evercurrent.context.roster import RosterEntry, TeamRosterService
 from evercurrent.context.workstreams import WorkstreamRegistry
 
 __all__ = [
+    "PhaseVector",
     "RosterEntry",
     "TeamRosterService",
     "WorkstreamRegistry",
