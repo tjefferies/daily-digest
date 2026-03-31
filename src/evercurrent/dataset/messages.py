@@ -481,7 +481,8 @@ def _build_drivetrain_messages() -> list[SlackMessage]:
             "#drivetrain",
             "U002",
             "Harmonic drive lifetime calc done: 15,000 hours at 3.1Nm "
-            "input. Spec requires 10,000. Margin is adequate.",
+            "input. Spec requires 10,000. Margin is adequate for "
+            "vendor qualification. Sending validation report to Maxon.",
             reactions=[_r("white_check_mark", ["U010"])],
         )
     )
@@ -794,7 +795,8 @@ def _build_power_messages() -> list[SlackMessage]:
             "#power-systems",
             "U004",
             "Updated PCB layout with 25 thermal vias under each "
-            "MOSFET. Simulated Tj drops to 128C. Sending to fab.",
+            "MOSFET. Simulated Tj drops to 128C. Sending to "
+            "vendor for DVT fab run.",
             thread=t2,
             reactions=[_r("white_check_mark", ["U012", "U010"])],
         )
@@ -807,7 +809,8 @@ def _build_power_messages() -> list[SlackMessage]:
             "#power-systems",
             "U018",
             "Battery cycle test #50 complete. Capacity retention at "
-            "97.2%. Datasheet claims 96% at 50 cycles. Tracking well.",
+            "97.2%. Datasheet claims 96% at 50 cycles. Validation "
+            "tracking well for DVT qualification.",
         )
     )
     msgs.append(
@@ -919,9 +922,9 @@ def _build_sensor_messages() -> list[SlackMessage]:
             t3,
             "#sensors",
             "U016",
-            "Front camera FOV measured at 118 deg horizontal. Spec "
-            "is 120 min. Edge distortion is higher than expected — "
-            "barrel at 4.2% vs 3% spec.",
+            "Front camera FOV measured at 118 deg on the EVT "
+            "prototype. Spec is 120 min. Edge distortion is higher "
+            "than expected — barrel at 4.2% vs 3% design target.",
         )
     )
     msgs.append(
@@ -1077,9 +1080,9 @@ def _build_firmware_messages() -> list[SlackMessage]:
             t2,
             "#firmware",
             "U006",
-            "Bootloader v2.1 ready for testing. Added CRC32 validation "
-            "on firmware images and fallback to golden image on 3 "
-            "consecutive boot failures.",
+            "Bootloader v2.1 ready for prototype testing. Added CRC32 "
+            "validation on firmware images and fallback to golden "
+            "image on 3 consecutive boot failures.",
         )
     )
     msgs.append(
@@ -1828,7 +1831,7 @@ def _build_day2_drivetrain() -> list[SlackMessage]:
             "#drivetrain",
             "U012",
             "Wheel assembly procedure v2 uploaded to Confluence. "
-            "Key change: bearing preload now set with torque wrench "
+            "Key change: bearing preload now set with tooling fixture "
             "at 2.5Nm instead of feel. Eliminates the runout issue.",
         )
     )
