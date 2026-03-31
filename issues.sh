@@ -857,3 +857,12 @@ echo "    Makefile:            $MAKEFILE"
 echo "    Next Steps:          $NEXT_STEPS"
 echo "    SVG Arch Diagram:    $SVG_ARCH"
 echo "    LLM Client:         $LLM_CLIENT"
+
+# ─── CR-1: WIRE PIPELINE END-TO-END ─────────────────────────────────────────
+WIRE_PIPELINE=$(bd create \
+  --title="Wire pipeline end-to-end: connect Ingestion → Extraction → Scoring → Generation in API endpoints" \
+  --type=bug \
+  --priority=0 \
+  --description="CR-1 from REVIEW.md. /pipeline/run returns stub. /digest/{persona_id} returns empty sections. DigestAssembler exists but is never called from any endpoint. The five layers are built and tested in isolation but never composed into a working flow. Without this, the system cannot demo its primary job. Wire DigestAssembler into /digest endpoint and implement /pipeline/run to trigger extraction." \
+  --silent)
+echo "    Wire Pipeline:      $WIRE_PIPELINE"

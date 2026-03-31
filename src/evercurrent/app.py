@@ -2,16 +2,28 @@
 
 Configures the main application with CORS middleware for local
 frontend development and provides the digest pipeline endpoints.
+Wires the full 5-layer pipeline: Ingestion → Extraction → Scoring → Generation.
 """
 
+from __future__ import annotations
+
+import logging
 from datetime import UTC, datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from evercurrent.config.loader import get_config
 from evercurrent.context.personas import get_persona
+from evercurrent.generation.assembler import DigestAssembler
+from evercurrent.llm.factory import create_llm_client
+from evercurrent.pipeline import run_pipeline
+
+if TYPE_CHECKING:
+    from evercurrent.models.atom import Atom
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="EverCurrent",
@@ -27,6 +39,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# In-memory atom store: populated by /pipeline/run, consumed by /digest.
+_atom_store: list[Atom] = []
+
+
+def clear_atom_store() -> None:
+    """Clear the in-memory atom store.
+
+    Used by tests to reset state between test cases.
+    """
+    _atom_store.clear()
+
 
 @app.get("/health")
 async def health_check() -> dict[str, str]:
@@ -39,16 +62,26 @@ async def health_check() -> dict[str, str]:
 
 
 @app.post("/pipeline/run")
-async def pipeline_run() -> dict[str, str]:
+async def pipeline_run() -> dict[str, Any]:
     """Trigger the extraction-to-digest pipeline.
 
-    Stub endpoint that returns immediately. Will be wired to the
-    real pipeline layers as they are implemented.
+    Runs the full Ingestion → Extraction → Filter → Validation pipeline
+    and stores extracted atoms for subsequent /digest requests.
 
     Returns:
-        A dict indicating this is a stub response.
+        A dict with status and processing stats.
     """
-    return {"status": "stub"}
+    client = create_llm_client()
+    result = run_pipeline(client)
+
+    _atom_store.clear()
+    _atom_store.extend(result.atoms)
+
+    logger.info("Pipeline complete: %d atoms stored", len(result.atoms))
+    return {
+        "status": "complete",
+        "stats": result.stats,
+    }
 
 
 @app.get("/digest/{persona_id}")
@@ -58,10 +91,9 @@ async def get_digest(
 ) -> dict[str, Any]:
     """Retrieve the generated digest for a specific persona.
 
-    Looks up the persona, optionally applies a phase override,
-    and returns the digest response. Without an Anthropic client
-    configured, returns an empty digest structure suitable for
-    frontend development and testing.
+    If the pipeline has been run (atoms in store), uses the DigestAssembler
+    to score and generate a personalized digest. Otherwise returns an empty
+    digest structure suitable for frontend development.
 
     Args:
         persona_id: Slack user ID of the persona.
@@ -85,9 +117,16 @@ async def get_digest(
                 detail=f"Invalid phase_override: {phase_override!r}. Expected 'workstream:phase'",
             )
 
-    return {
-        "persona_id": persona_id,
-        "generated_at": datetime.now(tz=UTC).isoformat(),
-        "sections": [],
-        "phase_override": phase_override,
-    }
+    # If no atoms have been extracted yet, return empty digest
+    if not _atom_store:
+        return {
+            "persona_id": persona_id,
+            "generated_at": datetime.now(tz=UTC).isoformat(),
+            "sections": [],
+            "phase_override": phase_override,
+        }
+
+    # Wire the assembler with stored atoms
+    client = create_llm_client()
+    assembler = DigestAssembler(client)
+    return assembler.assemble(persona_id, list(_atom_store), phase_override)
