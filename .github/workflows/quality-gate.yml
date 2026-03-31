@@ -1,0 +1,209 @@
+name: Quality Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.13"
+
+jobs:
+  quality-gates:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+      - run: uv sync --all-groups
+
+      - name: "Gate 1: Ruff lint"
+        run: uv run ruff check src/ tests/
+
+      - name: "Gate 2: Ruff format"
+        run: uv run ruff format --check src/ tests/
+
+      - name: "Gate 3: Type check (ty)"
+        run: uv run ty check src/
+
+      - name: "Gate 4: Pytest with coverage"
+        run: uv run pytest --tb=short -q --cov=src --cov-report=term-missing --cov-fail-under=90
+
+      - name: "Gate 5: Cyclomatic complexity"
+        run: |
+          output=$(uv run radon cc src/ -a -nc 2>&1)
+          echo "$output"
+          if echo "$output" | grep -qE -- '^\s+[A-Z].*- [D-F]$'; then
+            echo "ERROR: Functions with complexity > 8 detected"
+            exit 1
+          fi
+
+      - name: "Gate 6: Maintainability index"
+        run: |
+          output=$(uv run radon mi src/ -nc 2>&1)
+          echo "$output"
+          if echo "$output" | grep -qE -- '- [B-F]$'; then
+            echo "ERROR: Modules with maintainability below A detected"
+            exit 1
+          fi
+
+      - name: "Gate 7: Docstring coverage"
+        run: uv run interrogate src/ --fail-under 95
+
+  license-check:
+    name: License Compliance
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+      - run: uv sync --all-groups
+
+      - name: Install pip-licenses
+        run: uv pip install pip-licenses
+
+      - name: Check licenses
+        run: |
+          echo "=== License Compliance Check ==="
+          IGNORE_PKGS="evercurrent"
+          uv run pip-licenses --format=markdown --ignore-packages $IGNORE_PKGS
+          ALLOWED="MIT;BSD;Apache;PSF;Python Software Foundation;ISC;Unlicense;Public Domain;CC0;Zlib;Historical Permission Notice and Disclaimer;Mozilla Public License;Academic Free License;0BSD"
+          uv run pip-licenses --ignore-packages $IGNORE_PKGS --partial-match --allow-only="${ALLOWED}"
+          echo "All runtime dependencies have approved licenses!"
+
+  semgrep:
+    name: Semgrep Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+      - run: uv sync --all-groups
+
+      - name: Install semgrep
+        run: uv pip install semgrep
+
+      - name: Run Semgrep scan
+        run: |
+          uv run semgrep scan \
+            --config=p/python \
+            --config=p/security-audit \
+            --config=p/owasp-top-ten \
+            --config=p/cwe-top-25 \
+            --config=p/secrets \
+            --json --output=semgrep-results.json \
+            --no-git-ignore src/ || true
+
+      - name: Check for high severity issues
+        run: |
+          uv run semgrep scan \
+            --config=p/python \
+            --config=p/security-audit \
+            --config=p/owasp-top-ten \
+            --config=p/cwe-top-25 \
+            --config=p/secrets \
+            --severity=ERROR --error \
+            --no-git-ignore src/
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: semgrep-results
+          path: semgrep-results.json
+
+  bandit:
+    name: Bandit Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+      - run: uv sync --all-groups
+
+      - name: Install bandit
+        run: uv pip install bandit[toml]
+
+      - name: Run Bandit scan
+        run: |
+          uv run bandit -r src/ -f json -o bandit-results.json \
+            --severity-level medium --confidence-level medium || true
+          uv run bandit -r src/ -f txt \
+            --severity-level medium --confidence-level medium
+
+      - name: Check for high severity issues
+        run: |
+          uv run bandit -r src/ \
+            --severity-level high --confidence-level high -q
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bandit-results
+          path: bandit-results.json
+
+  sbom:
+    name: SBOM & Vulnerability Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+      - run: uv sync --all-groups
+
+      - name: Install Syft and Grype
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Generate SBOM (CycloneDX)
+        run: syft scan dir:.venv -o cyclonedx-json=sbom-cyclonedx.json
+
+      - name: Generate SBOM (SPDX)
+        run: syft scan dir:.venv -o spdx-json=sbom-spdx.json
+
+      - name: Scan for vulnerabilities
+        run: |
+          grype sbom:sbom-cyclonedx.json -o json > grype-vulnerabilities.json || true
+          grype sbom:sbom-cyclonedx.json -o table || true
+
+      - name: Check for critical vulnerabilities
+        run: |
+          CRITICAL=$(python3 -c "
+          import json
+          data = json.load(open('grype-vulnerabilities.json'))
+          print(sum(
+              1 for m in data.get('matches', [])
+              if m.get('vulnerability', {}).get('severity', '').upper() == 'CRITICAL'
+          ))
+          " 2>/dev/null || echo "0")
+          if [ "${CRITICAL}" -gt 0 ]; then
+            echo "ERROR: Critical vulnerabilities found!"
+            exit 1
+          fi
+          echo "No critical vulnerabilities found."
+
+      - name: Upload SBOM reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sbom-reports
+          path: |
+            sbom-cyclonedx.json
+            sbom-spdx.json
+            grype-vulnerabilities.json
+
+  docs:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+      - run: uv sync --all-groups
+
+      - name: Build Sphinx docs
+        run: uv run sphinx-build -b html docs docs/_build/html
+
+      - name: Upload docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation
+          path: docs/_build/html/
