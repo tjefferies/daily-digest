@@ -4,7 +4,13 @@ Transforms ingested context windows into structured Atom objects
 using the Anthropic Claude API.
 """
 
+from evercurrent.extraction.filter import FilterResult, confidence_filter
 from evercurrent.extraction.prompt import build_extraction_prompt
 from evercurrent.extraction.runner import ExtractionRunner
 
-__all__ = ["ExtractionRunner", "build_extraction_prompt"]
+__all__ = [
+    "ExtractionRunner",
+    "FilterResult",
+    "build_extraction_prompt",
+    "confidence_filter",
+]
