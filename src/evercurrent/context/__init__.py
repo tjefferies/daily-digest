@@ -6,8 +6,10 @@ and persona definitions.
 """
 
 from evercurrent.context.roster import RosterEntry, TeamRosterService
+from evercurrent.context.workstreams import WorkstreamRegistry
 
 __all__ = [
     "RosterEntry",
     "TeamRosterService",
+    "WorkstreamRegistry",
 ]
