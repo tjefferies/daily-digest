@@ -52,17 +52,18 @@ class TestPhaseAlignment:
         persona = _make_persona({"chassis": "DVT"})
         assert score_phase_alignment(atom, persona) == 1.0
 
-    def test_non_matching_phase_scores_low(self) -> None:
-        """Atom for different phase scores low."""
+    def test_non_matching_phase_scores_by_distance(self) -> None:
+        """Atom for different phase scores by distance from persona phase."""
         atom = _make_atom(["Concept"])
         persona = _make_persona({"chassis": "DVT"})
-        assert score_phase_alignment(atom, persona) == 0.2
+        # Concept → DVT = distance 2 → 0.5
+        assert score_phase_alignment(atom, persona) == 0.5
 
     def test_no_phase_relevance_default(self) -> None:
         """Atom with no phases gets default score."""
         atom = _make_atom([])
         persona = _make_persona({"chassis": "DVT"})
-        assert score_phase_alignment(atom, persona) == 0.3
+        assert score_phase_alignment(atom, persona) == 0.5
 
     def test_no_persona_phases_default(self) -> None:
         """Persona with no phase context gets default."""

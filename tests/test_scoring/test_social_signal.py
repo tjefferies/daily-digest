@@ -61,22 +61,22 @@ class TestSocialSignal:
         assert score_social_signal(atom, persona) == 1.0
 
     def test_collaborator_scores_high(self) -> None:
-        """Atom from collaborator scores 0.8."""
+        """Atom from collaborator scores 0.75."""
         atom = _make_atom(["U002"])
         persona = _make_persona("U001", collaborators=["U002", "U003"])
-        assert score_social_signal(atom, persona) == 0.8
+        assert score_social_signal(atom, persona) == 0.75
 
     def test_unknown_participant_scores_low(self) -> None:
-        """Atom from unknown person scores 0.3."""
+        """Atom from unknown person scores 0.25."""
         atom = _make_atom(["U099"])
         persona = _make_persona("U001", collaborators=["U002"])
-        assert score_social_signal(atom, persona) == 0.3
+        assert score_social_signal(atom, persona) == 0.25
 
     def test_no_participants_default(self) -> None:
-        """Atom with no participants gets default 0.3."""
+        """Atom with no participants gets default 0.5."""
         atom = _make_atom([])
         persona = _make_persona("U001")
-        assert score_social_signal(atom, persona) == 0.3
+        assert score_social_signal(atom, persona) == 0.5
 
     def test_score_in_range(self) -> None:
         """All scores are in [0, 1]."""

@@ -132,11 +132,11 @@ class TestScoringConfig:
         assert matrix["IC Engineer"]["SPEC_CHANGE"] == 1.0
 
     def test_phase_alignment_scores_present(self) -> None:
-        """Phase alignment scores are configured."""
+        """Phase alignment distance scores are configured."""
         cfg = get_config()
         pa = cfg["scoring"]["phase_alignment"]
-        assert "overlap" in pa
-        assert pa["overlap"] == 1.0
+        assert "distance_scores" in pa
+        assert pa["distance_scores"][0] == 1.0
 
     def test_social_signal_scores_present(self) -> None:
         """Social signal scores are configured."""
@@ -245,9 +245,9 @@ class TestConfigMatchesOriginalHardcoded:
     """
 
     def test_urgency_scores_match(self) -> None:
-        """YAML urgency scores match original hardcoded values."""
+        """YAML urgency scores match calibrated values (uniform spacing)."""
         cfg = get_config()
-        expected = {"critical": 1.0, "high": 0.8, "medium": 0.5, "low": 0.2}
+        expected = {"critical": 1.0, "high": 0.75, "medium": 0.50, "low": 0.25}
         assert cfg["scoring"]["urgency_scores"] == expected
 
     def test_role_alignment_ic_engineer_matches(self) -> None:

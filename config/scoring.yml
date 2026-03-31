@@ -15,12 +15,12 @@ default_digest_preferences:
   critical_threshold: 0.85
   include_broader_context: true
 
-# Urgency level → score mapping.
+# Urgency level → score mapping (uniformly spaced 0.25 intervals).
 urgency_scores:
   critical: 1.0
-  high: 0.8
-  medium: 0.5
-  low: 0.2
+  high: 0.75
+  medium: 0.50
+  low: 0.25
 
 # Role-type alignment matrix (5 archetypes × 8 atom types).
 # Score = matrix[persona.role_archetype][atom.type]
@@ -74,19 +74,25 @@ role_type_alignment:
 # Default score for unknown role/type combinations.
 role_type_default: 0.5
 
-# Phase alignment scores.
+# Phase alignment scores (graduated by phase distance).
+# Phase order: Concept=0, EVT=1, DVT=2, PVT=3, MP=4.
+# Score decreases as distance increases.
 phase_alignment:
-  no_phase_relevance: 0.3
+  no_phase_relevance: 0.5
   no_persona_phases: 0.5
-  overlap: 1.0
-  no_overlap: 0.2
+  distance_scores:
+    0: 1.0
+    1: 0.75
+    2: 0.5
+    3: 0.25
+    4: 0.1
 
-# Social signal scores.
+# Social signal scores (4 distinct levels for graduated scoring).
 social_signal:
-  no_participants: 0.3
+  no_participants: 0.5
   persona_is_participant: 1.0
-  collaborator_overlap: 0.8
-  unknown_participants: 0.3
+  collaborator_overlap: 0.75
+  unknown_participants: 0.25
 
 # Title → role archetype mapping for roster inference.
 title_to_archetype:

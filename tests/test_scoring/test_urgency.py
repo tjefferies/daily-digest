@@ -29,17 +29,17 @@ class TestUrgencyScore:
         """Critical urgency scores 1.0."""
         assert score_urgency(_make_atom("critical")) == 1.0
 
-    def test_high_scores_08(self) -> None:
-        """High urgency scores 0.8."""
-        assert score_urgency(_make_atom("high")) == 0.8
+    def test_high_scores_075(self) -> None:
+        """High urgency scores 0.75."""
+        assert score_urgency(_make_atom("high")) == 0.75
 
     def test_medium_scores_05(self) -> None:
         """Medium urgency scores 0.5."""
         assert score_urgency(_make_atom("medium")) == 0.5
 
-    def test_low_scores_02(self) -> None:
-        """Low urgency scores 0.2."""
-        assert score_urgency(_make_atom("low")) == 0.2
+    def test_low_scores_025(self) -> None:
+        """Low urgency scores 0.25."""
+        assert score_urgency(_make_atom("low")) == 0.25
 
     def test_all_scores_in_range(self) -> None:
         """All urgency scores are in [0, 1]."""
