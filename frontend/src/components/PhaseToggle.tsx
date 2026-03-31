@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PipelineRunner from './PipelineRunner'
 
 const WORKSTREAMS = [
   'chassis',
@@ -16,12 +17,14 @@ interface PhaseToggleProps {
   onApply: (override: string) => void
   activeOverride: string | null
   onClear: () => void
+  onPipelineComplete: () => void
 }
 
 export default function PhaseToggle({
   onApply,
   activeOverride,
   onClear,
+  onPipelineComplete,
 }: PhaseToggleProps) {
   const [collapsed, setCollapsed] = useState(true)
   const [workstream, setWorkstream] = useState(WORKSTREAMS[0])
@@ -106,6 +109,10 @@ export default function PhaseToggle({
               <span className="font-medium">{activeOverride}</span>
             </div>
           )}
+
+          <div className="border-t border-gray-200 pt-3">
+            <PipelineRunner onComplete={onPipelineComplete} />
+          </div>
         </div>
       )}
     </div>

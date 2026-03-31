@@ -74,6 +74,7 @@ function App() {
           onApply={handlePhaseApply}
           activeOverride={phaseOverride}
           onClear={handlePhaseClear}
+          onPipelineComplete={() => fetchDigest(selectedPersona, phaseOverride)}
         />
       </div>
 
