@@ -51,6 +51,9 @@ jobs:
       - name: "Gate 7: Docstring coverage"
         run: uv run interrogate src/ --fail-under 95
 
+      - name: "Gate 8: Dead code (vulture)"
+        run: uv run vulture src/ tests/ vulture_whitelist.py --min-confidence 80
+
   license-check:
     name: License Compliance
     runs-on: ubuntu-latest

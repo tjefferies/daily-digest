@@ -1,7 +1,7 @@
 # Makefile - Local equivalents of all GitHub Actions pipeline jobs.
 # Usage: make <target> or make all
 
-.PHONY: help lint format typecheck test complexity maintainability interrogate \
+.PHONY: help lint format typecheck test complexity maintainability interrogate vulture \
         quality license-check semgrep bandit sbom security docs docs-serve all ci \
         dev serve serve-frontend serve-all clean
 
@@ -45,7 +45,10 @@ complexity: ## Check cyclomatic complexity (<=8) and maintainability (A)
 interrogate: ## Check docstring coverage (>=95%)
 	uv run interrogate src/ --fail-under 95
 
-quality: lint format typecheck test complexity interrogate ## Run all quality gates
+vulture: ## Check for dead code (vulture)
+	uv run vulture src/ tests/ vulture_whitelist.py --min-confidence 80
+
+quality: lint format typecheck test complexity interrogate vulture ## Run all quality gates
 	@echo ""
 	@echo "=== ALL QUALITY GATES PASSED ==="
 

@@ -108,6 +108,11 @@ if [ -d "src" ]; then
   gate "Docstring coverage (≥95%)" uv run interrogate src/ --fail-under 95
 fi
 
+# Gate 8: Dead code detection (vulture)
+if [ -d "src" ]; then
+  gate "Dead code (vulture)" uv run vulture src/ tests/ vulture_whitelist.py --min-confidence 80
+fi
+
 echo "═══════════════════════════════════════"
 if [ "$FAILED" -ne 0 ]; then
   printf "${RED}  QUALITY GATES FAILED${NC}\n"
