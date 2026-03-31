@@ -80,7 +80,7 @@ if [ -d "src" ]; then
     output=$(uv run radon cc src/ -a -nc 2>&1)
     echo "$output"
     # Fail if any function has grade D, E, or F (complexity > 8)
-    if echo "$output" | grep -qE '^\s+[A-Z].*- [D-F]$'; then
+    if echo "$output" | grep -qE -- '^\s+[A-Z].*- [D-F]$'; then
       return 1
     fi
     return 0
@@ -95,7 +95,7 @@ if [ -d "src" ]; then
     output=$(uv run radon mi src/ -nc 2>&1)
     echo "$output"
     # Fail if any module has grade B or worse
-    if echo "$output" | grep -qE '- [B-F]$'; then
+    if echo "$output" | grep -qE -- '- [B-F]$'; then
       return 1
     fi
     return 0
