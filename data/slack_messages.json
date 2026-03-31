@@ -1,0 +1,3148 @@
+{
+  "channels": [
+    {
+      "id": "C008",
+      "name": "amr-general",
+      "messages": [
+        {
+          "type": "message",
+          "ts": "1711907000.000700",
+          "user": "U011",
+          "text": "DVT readiness review scheduled for Friday 3pm. Each workstream lead needs a 5-min status update: open blockers, critical test results, and supply chain risks.",
+          "thread_ts": "1711907000.000700",
+          "reply_count": 9,
+          "reply_users_count": 9,
+          "reply_users": [
+            "U001",
+            "U002",
+            "U003",
+            "U004",
+            "U005",
+            "U006",
+            "U007",
+            "U010",
+            "U011"
+          ],
+          "latest_reply": "1711907540.000709",
+          "reactions": [
+            {
+              "name": "eyes",
+              "users": [
+                "U001",
+                "U002",
+                "U003",
+                "U007"
+              ],
+              "count": 4
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711907060.000701",
+          "user": "U010",
+          "text": "Please also include a go/no-go recommendation for each workstream. We need to decide on Friday whether DVT build starts on schedule or slips.",
+          "thread_ts": "1711907000.000700"
+        },
+        {
+          "type": "message",
+          "ts": "1711907120.000702",
+          "user": "U002",
+          "text": "Drivetrain is go pending the thermal interface fix. @U003 when will we have validation data on the new TIM?",
+          "thread_ts": "1711907000.000700"
+        },
+        {
+          "type": "message",
+          "ts": "1711907180.000703",
+          "user": "U003",
+          "text": "Testing the Fujipoly XR-Um today. Results by Thursday AM.",
+          "thread_ts": "1711907000.000700"
+        },
+        {
+          "type": "message",
+          "ts": "1711907240.000704",
+          "user": "U007",
+          "text": "Supply chain is conditional go. The FPGA situation is resolved (switched to XC7A50T) but the LIDAR lead time is tight - 8 weeks with no float.",
+          "thread_ts": "1711907000.000700"
+        },
+        {
+          "type": "message",
+          "ts": "1711907300.000705",
+          "user": "U001",
+          "text": "Chassis is conditional go. The snap-fit redesign is done and tested. Magnesium housing decision is pending vendor quotes - won't affect DVT timeline either way.",
+          "thread_ts": "1711907000.000700"
+        },
+        {
+          "type": "message",
+          "ts": "1711907360.000706",
+          "user": "U005",
+          "text": "Sensors are go. LIDAR calibration issue resolved with thermal compensation. Camera FOV accepted for DVT with PVT action item logged.",
+          "thread_ts": "1711907000.000700"
+        },
+        {
+          "type": "message",
+          "ts": "1711907420.000707",
+          "user": "U006",
+          "text": "Firmware is go. FPGA timing resolved. Bootloader v2.1 ready. Motor control loop validated. Memory usage is tight but manageable.",
+          "thread_ts": "1711907000.000700"
+        },
+        {
+          "type": "message",
+          "ts": "1711907480.000708",
+          "user": "U004",
+          "text": "Power systems is go. BMS SOC accuracy fixed with 16-bit ADC. Driver board thermal addressed with via stitching. Battery cycling on track.",
+          "thread_ts": "1711907000.000700"
+        },
+        {
+          "type": "message",
+          "ts": "1711907540.000709",
+          "user": "U011",
+          "text": "Good. Looks like we're at conditional go across the board. I'll compile the readiness matrix and distribute before Friday. Blockers: TIM validation, LIDAR float.",
+          "thread_ts": "1711907000.000700",
+          "reactions": [
+            {
+              "name": "thumbsup",
+              "users": [
+                "U010",
+                "U019"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711917000.000710",
+          "user": "U015",
+          "text": "Pre-DVT safety review findings: 3 open items. (1) E-stop wiring needs redundant path, (2) bumper force sensor calibration drift, (3) motor controller watchdog timeout too long at 500ms.",
+          "thread_ts": "1711917000.000710",
+          "reply_count": 3,
+          "reply_users_count": 3,
+          "reply_users": [
+            "U004",
+            "U005",
+            "U010"
+          ],
+          "latest_reply": "1711917180.000713"
+        },
+        {
+          "type": "message",
+          "ts": "1711917060.000711",
+          "user": "U010",
+          "text": "These are all blockers for DVT entry. @U004 own the e-stop and watchdog. @U005 own the bumper sensor.",
+          "thread_ts": "1711917000.000710",
+          "reactions": [
+            {
+              "name": "thumbsup",
+              "users": [
+                "U004",
+                "U005"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711917120.000712",
+          "user": "U004",
+          "text": "E-stop: adding second contactor in series. Hardware change, 2 days. Watchdog: reducing to 50ms. Firmware change, 1 hour. Both done by Wednesday.",
+          "thread_ts": "1711917000.000710"
+        },
+        {
+          "type": "message",
+          "ts": "1711917180.000713",
+          "user": "U005",
+          "text": "Bumper sensor: the drift is temperature-related. Adding runtime calibration offset. Fix ready by Tuesday.",
+          "thread_ts": "1711917000.000710"
+        },
+        {
+          "type": "message",
+          "ts": "1711927000.000714",
+          "user": "U019",
+          "text": "Team - great progress this sprint. Customer demo is scheduled for 6 weeks after DVT build starts. Need the core navigation loop running by then.",
+          "thread_ts": "1711927000.000714",
+          "reply_count": 2,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U010",
+            "U019"
+          ],
+          "latest_reply": "1711927120.000716"
+        },
+        {
+          "type": "message",
+          "ts": "1711927060.000715",
+          "user": "U010",
+          "text": "Nav loop is on track. @U006 and @U005 are integrating the LIDAR-based SLAM with the motor controller this week. Basic warehouse navigation demo should be ready.",
+          "thread_ts": "1711927000.000714"
+        },
+        {
+          "type": "message",
+          "ts": "1711927120.000716",
+          "user": "U019",
+          "text": "Perfect. The customer specifically wants to see obstacle avoidance and pallet detection. Make sure those are in the demo script.",
+          "thread_ts": "1711927000.000714",
+          "reactions": [
+            {
+              "name": "thumbsup",
+              "users": [
+                "U010",
+                "U005"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711937000.000717",
+          "user": "U011",
+          "text": "Updated project timeline on Confluence. DVT build: weeks 12-14. Field test: weeks 15-18. Customer demo: week 18. PVT: weeks 22-26."
+        },
+        {
+          "type": "message",
+          "ts": "1711937060.000718",
+          "user": "U009",
+          "text": "Test lab schedule is booked solid weeks 12-14. I've reserved the thermal chamber and vibration table for DVT validation. First come first served for the EMC chamber."
+        },
+        {
+          "type": "message",
+          "ts": "1711937120.000719",
+          "user": "U010",
+          "text": "All hands reminder: design freeze for DVT is next Friday. Any changes after that go through the ECO process. No exceptions.",
+          "reactions": [
+            {
+              "name": "rotating_light",
+              "users": [
+                "U001",
+                "U002",
+                "U003",
+                "U004",
+                "U005",
+                "U006"
+              ],
+              "count": 6
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711997000.001700",
+          "user": "U011",
+          "text": "DVT readiness matrix distributed. Summary: 5 workstreams at GO, 2 at CONDITIONAL GO (chassis mass, sensor FOV). No NO-GO items. Review Friday as planned.",
+          "thread_ts": "1711997000.001700",
+          "reply_count": 2,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U010",
+            "U019"
+          ],
+          "latest_reply": "1711997120.001702"
+        },
+        {
+          "type": "message",
+          "ts": "1711997060.001701",
+          "user": "U010",
+          "text": "Good position. The two conditional items have clear paths to resolution. I'm comfortable proceeding.",
+          "thread_ts": "1711997000.001700"
+        },
+        {
+          "type": "message",
+          "ts": "1711997120.001702",
+          "user": "U019",
+          "text": "Agreed. Let's confirm GO on Friday and start DVT material ordering Monday. The team has done excellent work getting here.",
+          "thread_ts": "1711997000.001700",
+          "reactions": [
+            {
+              "name": "rocket",
+              "users": [
+                "U001",
+                "U002",
+                "U003",
+                "U004",
+                "U005",
+                "U006",
+                "U007"
+              ],
+              "count": 7
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1712007000.001703",
+          "user": "U009",
+          "text": "DVT test infrastructure status: thermal chamber calibrated, vibe table load-tested, EMC pre-scan done. We're ready for units.",
+          "thread_ts": "1712007000.001703",
+          "reply_count": 2,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U009",
+            "U015"
+          ],
+          "latest_reply": "1712007120.001705"
+        },
+        {
+          "type": "message",
+          "ts": "1712007060.001704",
+          "user": "U015",
+          "text": "Also booked the IP testing lab for week 14. They need 2 units and 3 days for the full IP54 suite.",
+          "thread_ts": "1712007000.001703"
+        },
+        {
+          "type": "message",
+          "ts": "1712007120.001705",
+          "user": "U009",
+          "text": "Updated the test schedule in Confluence. Critical path is thermal cycling - takes 2 full weeks.",
+          "thread_ts": "1712007000.001703"
+        },
+        {
+          "type": "message",
+          "ts": "1712017000.001706",
+          "user": "U011",
+          "text": "Design documentation audit: 85% of subsystems have complete design docs. Missing: power sequencing spec, sensor fusion algorithm description, FPGA register map.",
+          "thread_ts": "1712017000.001706",
+          "reply_count": 4,
+          "reply_users_count": 4,
+          "reply_users": [
+            "U004",
+            "U006",
+            "U011",
+            "U016"
+          ],
+          "latest_reply": "1712017240.001710"
+        },
+        {
+          "type": "message",
+          "ts": "1712017060.001707",
+          "user": "U004",
+          "text": "Power sequencing spec draft is ready. Reviewing today, publishing tomorrow.",
+          "thread_ts": "1712017000.001706"
+        },
+        {
+          "type": "message",
+          "ts": "1712017120.001708",
+          "user": "U016",
+          "text": "Sensor fusion doc is 70% done. Will complete by EOW.",
+          "thread_ts": "1712017000.001706"
+        },
+        {
+          "type": "message",
+          "ts": "1712017180.001709",
+          "user": "U006",
+          "text": "FPGA register map auto-generated from the HDL. Just need to add descriptions. Done by Wednesday.",
+          "thread_ts": "1712017000.001706"
+        },
+        {
+          "type": "message",
+          "ts": "1712017240.001710",
+          "user": "U011",
+          "text": "Target: 100% documentation coverage before DVT entry. Please prioritize.",
+          "thread_ts": "1712017000.001706"
+        },
+        {
+          "type": "message",
+          "ts": "1712027000.001711",
+          "user": "U010",
+          "text": "Weekly metrics: 23 open action items (down from 31 last week), 0 critical blockers, 2 medium risks (LIDAR float, mag housing timeline)."
+        },
+        {
+          "type": "message",
+          "ts": "1712027060.001712",
+          "user": "U019",
+          "text": "Board update prep: I need a 1-page executive summary by Thursday. @U011 can you compile from the readiness matrix?",
+          "thread_ts": "1712027060.001712",
+          "reply_count": 1,
+          "reply_users_count": 1,
+          "reply_users": [
+            "U011"
+          ],
+          "latest_reply": "1712027120.001713"
+        },
+        {
+          "type": "message",
+          "ts": "1712027120.001713",
+          "user": "U011",
+          "text": "Will do. Including: DVT readiness status, cost vs budget, timeline risks, and customer demo plan.",
+          "thread_ts": "1712027060.001712"
+        },
+        {
+          "type": "message",
+          "ts": "1712027180.001714",
+          "user": "U009",
+          "text": "EMC pre-scan results are clean at conducted emissions. Radiated is borderline at 230MHz - the motor PWM switching frequency harmonic. Adding ferrite bead."
+        },
+        {
+          "type": "message",
+          "ts": "1712027240.001715",
+          "user": "U015",
+          "text": "Reliability prediction complete: MTBF estimated at 8,200 hours. Customer spec is 5,000 hours. 64% margin.",
+          "reactions": [
+            {
+              "name": "thumbsup",
+              "users": [
+                "U010",
+                "U019"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1712037000.002027",
+          "user": "U011",
+          "text": "Standup notes: Chassis rev D released. Drivetrain endurance test passing. Thermal fix validated. Power BMS updated. Sensors SLAM qualified. Firmware v0.9 ready. Supply chain material ordered.",
+          "thread_ts": "1712037000.002027",
+          "reply_count": 2,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U010",
+            "U019"
+          ],
+          "latest_reply": "1712037120.002029"
+        },
+        {
+          "type": "message",
+          "ts": "1712037060.002028",
+          "user": "U010",
+          "text": "Best status update we've had all quarter. Team is executing well. Keep the momentum through DVT.",
+          "thread_ts": "1712037000.002027",
+          "reactions": [
+            {
+              "name": "rocket",
+              "users": [
+                "U001",
+                "U002",
+                "U003",
+                "U004",
+                "U005",
+                "U006",
+                "U007",
+                "U011",
+                "U019"
+              ],
+              "count": 9
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1712037120.002029",
+          "user": "U019",
+          "text": "Agreed. I'll share these results with the board. This team is ahead of the industry average pace for a program of this complexity.",
+          "thread_ts": "1712037000.002027"
+        },
+        {
+          "type": "message",
+          "ts": "1712038420.002037",
+          "user": "U015",
+          "text": "Updated FMEA with latest test results. RPN for 3 failure modes reduced below threshold. 2 remain above: battery cell failure and motor bearing seizure."
+        },
+        {
+          "type": "message",
+          "ts": "1712038900.002045",
+          "user": "U011",
+          "text": "Risk register updated: 4 green, 2 yellow (LIDAR float, mag housing timeline), 0 red. Best position since program inception.",
+          "reactions": [
+            {
+              "name": "white_check_mark",
+              "users": [
+                "U010",
+                "U019"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1712039380.002053",
+          "user": "U009",
+          "text": "Test automation framework v2 deployed. 85% of DVT tests can run unattended overnight. Remaining 15% require manual fixture setup."
+        },
+        {
+          "type": "message",
+          "ts": "1712039500.002055",
+          "user": "U010",
+          "text": "Reminder: design freeze is tomorrow at 5pm. After that all changes require ECO. Submit any pending changes now.",
+          "reactions": [
+            {
+              "name": "rotating_light",
+              "users": [
+                "U001",
+                "U002",
+                "U003",
+                "U004",
+                "U005",
+                "U006"
+              ],
+              "count": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C001",
+      "name": "chassis-design",
+      "messages": [
+        {
+          "type": "message",
+          "ts": "1711900000.000001",
+          "user": "U001",
+          "text": "Pull-out force on snap fit measured at 12N, spec is 15N min. Third iteration and we're still under spec.",
+          "thread_ts": "1711900000.000001",
+          "reply_count": 14,
+          "reply_users_count": 4,
+          "reply_users": [
+            "U001",
+            "U008",
+            "U013",
+            "U020"
+          ],
+          "latest_reply": "1711900840.000015",
+          "reactions": [
+            {
+              "name": "eyes",
+              "users": [
+                "U008",
+                "U020"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711900060.000002",
+          "user": "U008",
+          "text": "Did you test with the updated rib geometry from rev C? I pushed the STEP file yesterday.",
+          "thread_ts": "1711900000.000001"
+        },
+        {
+          "type": "message",
+          "ts": "1711900120.000003",
+          "user": "U001",
+          "text": "Yes, rev C. The issue is the draft angle on the retention hook - 3deg is too aggressive for PA66-GF30.",
+          "thread_ts": "1711900000.000001"
+        },
+        {
+          "type": "message",
+          "ts": "1711900180.000004",
+          "user": "U020",
+          "text": "What if we go to 1.5deg draft and add a barb feature? Worked on the sensor bracket.",
+          "thread_ts": "1711900000.000001"
+        },
+        {
+          "type": "message",
+          "ts": "1711900240.000005",
+          "user": "U001",
+          "text": "Barb adds undercut complexity for the tool. @U013 can the mold vendor handle that with a side action?",
+          "thread_ts": "1711900000.000001"
+        },
+        {
+          "type": "message",
+          "ts": "1711900300.000006",
+          "user": "U013",
+          "text": "Side action adds 3 weeks to tool lead time and ~$4k. Alternative: lifter pin, but wall thickness needs 2.5mm min.",
+          "thread_ts": "1711900000.000001"
+        },
+        {
+          "type": "message",
+          "ts": "1711900360.000007",
+          "user": "U001",
+          "text": "Current wall is 2.0mm. Going to 2.5 means re-running the FEA for drop test compliance.",
+          "thread_ts": "1711900000.000001"
+        },
+        {
+          "type": "message",
+          "ts": "1711900420.000008",
+          "user": "U008",
+          "text": "I can run the drop sim tonight. What's the impact energy spec - 1.5J at 1m?",
+          "thread_ts": "1711900000.000001"
+        },
+        {
+          "type": "message",
+          "ts": "1711900480.000009",
+          "user": "U001",
+          "text": "Correct, 1.5J free fall from 1m onto concrete per IEC 62368. Corner impact case is usually the limiting factor.",
+          "thread_ts": "1711900000.000001"
+        },
+        {
+          "type": "message",
+          "ts": "1711900540.000010",
+          "user": "U020",
+          "text": "For what it's worth, the sensor bracket passed at 2.2mm wall with the barb. Different load path though.",
+          "thread_ts": "1711900000.000001"
+        },
+        {
+          "type": "message",
+          "ts": "1711900600.000011",
+          "user": "U013",
+          "text": "Talked to the mold vendor. Lifter pin is feasible at 2.5mm wall. They need the updated Parasolid by Friday.",
+          "thread_ts": "1711900000.000001",
+          "reactions": [
+            {
+              "name": "thumbsup",
+              "users": [
+                "U001",
+                "U008"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711900660.000012",
+          "user": "U001",
+          "text": "Decision: go with 2.5mm wall + lifter pin. @U008 run drop sim, I'll update the Parasolid. Target: Thursday EOD.",
+          "thread_ts": "1711900000.000001",
+          "reactions": [
+            {
+              "name": "white_check_mark",
+              "users": [
+                "U008",
+                "U013",
+                "U020"
+              ],
+              "count": 3
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711900720.000013",
+          "user": "U008",
+          "text": "Drop sim results: 2.5mm wall passes at 1.8J - 20% margin above spec. Corner impact stress at 85% of yield.",
+          "thread_ts": "1711900000.000001"
+        },
+        {
+          "type": "message",
+          "ts": "1711900780.000014",
+          "user": "U001",
+          "text": "Good margin. Parasolid updated and uploaded. @U013 please forward to vendor for T1 tooling quote.",
+          "thread_ts": "1711900000.000001"
+        },
+        {
+          "type": "message",
+          "ts": "1711900840.000015",
+          "user": "U013",
+          "text": "Sent. Vendor confirms 6 week lead time from PO. I'll get the quote to Elena for approval by Monday.",
+          "thread_ts": "1711900000.000001",
+          "reactions": [
+            {
+              "name": "rocket",
+              "users": [
+                "U001"
+              ],
+              "count": 1
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711910000.000016",
+          "user": "U020",
+          "text": "Updated mass properties for rev C chassis: 4.73kg. Budget is 4.5kg. We're 230g over.",
+          "thread_ts": "1711910000.000016",
+          "reply_count": 2,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U001",
+            "U008"
+          ],
+          "latest_reply": "1711910120.000018"
+        },
+        {
+          "type": "message",
+          "ts": "1711910060.000017",
+          "user": "U001",
+          "text": "The 2.5mm wall change adds ~80g. Where else can we pocket? The motor mount plate has material to remove.",
+          "thread_ts": "1711910000.000016"
+        },
+        {
+          "type": "message",
+          "ts": "1711910120.000018",
+          "user": "U008",
+          "text": "Topology optimization on the motor mount showed 150g savings possible. Sending the optimized STEP now.",
+          "thread_ts": "1711910000.000016",
+          "reactions": [
+            {
+              "name": "thumbsup",
+              "users": [
+                "U001",
+                "U020"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711920000.000019",
+          "user": "U013",
+          "text": "FYI the new aluminum extrusion supplier quoted 30% lower than current. But we should also consider magnesium for the main housing - 35% weight savings at similar strength.",
+          "thread_ts": "1711920000.000019",
+          "reply_count": 4,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U001",
+            "U013"
+          ],
+          "latest_reply": "1711920240.000023"
+        },
+        {
+          "type": "message",
+          "ts": "1711920060.000020",
+          "user": "U001",
+          "text": "Magnesium is interesting for the weight target. What's the corrosion protection story? We need IP54.",
+          "thread_ts": "1711920000.000019"
+        },
+        {
+          "type": "message",
+          "ts": "1711920120.000021",
+          "user": "U013",
+          "text": "Micro-arc oxidation coating handles IP54. But the real question is supply chain - mag die casting has longer lead times and fewer qualified vendors.",
+          "thread_ts": "1711920000.000019"
+        },
+        {
+          "type": "message",
+          "ts": "1711920180.000022",
+          "user": "U001",
+          "text": "Let's prototype the housing in magnesium for DVT. If it works, we switch. If not, we stay aluminum and eat the weight penalty. @U013 can you get vendor quotes?",
+          "thread_ts": "1711920000.000019",
+          "reactions": [
+            {
+              "name": "thumbsup",
+              "users": [
+                "U013",
+                "U020",
+                "U010"
+              ],
+              "count": 3
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711920240.000023",
+          "user": "U013",
+          "text": "On it. I'll need 2-3 weeks for vendor qualification. This will affect the supply chain timeline if we go mag.",
+          "thread_ts": "1711920000.000019"
+        },
+        {
+          "type": "message",
+          "ts": "1711930000.000024",
+          "user": "U009",
+          "text": "Chassis DVT test plan review meeting moved to Thursday 2pm. Updated invite sent."
+        },
+        {
+          "type": "message",
+          "ts": "1711930060.000025",
+          "user": "U015",
+          "text": "Reminder: chassis assembly torque audit is next week. Please have all fastener specs documented in the BOM.",
+          "reactions": [
+            {
+              "name": "eyes",
+              "users": [
+                "U001",
+                "U008",
+                "U020"
+              ],
+              "count": 3
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711990000.001000",
+          "user": "U008",
+          "text": "Updated topology-optimized motor mount STEP uploaded. Mass savings: 148g. Total chassis now at 4.58kg - within 2% of the 4.5kg budget.",
+          "thread_ts": "1711990000.001000",
+          "reply_count": 4,
+          "reply_users_count": 3,
+          "reply_users": [
+            "U001",
+            "U008",
+            "U020"
+          ],
+          "latest_reply": "1711990240.001004"
+        },
+        {
+          "type": "message",
+          "ts": "1711990060.001001",
+          "user": "U001",
+          "text": "Good progress. The remaining 80g is in the battery tray. Can we pocket the underside without compromising stiffness?",
+          "thread_ts": "1711990000.001000"
+        },
+        {
+          "type": "message",
+          "ts": "1711990120.001002",
+          "user": "U008",
+          "text": "Running a quick modal analysis to check first resonant freq. Battery tray needs to stay above 200Hz to avoid coupling with the motor vibration.",
+          "thread_ts": "1711990000.001000"
+        },
+        {
+          "type": "message",
+          "ts": "1711990180.001003",
+          "user": "U008",
+          "text": "Modal results: pocketed tray first mode at 245Hz. Safe. Mass with pockets: 4.48kg. Under budget.",
+          "thread_ts": "1711990000.001000",
+          "reactions": [
+            {
+              "name": "tada",
+              "users": [
+                "U001",
+                "U020"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711990240.001004",
+          "user": "U020",
+          "text": "Nice work. I'll update the assembly drawing and release to the model vault. Rev D it is.",
+          "thread_ts": "1711990000.001000"
+        },
+        {
+          "type": "message",
+          "ts": "1712000000.001005",
+          "user": "U009",
+          "text": "IP54 ingress test on chassis rev C: dust test passed, water splash test passed all faces. One leak point at the cable gland for motor harness.",
+          "thread_ts": "1712000000.001005",
+          "reply_count": 3,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U001",
+            "U009"
+          ],
+          "latest_reply": "1712000180.001008"
+        },
+        {
+          "type": "message",
+          "ts": "1712000060.001006",
+          "user": "U001",
+          "text": "Cable gland is the M20 Hummel? We might need the version with double sealing lip.",
+          "thread_ts": "1712000000.001005"
+        },
+        {
+          "type": "message",
+          "ts": "1712000120.001007",
+          "user": "U009",
+          "text": "Correct. The single lip version leaks at 45-degree spray. Double lip version is $2 more per unit. 8 glands per robot.",
+          "thread_ts": "1712000000.001005"
+        },
+        {
+          "type": "message",
+          "ts": "1712000180.001008",
+          "user": "U001",
+          "text": "$16 per unit for IP54 compliance is a no-brainer. Switching to double lip. @U017 please update the BOM.",
+          "thread_ts": "1712000000.001005",
+          "reactions": [
+            {
+              "name": "thumbsup",
+              "users": [
+                "U009",
+                "U017"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1712010000.001009",
+          "user": "U015",
+          "text": "Vibration test profile for chassis DVT: random vibe 0.5g RMS 10-500Hz, 30 min per axis. Plus sine sweep 5-200Hz at 0.25g for resonance hunting.",
+          "thread_ts": "1712010000.001009",
+          "reply_count": 3,
+          "reply_users_count": 3,
+          "reply_users": [
+            "U001",
+            "U009",
+            "U015"
+          ],
+          "latest_reply": "1712010180.001012"
+        },
+        {
+          "type": "message",
+          "ts": "1712010060.001010",
+          "user": "U001",
+          "text": "The motor excitation is primarily at 150-180Hz range. Make sure the sine sweep has fine resolution through that band - 0.5Hz steps.",
+          "thread_ts": "1712010000.001009"
+        },
+        {
+          "type": "message",
+          "ts": "1712010120.001011",
+          "user": "U015",
+          "text": "Noted. Also adding shock test: half-sine 30g 11ms per IEC 60068-2-27. Test fixturing designed - need 3D printed adapter for shaker table.",
+          "thread_ts": "1712010000.001009"
+        },
+        {
+          "type": "message",
+          "ts": "1712010180.001012",
+          "user": "U009",
+          "text": "I can print the adapter on the Markforged. Send me the STEP and I'll have it ready by Thursday.",
+          "thread_ts": "1712010000.001009"
+        },
+        {
+          "type": "message",
+          "ts": "1712020000.001013",
+          "user": "U020",
+          "text": "Drawing review complete for motor mount rev D. All GD&T callouts verified. Ready for vendor quote."
+        },
+        {
+          "type": "message",
+          "ts": "1712020060.001014",
+          "user": "U013",
+          "text": "Vendor confirmed receipt of updated Parasolid. Tool modification quote expected Monday. Lifter pin change adds $1.2k to the tool cost."
+        },
+        {
+          "type": "message",
+          "ts": "1712020120.001015",
+          "user": "U001",
+          "text": "Acceptable. Total tool cost is still within budget. @U007 please include in the DVT cost rollup."
+        },
+        {
+          "type": "message",
+          "ts": "1712030000.002000",
+          "user": "U015",
+          "text": "Fastener audit results: 23 unique fastener types in chassis assembly. Industry best practice is <15. Can we consolidate?",
+          "thread_ts": "1712030000.002000",
+          "reply_count": 4,
+          "reply_users_count": 3,
+          "reply_users": [
+            "U001",
+            "U015",
+            "U020"
+          ],
+          "latest_reply": "1712030240.002004"
+        },
+        {
+          "type": "message",
+          "ts": "1712030060.002001",
+          "user": "U001",
+          "text": "Agreed, 23 is too many. The M3x8 and M3x10 can merge to M3x10. Same for M4x12 and M4x14. That's -4 types.",
+          "thread_ts": "1712030000.002000"
+        },
+        {
+          "type": "message",
+          "ts": "1712030120.002002",
+          "user": "U020",
+          "text": "Also 5 of those are one-off shoulder screws. Can we redesign those features to use standard hex cap?",
+          "thread_ts": "1712030000.002000"
+        },
+        {
+          "type": "message",
+          "ts": "1712030180.002003",
+          "user": "U001",
+          "text": "3 of the 5 can change. The other 2 need shoulders for bearing preload. That gets us to 16 types. Close enough.",
+          "thread_ts": "1712030000.002000"
+        },
+        {
+          "type": "message",
+          "ts": "1712030240.002004",
+          "user": "U015",
+          "text": "Good. Updated BOM with consolidated fastener list. Also reduces kitting complexity for the assembly line.",
+          "thread_ts": "1712030000.002000",
+          "reactions": [
+            {
+              "name": "thumbsup",
+              "users": [
+                "U001",
+                "U020",
+                "U007"
+              ],
+              "count": 3
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1712038000.002030",
+          "user": "U009",
+          "text": "Torque audit complete. All 47 fasteners within spec. 3 were at lower bound - tightened to nominal."
+        },
+        {
+          "type": "message",
+          "ts": "1712038480.002038",
+          "user": "U013",
+          "text": "The aluminum extrusion vendor is quoting competitively. If we stay aluminum (no mag housing), per-unit cost drops $45 on the chassis alone."
+        },
+        {
+          "type": "message",
+          "ts": "1712038960.002046",
+          "user": "U008",
+          "text": "FEA convergence study complete for motor mount. Stress results stable within 2% at current mesh density. No further refinement needed."
+        },
+        {
+          "type": "message",
+          "ts": "1712039440.002054",
+          "user": "U001",
+          "text": "Updated the assembly manual for rev D chassis. Added photos for the new snap-fit retention and cable gland installation. Shared on Confluence."
+        },
+        {
+          "type": "message",
+          "ts": "1712039620.002057",
+          "user": "U001",
+          "text": "Chassis changes submitted: rev D assembly, 2.5mm wall snap fit, pocketed battery tray, double-lip cable glands. Ready for freeze."
+        }
+      ]
+    },
+    {
+      "id": "C002",
+      "name": "drivetrain",
+      "messages": [
+        {
+          "type": "message",
+          "ts": "1711901000.000100",
+          "user": "U002",
+          "text": "Load testing results are in. Peak torque demand is 3.1Nm, not 2.5Nm as originally spec'd. The additional friction from the new wheel compound is higher than modeled.",
+          "thread_ts": "1711901000.000100",
+          "reply_count": 9,
+          "reply_users_count": 4,
+          "reply_users": [
+            "U002",
+            "U003",
+            "U004",
+            "U012"
+          ],
+          "latest_reply": "1711901540.000109",
+          "reactions": [
+            {
+              "name": "rotating_light",
+              "users": [
+                "U012",
+                "U004"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711901060.000101",
+          "user": "U012",
+          "text": "3.1Nm at what duty cycle? Continuous or peak? The Maxon EC-i 40 is rated 2.83Nm continuous, 4.2Nm peak.",
+          "thread_ts": "1711901000.000100"
+        },
+        {
+          "type": "message",
+          "ts": "1711901120.000102",
+          "user": "U002",
+          "text": "It's a 15s peak during obstacle climbing. Thermal margin on the motor is the concern - @U003 can you check the thermal derating at 3.1Nm continuous equiv?",
+          "thread_ts": "1711901000.000100"
+        },
+        {
+          "type": "message",
+          "ts": "1711901180.000103",
+          "user": "U003",
+          "text": "Running the thermal model now. At 3.1Nm equiv the winding temp hits 142C - max rated is 155C. Only 13C margin.",
+          "thread_ts": "1711901000.000100"
+        },
+        {
+          "type": "message",
+          "ts": "1711901240.000104",
+          "user": "U002",
+          "text": "That's tight. Options: (1) upsize to EC-i 52, (2) improve thermal path from motor to chassis, (3) reduce friction.",
+          "thread_ts": "1711901000.000100"
+        },
+        {
+          "type": "message",
+          "ts": "1711901300.000105",
+          "user": "U012",
+          "text": "EC-i 52 adds 180g per motor, 720g total for 4 wheels. That blows the mass budget. Option 2 is cheaper.",
+          "thread_ts": "1711901000.000100"
+        },
+        {
+          "type": "message",
+          "ts": "1711901360.000106",
+          "user": "U004",
+          "text": "From power side: 3.1Nm at 200rpm needs ~65W per motor. Current driver board handles 80W max. We're fine on power.",
+          "thread_ts": "1711901000.000100"
+        },
+        {
+          "type": "message",
+          "ts": "1711901420.000107",
+          "user": "U002",
+          "text": "Decision: update torque spec to 3.1Nm. Keep EC-i 40 motor, improve thermal interface between motor housing and chassis heat sink. @U003 own the thermal fix.",
+          "thread_ts": "1711901000.000100",
+          "reactions": [
+            {
+              "name": "white_check_mark",
+              "users": [
+                "U012",
+                "U003",
+                "U004"
+              ],
+              "count": 3
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711901480.000108",
+          "user": "U003",
+          "text": "Accepted. I'll spec a thermal pad with >3 W/mK between motor flange and chassis mount. Should drop winding temp by 20-25C.",
+          "thread_ts": "1711901000.000100"
+        },
+        {
+          "type": "message",
+          "ts": "1711901540.000109",
+          "user": "U002",
+          "text": "Good. Also updating the gearbox input torque spec. The harmonic drive needs to be re-validated at 3.1Nm input. @U012 please run the lifetime calc.",
+          "thread_ts": "1711901000.000100"
+        },
+        {
+          "type": "message",
+          "ts": "1711911000.000110",
+          "user": "U012",
+          "text": "Hearing intermittent bearing noise from wheel 3 during endurance testing. ~2kHz whine above 150rpm.",
+          "thread_ts": "1711911000.000110",
+          "reply_count": 2,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U002",
+            "U012"
+          ],
+          "latest_reply": "1711911120.000112"
+        },
+        {
+          "type": "message",
+          "ts": "1711911060.000111",
+          "user": "U002",
+          "text": "Pull it for teardown. Could be preload issue from the last assembly. Check bearing seat concentricity.",
+          "thread_ts": "1711911000.000110"
+        },
+        {
+          "type": "message",
+          "ts": "1711911120.000112",
+          "user": "U012",
+          "text": "Teardown complete. Bearing inner race had 0.02mm step from shaft tolerance. Reshimming fixed it. Updating assembly procedure to add runout check.",
+          "thread_ts": "1711911000.000110",
+          "reactions": [
+            {
+              "name": "thumbsup",
+              "users": [
+                "U002"
+              ],
+              "count": 1
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711921000.000113",
+          "user": "U002",
+          "text": "Harmonic drive lifetime calc done: 15,000 hours at 3.1Nm input. Spec requires 10,000. Margin is adequate for vendor qualification. Sending validation report to Maxon.",
+          "reactions": [
+            {
+              "name": "white_check_mark",
+              "users": [
+                "U010"
+              ],
+              "count": 1
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711921060.000114",
+          "user": "U008",
+          "text": "The new motor mount topology-optimized design clears the drivetrain envelope. No interference with gearbox."
+        },
+        {
+          "type": "message",
+          "ts": "1711991000.001100",
+          "user": "U012",
+          "text": "Harmonic drive efficiency measurement: 82% at rated load, 78% at 1.5x rated. Spec sheet claims 85%. The 3% loss is in the wave generator bearing.",
+          "thread_ts": "1711991000.001100",
+          "reply_count": 4,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U002",
+            "U003"
+          ],
+          "latest_reply": "1711991240.001104"
+        },
+        {
+          "type": "message",
+          "ts": "1711991060.001101",
+          "user": "U002",
+          "text": "78% at 1.5x is concerning for the peak torque case. That means 22% of the motor power is heat. Does our thermal budget account for that?",
+          "thread_ts": "1711991000.001100"
+        },
+        {
+          "type": "message",
+          "ts": "1711991120.001102",
+          "user": "U003",
+          "text": "The thermal model assumed 85% efficiency. With 78% we get an additional 4.5W of heat per motor at peak. Need to update the thermal analysis.",
+          "thread_ts": "1711991000.001100"
+        },
+        {
+          "type": "message",
+          "ts": "1711991180.001103",
+          "user": "U002",
+          "text": "The peak is only 15s. Thermal mass should absorb it. @U003 can you confirm the transient thermal response?",
+          "thread_ts": "1711991000.001100"
+        },
+        {
+          "type": "message",
+          "ts": "1711991240.001104",
+          "user": "U003",
+          "text": "Ran the transient: temp rise is 3C over 15s burst. Well within margin. Gearbox steady-state is fine.",
+          "thread_ts": "1711991000.001100",
+          "reactions": [
+            {
+              "name": "thumbsup",
+              "users": [
+                "U002",
+                "U012"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1712001000.001105",
+          "user": "U012",
+          "text": "Wheel assembly procedure v2 uploaded to Confluence. Key change: bearing preload now set with tooling fixture at 2.5Nm instead of feel. Eliminates the runout issue.",
+          "thread_ts": "1712001000.001105",
+          "reply_count": 2,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U002",
+            "U012"
+          ],
+          "latest_reply": "1712001120.001107"
+        },
+        {
+          "type": "message",
+          "ts": "1712001060.001106",
+          "user": "U002",
+          "text": "Good. Also add a step for verifying encoder alignment after bearing preload. The last build had 2 misaligned encoders that caused position errors.",
+          "thread_ts": "1712001000.001105"
+        },
+        {
+          "type": "message",
+          "ts": "1712001120.001107",
+          "user": "U012",
+          "text": "Added encoder alignment check with go/no-go gauge. Max allowable offset is 0.05mm radial.",
+          "thread_ts": "1712001000.001105"
+        },
+        {
+          "type": "message",
+          "ts": "1712011000.001108",
+          "user": "U004",
+          "text": "Motor controller auto-calibration routine completed on all 4 motors. Phase resistance and inductance measured within 2% of datasheet values.",
+          "thread_ts": "1712011000.001108",
+          "reply_count": 3,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U002",
+            "U004"
+          ],
+          "latest_reply": "1712011180.001111"
+        },
+        {
+          "type": "message",
+          "ts": "1712011060.001109",
+          "user": "U002",
+          "text": "What about the back-EMF constant? That's the one that drifts with temperature.",
+          "thread_ts": "1712011000.001108"
+        },
+        {
+          "type": "message",
+          "ts": "1712011120.001110",
+          "user": "U004",
+          "text": "Ke measured at 0.0285 V/rpm vs spec 0.029. Within 2%. I've added temperature compensation in the FOC loop - recalibrates Ke every 60 seconds using the motor temp sensor.",
+          "thread_ts": "1712011000.001108"
+        },
+        {
+          "type": "message",
+          "ts": "1712011180.001111",
+          "user": "U002",
+          "text": "Good. That should eliminate the torque ripple we saw at elevated temps last week.",
+          "thread_ts": "1712011000.001108"
+        },
+        {
+          "type": "message",
+          "ts": "1712021000.001112",
+          "user": "U002",
+          "text": "Drivetrain DVT test matrix finalized: 14 tests across 3 categories (performance, durability, environmental). Shared in Confluence.",
+          "reactions": [
+            {
+              "name": "thumbsup",
+              "users": [
+                "U010",
+                "U009"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1712021060.001113",
+          "user": "U012",
+          "text": "Ordered 8 spare harmonic drives for DVT. 2 week lead time. We'll have spares before DVT build starts."
+        },
+        {
+          "type": "message",
+          "ts": "1712031000.002005",
+          "user": "U002",
+          "text": "500-hour endurance test on wheels 1&2 complete. Zero failures. Bearing wear within spec. Tire compound shows 0.3mm tread wear - well within the 2mm budget.",
+          "thread_ts": "1712031000.002005",
+          "reply_count": 2,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U002",
+            "U012"
+          ],
+          "latest_reply": "1712031120.002007",
+          "reactions": [
+            {
+              "name": "tada",
+              "users": [
+                "U010",
+                "U012"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1712031060.002006",
+          "user": "U012",
+          "text": "Gearbox backlash measurement after 500hr: increased from 6 to 9 arcmin. Spec limit is 15. Trending well.",
+          "thread_ts": "1712031000.002005"
+        },
+        {
+          "type": "message",
+          "ts": "1712031120.002007",
+          "user": "U002",
+          "text": "Good data. We should repeat at 1000hr and 2000hr for the wear trend line. Keep wheels 1&2 running.",
+          "thread_ts": "1712031000.002005"
+        },
+        {
+          "type": "message",
+          "ts": "1712038060.002031",
+          "user": "U002",
+          "text": "Updated the drivetrain design review presentation. Added the torque spec change rationale and the gearbox lifetime analysis. Shared on Confluence."
+        },
+        {
+          "type": "message",
+          "ts": "1712038540.002039",
+          "user": "U012",
+          "text": "Wheel 3 back on the endurance test after bearing reshim. Running clean at 500rpm. Will monitor for another 100 hours."
+        },
+        {
+          "type": "message",
+          "ts": "1712039020.002047",
+          "user": "U004",
+          "text": "Motor current sense accuracy verified: ±0.5% at full scale. Exceeds the ±1% requirement for FOC control."
+        },
+        {
+          "type": "message",
+          "ts": "1712039560.002056",
+          "user": "U002",
+          "text": "All drivetrain changes submitted. Rev D gearbox mount, updated torque spec, thermal interface spec. Ready for design freeze."
+        }
+      ]
+    },
+    {
+      "id": "C006",
+      "name": "firmware",
+      "messages": [
+        {
+          "type": "message",
+          "ts": "1711905000.000500",
+          "user": "U006",
+          "text": "FPGA timing closure failing on the motor control path. Setup violation of 1.2ns on the PWM output register. Need to pipeline the output stage.",
+          "thread_ts": "1711905000.000500",
+          "reply_count": 6,
+          "reply_users_count": 3,
+          "reply_users": [
+            "U006",
+            "U014",
+            "U017"
+          ],
+          "latest_reply": "1711905360.000506"
+        },
+        {
+          "type": "message",
+          "ts": "1711905060.000501",
+          "user": "U014",
+          "text": "What clock frequency? If it's the 100MHz domain we can add a register stage without affecting PWM latency.",
+          "thread_ts": "1711905000.000500"
+        },
+        {
+          "type": "message",
+          "ts": "1711905120.000502",
+          "user": "U006",
+          "text": "200MHz motor control clock. Adding a pipeline stage means 5ns additional latency. The control loop can tolerate it - sample rate is 20kHz so 5ns is negligible.",
+          "thread_ts": "1711905000.000500"
+        },
+        {
+          "type": "message",
+          "ts": "1711905180.000503",
+          "user": "U006",
+          "text": "Pipeline stage added. Timing clean now at 200MHz with 0.8ns positive slack. Bitstream rebuilt and tested.",
+          "thread_ts": "1711905000.000500",
+          "reactions": [
+            {
+              "name": "thumbsup",
+              "users": [
+                "U014"
+              ],
+              "count": 1
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711905240.000504",
+          "user": "U014",
+          "text": "BTW the FPGA we're using (Artix-7 XC7A35T) is showing 12 week lead time from Digikey. Was 4 weeks last month. @U007 @U017 heads up on supply.",
+          "thread_ts": "1711905000.000500",
+          "reactions": [
+            {
+              "name": "rotating_light",
+              "users": [
+                "U007",
+                "U017"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711905300.000505",
+          "user": "U006",
+          "text": "12 weeks is a problem. We need 50 units for DVT builds in 8 weeks. Can we get allocation from our distributor?",
+          "thread_ts": "1711905000.000500"
+        },
+        {
+          "type": "message",
+          "ts": "1711905360.000506",
+          "user": "U017",
+          "text": "Checking with Arrow now. They sometimes have stock the web doesn't show. Will update by end of day.",
+          "thread_ts": "1711905000.000500"
+        },
+        {
+          "type": "message",
+          "ts": "1711915000.000507",
+          "user": "U006",
+          "text": "Bootloader v2.1 ready for prototype testing. Added CRC32 validation on firmware images and fallback to golden image on 3 consecutive boot failures.",
+          "thread_ts": "1711915000.000507",
+          "reply_count": 2,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U006",
+            "U014"
+          ],
+          "latest_reply": "1711915120.000509"
+        },
+        {
+          "type": "message",
+          "ts": "1711915060.000508",
+          "user": "U014",
+          "text": "Does the golden image get updated during OTA? We need to keep it as a known-good fallback.",
+          "thread_ts": "1711915000.000507"
+        },
+        {
+          "type": "message",
+          "ts": "1711915120.000509",
+          "user": "U006",
+          "text": "No, golden image is write-protected in flash. Only the A/B partitions are OTA-updatable. Golden is factory-programmed and never touched.",
+          "thread_ts": "1711915000.000507",
+          "reactions": [
+            {
+              "name": "white_check_mark",
+              "users": [
+                "U014"
+              ],
+              "count": 1
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711925000.000510",
+          "user": "U014",
+          "text": "MCU flash usage: 78% (312KB/400KB). RAM: 85% (170KB/200KB). Getting tight. The navigation stack alone is 45%.",
+          "thread_ts": "1711925000.000510",
+          "reply_count": 2,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U006",
+            "U014"
+          ],
+          "latest_reply": "1711925120.000512"
+        },
+        {
+          "type": "message",
+          "ts": "1711925060.000511",
+          "user": "U006",
+          "text": "We should profile the nav stack for heap fragmentation. I bet we can reclaim 20KB by switching to fixed-size allocators for the path planner.",
+          "thread_ts": "1711925000.000510"
+        },
+        {
+          "type": "message",
+          "ts": "1711925120.000512",
+          "user": "U014",
+          "text": "Good idea. Also the logging buffer is 32KB - we can compress logs in-place and halve that.",
+          "thread_ts": "1711925000.000510"
+        },
+        {
+          "type": "message",
+          "ts": "1711935000.000513",
+          "user": "U006",
+          "text": "Motor control loop validated at 20kHz update rate. Jitter is <500ns. Meets real-time requirements.",
+          "reactions": [
+            {
+              "name": "rocket",
+              "users": [
+                "U002",
+                "U012"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711995000.001500",
+          "user": "U006",
+          "text": "XC7A50T bitstream rebuilt and verified. All timing clean. Extra fabric gives us room for the diagnostic logic we wanted to add later.",
+          "thread_ts": "1711995000.001500",
+          "reply_count": 2,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U006",
+            "U014"
+          ],
+          "latest_reply": "1711995120.001502"
+        },
+        {
+          "type": "message",
+          "ts": "1711995060.001501",
+          "user": "U014",
+          "text": "How much fabric utilization on the 50T? If we're under 50% we have plenty of room for DVT debug features.",
+          "thread_ts": "1711995000.001500"
+        },
+        {
+          "type": "message",
+          "ts": "1711995120.001502",
+          "user": "U006",
+          "text": "38% LUT utilization, 22% BRAM. Tons of room. Added the ILA debug core - 4K sample depth on the motor control signals.",
+          "thread_ts": "1711995000.001500"
+        },
+        {
+          "type": "message",
+          "ts": "1712005000.001503",
+          "user": "U014",
+          "text": "OTA update stress test: 100 consecutive A/B partition switches. Zero failures. CRC validation catches all injected corruption.",
+          "thread_ts": "1712005000.001503",
+          "reply_count": 2,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U006",
+            "U014"
+          ],
+          "latest_reply": "1712005120.001505"
+        },
+        {
+          "type": "message",
+          "ts": "1712005060.001504",
+          "user": "U006",
+          "text": "Did you test power loss during flash write? That's the scary case.",
+          "thread_ts": "1712005000.001503"
+        },
+        {
+          "type": "message",
+          "ts": "1712005120.001505",
+          "user": "U014",
+          "text": "Yes, killed power at random during 50 updates. All 50 recovered to the previous good partition. The atomic commit flag works as designed.",
+          "thread_ts": "1712005000.001503",
+          "reactions": [
+            {
+              "name": "white_check_mark",
+              "users": [
+                "U006",
+                "U010"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1712015000.001506",
+          "user": "U006",
+          "text": "Real-time task profiling: motor control ISR 2.1us, navigation loop 1.8ms, sensor fusion 0.9ms. CPU utilization 72% at peak.",
+          "thread_ts": "1712015000.001506",
+          "reply_count": 5,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U006",
+            "U014"
+          ],
+          "latest_reply": "1712015300.001511"
+        },
+        {
+          "type": "message",
+          "ts": "1712015060.001507",
+          "user": "U014",
+          "text": "72% is on the edge. We should keep it under 80% for margin. Any optimization opportunities?",
+          "thread_ts": "1712015000.001506"
+        },
+        {
+          "type": "message",
+          "ts": "1712015120.001508",
+          "user": "U006",
+          "text": "The SLAM lookup table is in external flash. Moving it to internal SRAM saves 400us per nav cycle. That brings CPU down to 65%.",
+          "thread_ts": "1712015000.001506"
+        },
+        {
+          "type": "message",
+          "ts": "1712015180.001509",
+          "user": "U014",
+          "text": "That eats 48KB of the 200KB RAM though. Given our 85% RAM usage that's tight. What about the compressed log buffer - did we implement that yet?",
+          "thread_ts": "1712015000.001506"
+        },
+        {
+          "type": "message",
+          "ts": "1712015240.001510",
+          "user": "U006",
+          "text": "Not yet. Compressed logs save 16KB. Combined with the fixed-size allocators (20KB savings), we'd free 36KB. Enough for the SLAM table with 8KB to spare.",
+          "thread_ts": "1712015000.001506"
+        },
+        {
+          "type": "message",
+          "ts": "1712015300.001511",
+          "user": "U014",
+          "text": "Let's do all three: compressed logs, fixed allocators, SLAM table in SRAM. I'll start with the log compression.",
+          "thread_ts": "1712015000.001506",
+          "reactions": [
+            {
+              "name": "thumbsup",
+              "users": [
+                "U006"
+              ],
+              "count": 1
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1712025000.001512",
+          "user": "U006",
+          "text": "Firmware v0.9.0 release candidate tagged. Full change log on Confluence. Ready for DVT qualification testing.",
+          "reactions": [
+            {
+              "name": "rocket",
+              "users": [
+                "U014",
+                "U010",
+                "U002"
+              ],
+              "count": 3
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1712035000.002019",
+          "user": "U014",
+          "text": "Diagnostic telemetry system ready: 32 channels of real-time data over CAN bus. Temperatures, voltages, motor currents, sensor status. 100Hz update rate.",
+          "thread_ts": "1712035000.002019",
+          "reply_count": 4,
+          "reply_users_count": 3,
+          "reply_users": [
+            "U009",
+            "U010",
+            "U014"
+          ],
+          "latest_reply": "1712035240.002023"
+        },
+        {
+          "type": "message",
+          "ts": "1712035060.002020",
+          "user": "U010",
+          "text": "Can we log this to SD card for post-test analysis? The DVT tests will need full data capture.",
+          "thread_ts": "1712035000.002019"
+        },
+        {
+          "type": "message",
+          "ts": "1712035120.002021",
+          "user": "U014",
+          "text": "Yes, SD card logging is included. Binary format with Python decoder script. 8 hours of data fits on a 2GB card at 100Hz.",
+          "thread_ts": "1712035000.002019"
+        },
+        {
+          "type": "message",
+          "ts": "1712035180.002022",
+          "user": "U009",
+          "text": "Perfect for DVT. I'll integrate the decoder into our test automation scripts. CSV output?",
+          "thread_ts": "1712035000.002019"
+        },
+        {
+          "type": "message",
+          "ts": "1712035240.002023",
+          "user": "U014",
+          "text": "Decoder outputs both CSV and parquet. Parquet is 5x smaller and loads faster in pandas.",
+          "thread_ts": "1712035000.002019",
+          "reactions": [
+            {
+              "name": "thumbsup",
+              "users": [
+                "U009",
+                "U010"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1712038300.002035",
+          "user": "U006",
+          "text": "Fixed-size allocator implementation complete. RAM usage down from 85% to 74%. Log compression next."
+        },
+        {
+          "type": "message",
+          "ts": "1712038780.002043",
+          "user": "U014",
+          "text": "CAN bus utilization: 34% at normal operation, 52% during diagnostics mode. Well under the 70% design limit."
+        },
+        {
+          "type": "message",
+          "ts": "1712039260.002051",
+          "user": "U006",
+          "text": "Motor control jitter optimization: worst-case ISR latency reduced from 2.1us to 1.4us by moving the ADC trigger to hardware timer compare output."
+        },
+        {
+          "type": "message",
+          "ts": "1712039680.002058",
+          "user": "U006",
+          "text": "Firmware v0.9.0 tagged and frozen. Any post-freeze changes go to v0.9.1 branch with ECO."
+        }
+      ]
+    },
+    {
+      "id": "C004",
+      "name": "power-systems",
+      "messages": [
+        {
+          "type": "message",
+          "ts": "1711903000.000300",
+          "user": "U004",
+          "text": "BMS is reporting 8% SOC error vs coulomb counting. The voltage-based estimation drifts significantly below 20% SOC. Need to calibrate the OCV-SOC lookup table.",
+          "thread_ts": "1711903000.000300",
+          "reply_count": 4,
+          "reply_users_count": 3,
+          "reply_users": [
+            "U004",
+            "U014",
+            "U018"
+          ],
+          "latest_reply": "1711903240.000304"
+        },
+        {
+          "type": "message",
+          "ts": "1711903060.000301",
+          "user": "U018",
+          "text": "Which cell chemistry? The LFP cells have a very flat voltage curve in the 20-80% range which makes voltage-based SOC unreliable.",
+          "thread_ts": "1711903000.000300"
+        },
+        {
+          "type": "message",
+          "ts": "1711903120.000302",
+          "user": "U004",
+          "text": "NMC 21700. The curve isn't flat but the BMS ADC resolution at 12-bit is only 1.2mV/LSB. Need to go to 16-bit or use the coulomb counter as primary below 20%.",
+          "thread_ts": "1711903000.000300"
+        },
+        {
+          "type": "message",
+          "ts": "1711903180.000303",
+          "user": "U014",
+          "text": "The BMS MCU has a 16-bit SAR ADC on channel 2 that's currently unused. I can remap the voltage sense to that channel in firmware. ~2 hours of work.",
+          "thread_ts": "1711903000.000300"
+        },
+        {
+          "type": "message",
+          "ts": "1711903240.000304",
+          "user": "U004",
+          "text": "Do it. That gives us 0.075mV/LSB which is plenty. @U014 please also add the hybrid estimator: coulomb counting primary below 20%, voltage-based above.",
+          "thread_ts": "1711903000.000300",
+          "reactions": [
+            {
+              "name": "thumbsup",
+              "users": [
+                "U014",
+                "U018"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711913000.000305",
+          "user": "U004",
+          "text": "Motor driver MOSFET junction temp hit 145C during peak load. Absolute max is 150C. Adding a heatsink to the driver board PCB.",
+          "thread_ts": "1711913000.000305",
+          "reply_count": 3,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U004",
+            "U012"
+          ],
+          "latest_reply": "1711913180.000308"
+        },
+        {
+          "type": "message",
+          "ts": "1711913060.000306",
+          "user": "U012",
+          "text": "Is that with or without the conformal coating? The coating adds thermal resistance.",
+          "thread_ts": "1711913000.000305"
+        },
+        {
+          "type": "message",
+          "ts": "1711913120.000307",
+          "user": "U004",
+          "text": "Without coating. With coating it'll be worse. Need to either increase copper pour area or add thermal vias under the MOSFET pad.",
+          "thread_ts": "1711913000.000305"
+        },
+        {
+          "type": "message",
+          "ts": "1711913180.000308",
+          "user": "U004",
+          "text": "Updated PCB layout with 25 thermal vias under each MOSFET. Simulated Tj drops to 128C. Sending to vendor for DVT fab run.",
+          "thread_ts": "1711913000.000305",
+          "reactions": [
+            {
+              "name": "white_check_mark",
+              "users": [
+                "U012",
+                "U010"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711923000.000309",
+          "user": "U018",
+          "text": "Battery cycle test #50 complete. Capacity retention at 97.2%. Datasheet claims 96% at 50 cycles. Validation tracking well for DVT qualification."
+        },
+        {
+          "type": "message",
+          "ts": "1711923060.000310",
+          "user": "U004",
+          "text": "Power budget updated: total system draw is 285W peak, 180W nominal. Battery provides 45 min runtime at nominal. Meets the 30 min spec with 50% margin."
+        },
+        {
+          "type": "message",
+          "ts": "1711993000.001300",
+          "user": "U014",
+          "text": "BMS firmware v3.2 deployed. Hybrid SOC estimator active: coulomb counting below 20%, voltage-based above. SOC error now <2% across full range.",
+          "thread_ts": "1711993000.001300",
+          "reply_count": 1,
+          "reply_users_count": 1,
+          "reply_users": [
+            "U004"
+          ],
+          "latest_reply": "1711993060.001301",
+          "reactions": [
+            {
+              "name": "white_check_mark",
+              "users": [
+                "U004",
+                "U018"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711993060.001301",
+          "user": "U004",
+          "text": "Verified on bench. SOC tracks within 1.5% of reference coulomb counter. Publish the cal parameters for the production BMS.",
+          "thread_ts": "1711993000.001300"
+        },
+        {
+          "type": "message",
+          "ts": "1712003000.001302",
+          "user": "U018",
+          "text": "Fast charge circuit tested: 0 to 80% in 55 minutes. Spec target is 60 min. Exceeds requirement.",
+          "thread_ts": "1712003000.001302",
+          "reply_count": 3,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U004",
+            "U018"
+          ],
+          "latest_reply": "1712003180.001305"
+        },
+        {
+          "type": "message",
+          "ts": "1712003060.001303",
+          "user": "U004",
+          "text": "Cell balancing during charge - are we seeing any cell voltage spread at end of charge?",
+          "thread_ts": "1712003000.001302"
+        },
+        {
+          "type": "message",
+          "ts": "1712003120.001304",
+          "user": "U018",
+          "text": "Max cell-to-cell delta at 80% is 12mV. BMS balances during the CV phase. By 100% delta is <5mV. Good.",
+          "thread_ts": "1712003000.001302"
+        },
+        {
+          "type": "message",
+          "ts": "1712003180.001305",
+          "user": "U004",
+          "text": "12mV at 80% is fine. The NMC cells are well matched. We should document the acceptance criteria for incoming cell matching: <15mV spread at 50% SOC.",
+          "thread_ts": "1712003000.001302"
+        },
+        {
+          "type": "message",
+          "ts": "1712013000.001306",
+          "user": "U004",
+          "text": "Power sequencing updated: main rail → MCU → sensors → motor drivers → LIDAR. Each stage has 50ms delay and current limit. Prevents inrush brownout.",
+          "thread_ts": "1712013000.001306",
+          "reply_count": 3,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U004",
+            "U006"
+          ],
+          "latest_reply": "1712013180.001309"
+        },
+        {
+          "type": "message",
+          "ts": "1712013060.001307",
+          "user": "U006",
+          "text": "Is the FPGA on the MCU rail or its own? It draws 1.2A peak during configuration.",
+          "thread_ts": "1712013000.001306"
+        },
+        {
+          "type": "message",
+          "ts": "1712013120.001308",
+          "user": "U004",
+          "text": "Own rail with dedicated 3.3V regulator. Sequenced after MCU so the SPI bus is ready when FPGA configures.",
+          "thread_ts": "1712013000.001306"
+        },
+        {
+          "type": "message",
+          "ts": "1712013180.001309",
+          "user": "U006",
+          "text": "Perfect. That matches our boot sequence: MCU init → FPGA bitstream load → motor control start.",
+          "thread_ts": "1712013000.001306"
+        },
+        {
+          "type": "message",
+          "ts": "1712023000.001310",
+          "user": "U018",
+          "text": "Battery safety test schedule: nail penetration, overcharge, short circuit, crush. Using 5 sacrificial packs. Test lab booked for week 13."
+        },
+        {
+          "type": "message",
+          "ts": "1712033000.002012",
+          "user": "U004",
+          "text": "Ground fault detection circuit validated. Trips at 30mA leakage. Response time: 2ms to motor disconnect. Meets IEC 60204 requirements.",
+          "thread_ts": "1712033000.002012",
+          "reply_count": 2,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U004",
+            "U018"
+          ],
+          "latest_reply": "1712033120.002014"
+        },
+        {
+          "type": "message",
+          "ts": "1712033060.002013",
+          "user": "U018",
+          "text": "Does it discriminate between ground fault and normal capacitive leakage? The motor cables have ~5mA of capacitive current at PWM frequency.",
+          "thread_ts": "1712033000.002012"
+        },
+        {
+          "type": "message",
+          "ts": "1712033120.002014",
+          "user": "U004",
+          "text": "Yes, the detection uses a DC component filter. PWM capacitive current is AC and gets filtered out. Only DC leakage above 30mA triggers the fault.",
+          "thread_ts": "1712033000.002012",
+          "reactions": [
+            {
+              "name": "white_check_mark",
+              "users": [
+                "U018"
+              ],
+              "count": 1
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1712038180.002033",
+          "user": "U014",
+          "text": "Motor controller firmware updated with the 50ms watchdog. Tested E-stop integration: full stop in 180ms from button press. Within the 200ms requirement.",
+          "reactions": [
+            {
+              "name": "white_check_mark",
+              "users": [
+                "U015"
+              ],
+              "count": 1
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1712038660.002041",
+          "user": "U018",
+          "text": "Battery management CAN protocol documentation complete. 12 message IDs covering SOC, cell voltages, temperatures, and fault codes."
+        },
+        {
+          "type": "message",
+          "ts": "1712039140.002049",
+          "user": "U004",
+          "text": "Regenerative braking energy capture: recovering 12% of kinetic energy during deceleration. Extends runtime by approximately 8 minutes."
+        },
+        {
+          "type": "message",
+          "ts": "1712039740.002059",
+          "user": "U004",
+          "text": "Power system changes frozen: 16-bit ADC, thermal vias, hybrid SOC estimator, ground fault detection. All verified and documented."
+        }
+      ]
+    },
+    {
+      "id": "C005",
+      "name": "sensors",
+      "messages": [
+        {
+          "type": "message",
+          "ts": "1711904000.000400",
+          "user": "U016",
+          "text": "LIDAR point cloud has 2.3cm RMS error at 5m range. Spec is <1cm. Recalibrating the intrinsic parameters.",
+          "thread_ts": "1711904000.000400",
+          "reply_count": 4,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U005",
+            "U016"
+          ],
+          "latest_reply": "1711904240.000404"
+        },
+        {
+          "type": "message",
+          "ts": "1711904060.000401",
+          "user": "U005",
+          "text": "Are you using the factory calibration or our custom procedure? The factory cal drifts with temperature.",
+          "thread_ts": "1711904000.000400"
+        },
+        {
+          "type": "message",
+          "ts": "1711904120.000402",
+          "user": "U016",
+          "text": "Factory cal. Good catch - lab was 28C, calibrated at 22C. The APD gain drifts with temp. Running our thermal compensation routine.",
+          "thread_ts": "1711904000.000400"
+        },
+        {
+          "type": "message",
+          "ts": "1711904180.000403",
+          "user": "U016",
+          "text": "With thermal compensation: 0.8cm RMS at 5m. Meets spec. Adding thermal comp to the boot sequence.",
+          "thread_ts": "1711904000.000400",
+          "reactions": [
+            {
+              "name": "tada",
+              "users": [
+                "U005",
+                "U006"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711904240.000404",
+          "user": "U005",
+          "text": "Nice. Make sure the IMU temp sensor feeds into the comp algorithm - it's closer to the LIDAR than the board sensor.",
+          "thread_ts": "1711904000.000400"
+        },
+        {
+          "type": "message",
+          "ts": "1711914000.000405",
+          "user": "U005",
+          "text": "Wheel encoder resolution at 4096 CPR gives 0.087mm per count. Position accuracy requirement is 0.5mm. Fine.",
+          "thread_ts": "1711914000.000405",
+          "reply_count": 2,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U005",
+            "U006"
+          ],
+          "latest_reply": "1711914120.000407"
+        },
+        {
+          "type": "message",
+          "ts": "1711914060.000406",
+          "user": "U006",
+          "text": "What's the max count rate? At top speed the encoder output is ~200kHz. The MCU timer capture can handle it?",
+          "thread_ts": "1711914000.000405"
+        },
+        {
+          "type": "message",
+          "ts": "1711914120.000407",
+          "user": "U005",
+          "text": "Yes, using quadrature decoder hardware. No CPU overhead.",
+          "thread_ts": "1711914000.000405"
+        },
+        {
+          "type": "message",
+          "ts": "1711924000.000408",
+          "user": "U016",
+          "text": "Front camera FOV measured at 118 deg on the EVT prototype. Spec is 120 min. Edge distortion is higher than expected - barrel at 4.2% vs 3% design target.",
+          "thread_ts": "1711924000.000408",
+          "reply_count": 6,
+          "reply_users_count": 3,
+          "reply_users": [
+            "U005",
+            "U010",
+            "U016"
+          ],
+          "latest_reply": "1711924360.000414"
+        },
+        {
+          "type": "message",
+          "ts": "1711924060.000409",
+          "user": "U005",
+          "text": "Can we correct in software? The ISP has a dewarping block that handles up to 5% barrel.",
+          "thread_ts": "1711924000.000408"
+        },
+        {
+          "type": "message",
+          "ts": "1711924120.000410",
+          "user": "U016",
+          "text": "Yes, tested the ISP dewarp. Corrected image is clean. Effective FOV after correction is 116 deg. Marginal.",
+          "thread_ts": "1711924000.000408"
+        },
+        {
+          "type": "message",
+          "ts": "1711924180.000411",
+          "user": "U005",
+          "text": "116 is below 120 spec. Can we accept 116 or do we need a wider lens? @U010 need a decision.",
+          "thread_ts": "1711924000.000408"
+        },
+        {
+          "type": "message",
+          "ts": "1711924240.000412",
+          "user": "U010",
+          "text": "What's the operational impact of 116 vs 120? If it's just edge coverage we can probably accept for DVT.",
+          "thread_ts": "1711924000.000408"
+        },
+        {
+          "type": "message",
+          "ts": "1711924300.000413",
+          "user": "U016",
+          "text": "4 deg less coverage means 0.35m blind spot at 5m range on each side. Acceptable for warehouse ops, marginal for outdoor. Recommend accept for DVT, fix for PVT.",
+          "thread_ts": "1711924000.000408"
+        },
+        {
+          "type": "message",
+          "ts": "1711924360.000414",
+          "user": "U010",
+          "text": "Agreed. Accept 116 for DVT. Log it as a PVT action item. @U005 please track in the sensor validation matrix.",
+          "thread_ts": "1711924000.000408",
+          "reactions": [
+            {
+              "name": "white_check_mark",
+              "users": [
+                "U005",
+                "U016"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711994000.001400",
+          "user": "U016",
+          "text": "SLAM validation: position drift is 0.3% of travel distance after 1km loop. Spec is <0.5%. Meeting requirement with margin.",
+          "thread_ts": "1711994000.001400",
+          "reply_count": 4,
+          "reply_users_count": 3,
+          "reply_users": [
+            "U005",
+            "U006",
+            "U016"
+          ],
+          "latest_reply": "1711994240.001404",
+          "reactions": [
+            {
+              "name": "rocket",
+              "users": [
+                "U005",
+                "U006",
+                "U010"
+              ],
+              "count": 3
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711994060.001401",
+          "user": "U005",
+          "text": "That's with LIDAR only? Or fused with wheel odometry?",
+          "thread_ts": "1711994000.001400"
+        },
+        {
+          "type": "message",
+          "ts": "1711994120.001402",
+          "user": "U016",
+          "text": "Fused: LIDAR + wheel odom + IMU. LIDAR-only is 0.8% drift. The fusion brings it way down.",
+          "thread_ts": "1711994000.001400"
+        },
+        {
+          "type": "message",
+          "ts": "1711994180.001403",
+          "user": "U006",
+          "text": "IMU bias stability is critical for the fusion. Are you running the calibration at every power-on?",
+          "thread_ts": "1711994000.001400"
+        },
+        {
+          "type": "message",
+          "ts": "1711994240.001404",
+          "user": "U016",
+          "text": "Yes, 10-second stationary calibration at boot. Gyro bias converges to <0.01 deg/s within 5 seconds.",
+          "thread_ts": "1711994000.001400"
+        },
+        {
+          "type": "message",
+          "ts": "1712004000.001405",
+          "user": "U005",
+          "text": "Safety LIDAR (rear) installed and calibrated. Detection range: 0.1m to 4m. Response time: <50ms from detection to motor stop command.",
+          "thread_ts": "1712004000.001405",
+          "reply_count": 3,
+          "reply_users_count": 3,
+          "reply_users": [
+            "U004",
+            "U005",
+            "U006"
+          ],
+          "latest_reply": "1712004180.001408"
+        },
+        {
+          "type": "message",
+          "ts": "1712004060.001406",
+          "user": "U006",
+          "text": "50ms is the total including the motor deceleration? Or just the sensor-to-command latency?",
+          "thread_ts": "1712004000.001405"
+        },
+        {
+          "type": "message",
+          "ts": "1712004120.001407",
+          "user": "U005",
+          "text": "Sensor-to-command only. Motor deceleration adds 200ms from full speed. Total stopping distance: 0.35m. Safety zone is set at 0.5m.",
+          "thread_ts": "1712004000.001405"
+        },
+        {
+          "type": "message",
+          "ts": "1712004180.001408",
+          "user": "U004",
+          "text": "The motor controller watchdog now at 50ms (down from 500ms per the safety review). If the safety LIDAR command doesn't arrive in 50ms, motors hard-stop.",
+          "thread_ts": "1712004000.001405",
+          "reactions": [
+            {
+              "name": "white_check_mark",
+              "users": [
+                "U005",
+                "U015"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1712014000.001409",
+          "user": "U016",
+          "text": "Pallet detection hit rate: 94% at 5m range, 98% at 3m. Using 3D point cloud segmentation with RANSAC plane fitting.",
+          "thread_ts": "1712014000.001409",
+          "reply_count": 3,
+          "reply_users_count": 3,
+          "reply_users": [
+            "U005",
+            "U010",
+            "U016"
+          ],
+          "latest_reply": "1712014180.001412"
+        },
+        {
+          "type": "message",
+          "ts": "1712014060.001410",
+          "user": "U005",
+          "text": "What are the false positive rates? A false detection could send the robot into an obstacle.",
+          "thread_ts": "1712014000.001409"
+        },
+        {
+          "type": "message",
+          "ts": "1712014120.001411",
+          "user": "U016",
+          "text": "0.1% false positive rate in the test dataset (10,000 frames). Most false positives are flat walls at oblique angles. Adding geometric constraints to filter those.",
+          "thread_ts": "1712014000.001409"
+        },
+        {
+          "type": "message",
+          "ts": "1712014180.001412",
+          "user": "U010",
+          "text": "94% at 5m is good enough for the customer demo. We approach from 3m anyway for the docking maneuver.",
+          "thread_ts": "1712014000.001409"
+        },
+        {
+          "type": "message",
+          "ts": "1712024000.001413",
+          "user": "U005",
+          "text": "Sensor validation matrix updated. 8 of 12 tests pass. Open items: outdoor LIDAR range, rain performance, vibration immunity. All scheduled for DVT."
+        },
+        {
+          "type": "message",
+          "ts": "1712024060.001414",
+          "user": "U016",
+          "text": "Camera image quality in low light: usable down to 50 lux. Warehouse minimum is typically 100 lux. Good."
+        },
+        {
+          "type": "message",
+          "ts": "1712034000.002015",
+          "user": "U005",
+          "text": "IMU temperature calibration complete. Gyro bias drift reduced from 0.05 deg/s/C to 0.005 deg/s/C. 10x improvement across -10C to 50C range.",
+          "thread_ts": "1712034000.002015",
+          "reply_count": 3,
+          "reply_users_count": 3,
+          "reply_users": [
+            "U005",
+            "U006",
+            "U016"
+          ],
+          "latest_reply": "1712034180.002018"
+        },
+        {
+          "type": "message",
+          "ts": "1712034060.002016",
+          "user": "U006",
+          "text": "What's the calibration data size? If it fits in the IMU's internal EEPROM we don't need to store it on the MCU side.",
+          "thread_ts": "1712034000.002015"
+        },
+        {
+          "type": "message",
+          "ts": "1712034120.002017",
+          "user": "U005",
+          "text": "256 bytes for the full temp-comp table. IMU EEPROM is 512 bytes with 384 free. It fits. Programming over SPI during factory calibration.",
+          "thread_ts": "1712034000.002015"
+        },
+        {
+          "type": "message",
+          "ts": "1712034180.002018",
+          "user": "U016",
+          "text": "This helps SLAM accuracy significantly. The gyro was the main error source in the sensor fusion. With 10x better stability I expect drift to drop to 0.2%.",
+          "thread_ts": "1712034000.002015"
+        },
+        {
+          "type": "message",
+          "ts": "1712038240.002034",
+          "user": "U005",
+          "text": "Ordered replacement camera lens with wider FOV for PVT evaluation. Should achieve 122 deg with less barrel distortion."
+        },
+        {
+          "type": "message",
+          "ts": "1712038720.002042",
+          "user": "U016",
+          "text": "LIDAR dust contamination test: performance degrades above 50mg/m3. Warehouse typical is 5-15mg/m3. Adequate margin. Adding wiper for outdoor use."
+        },
+        {
+          "type": "message",
+          "ts": "1712039200.002050",
+          "user": "U005",
+          "text": "Safety LIDAR field-of-view verification: 270 deg horizontal, 30 deg vertical. Meets the ISO 3691-4 requirement for automated guided vehicles."
+        },
+        {
+          "type": "message",
+          "ts": "1712039800.002060",
+          "user": "U005",
+          "text": "Sensor subsystem frozen: thermal-compensated LIDAR, safety LIDAR config, IMU temp cal, camera with ISP dewarp. FOV waiver for DVT documented."
+        }
+      ]
+    },
+    {
+      "id": "C007",
+      "name": "supply-chain",
+      "messages": [
+        {
+          "type": "message",
+          "ts": "1711906000.000600",
+          "user": "U007",
+          "text": "DVT build material review. Critical path items and lead times: BLDC motors (6 wk), battery cells (4 wk), LIDAR module (8 wk), custom PCBs (3 wk). DVT build target is 10 weeks out.",
+          "thread_ts": "1711906000.000600",
+          "reply_count": 5,
+          "reply_users_count": 3,
+          "reply_users": [
+            "U007",
+            "U010",
+            "U017"
+          ],
+          "latest_reply": "1711906300.000605"
+        },
+        {
+          "type": "message",
+          "ts": "1711906060.000601",
+          "user": "U017",
+          "text": "LIDAR at 8 weeks is the long pole. I've got a PO ready for Velodyne - just need engineering sign-off on the final part number.",
+          "thread_ts": "1711906000.000600"
+        },
+        {
+          "type": "message",
+          "ts": "1711906120.000602",
+          "user": "U007",
+          "text": "Also need to confirm quantity. @U010 are we building 10 or 15 DVT units?",
+          "thread_ts": "1711906000.000600"
+        },
+        {
+          "type": "message",
+          "ts": "1711906180.000603",
+          "user": "U010",
+          "text": "15 units. 10 for validation, 3 for field testing, 2 spares. Better to order extra now than pay expedite later.",
+          "thread_ts": "1711906000.000600",
+          "reactions": [
+            {
+              "name": "thumbsup",
+              "users": [
+                "U007",
+                "U017"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711906240.000604",
+          "user": "U017",
+          "text": "Updated PO for 15x. Total BOM cost per unit: $3,240. 15 units = $48,600. Within the DVT build budget of $55k.",
+          "thread_ts": "1711906000.000600"
+        },
+        {
+          "type": "message",
+          "ts": "1711906300.000605",
+          "user": "U007",
+          "text": "Approved. @U017 please release the PO today. We need those LIDARs moving ASAP given the 8 week lead.",
+          "thread_ts": "1711906000.000600"
+        },
+        {
+          "type": "message",
+          "ts": "1711916000.000606",
+          "user": "U017",
+          "text": "Alert from Arrow: Xilinx Artix-7 XC7A35T allocation is being pulled. New lead time is 16 weeks, up from 12. We need 50 pcs for DVT.",
+          "thread_ts": "1711916000.000606",
+          "reply_count": 4,
+          "reply_users_count": 3,
+          "reply_users": [
+            "U006",
+            "U007",
+            "U017"
+          ],
+          "latest_reply": "1711916240.000610",
+          "reactions": [
+            {
+              "name": "rotating_light",
+              "users": [
+                "U007",
+                "U011"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711916060.000607",
+          "user": "U007",
+          "text": "16 weeks is past our DVT build date. Options: (1) expedite at premium, (2) find broker stock, (3) design in alternate FPGA.",
+          "thread_ts": "1711916000.000606"
+        },
+        {
+          "type": "message",
+          "ts": "1711916120.000608",
+          "user": "U017",
+          "text": "Checking brokers. Also the XC7A50T is pin-compatible and in stock - 800 pcs at Arrow. Higher capacity but same footprint. @U006 can firmware use the 50T?",
+          "thread_ts": "1711916000.000606"
+        },
+        {
+          "type": "message",
+          "ts": "1711916180.000609",
+          "user": "U006",
+          "text": "XC7A50T is a drop-in replacement. Same pinout, more logic fabric. Bitstream needs rebuild but no design changes. Go for it.",
+          "thread_ts": "1711916000.000606",
+          "reactions": [
+            {
+              "name": "thumbsup",
+              "users": [
+                "U017",
+                "U007"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711916240.000610",
+          "user": "U007",
+          "text": "Decision: switch to XC7A50T. @U017 order 50+10 spare immediately from Arrow stock. @U006 rebuild bitstream.",
+          "thread_ts": "1711916000.000606",
+          "reactions": [
+            {
+              "name": "white_check_mark",
+              "users": [
+                "U006",
+                "U017",
+                "U011"
+              ],
+              "count": 3
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711926000.000611",
+          "user": "U013",
+          "text": "Magnesium die casting vendor short list: (1) DyCast (domestic, 8wk), (2) Zhongshan (China, 5wk + 3wk ship), (3) MagForm (Mexico, 6wk). All can do AZ91D alloy.",
+          "thread_ts": "1711926000.000611",
+          "reply_count": 3,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U007",
+            "U013"
+          ],
+          "latest_reply": "1711926180.000614"
+        },
+        {
+          "type": "message",
+          "ts": "1711926060.000612",
+          "user": "U007",
+          "text": "DyCast is preferred for prototype - domestic simplifies quality audits. What's their MOQ for prototypes?",
+          "thread_ts": "1711926000.000611"
+        },
+        {
+          "type": "message",
+          "ts": "1711926120.000613",
+          "user": "U013",
+          "text": "DyCast has no MOQ for proto tooling. T0 samples in 8 weeks from tooling release. $12k for soft tool. They need the 3D model by next Friday.",
+          "thread_ts": "1711926000.000611"
+        },
+        {
+          "type": "message",
+          "ts": "1711926180.000614",
+          "user": "U007",
+          "text": "Approved. @U013 send the RFQ with the Parasolid from @U001. Let's get magnesium prototypes in hand for DVT comparison testing.",
+          "thread_ts": "1711926000.000611",
+          "reactions": [
+            {
+              "name": "thumbsup",
+              "users": [
+                "U013"
+              ],
+              "count": 1
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711936000.000615",
+          "user": "U017",
+          "text": "Weekly supplier scorecard: 94% on-time delivery this month. Two late shipments - both from the connector vendor (Molex). Escalating."
+        },
+        {
+          "type": "message",
+          "ts": "1711936060.000616",
+          "user": "U007",
+          "text": "The Molex issue is becoming a pattern. @U017 set up a call with their regional sales manager. We need commits."
+        },
+        {
+          "type": "message",
+          "ts": "1711996000.001600",
+          "user": "U017",
+          "text": "Arrow confirmed XC7A50T stock: 820 pcs available. PO for 60 pcs placed. Expected delivery: 5 business days. Crisis averted.",
+          "thread_ts": "1711996000.001600",
+          "reply_count": 2,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U007",
+            "U011"
+          ],
+          "latest_reply": "1711996120.001602",
+          "reactions": [
+            {
+              "name": "tada",
+              "users": [
+                "U006",
+                "U007",
+                "U011"
+              ],
+              "count": 3
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711996060.001601",
+          "user": "U007",
+          "text": "Excellent. @U011 please update the risk register - FPGA supply moved from red to green.",
+          "thread_ts": "1711996000.001600"
+        },
+        {
+          "type": "message",
+          "ts": "1711996120.001602",
+          "user": "U011",
+          "text": "Updated. Also adding a note to qualify the XC7A50T as the primary going forward, with XC7A35T as fallback.",
+          "thread_ts": "1711996000.001600"
+        },
+        {
+          "type": "message",
+          "ts": "1712006000.001603",
+          "user": "U007",
+          "text": "DVT BOM cost rollup complete. Per unit: $3,240 base + $14 TIM upgrade + $16 cable glands + $52 FPGA upgrade = $3,322 per unit. 15 units = $49,830.",
+          "thread_ts": "1712006000.001603",
+          "reply_count": 3,
+          "reply_users_count": 3,
+          "reply_users": [
+            "U007",
+            "U011",
+            "U017"
+          ],
+          "latest_reply": "1712006180.001606"
+        },
+        {
+          "type": "message",
+          "ts": "1712006060.001604",
+          "user": "U017",
+          "text": "Within the $55k budget with $5.2k contingency. That's about 10% - adequate for DVT.",
+          "thread_ts": "1712006000.001603"
+        },
+        {
+          "type": "message",
+          "ts": "1712006120.001605",
+          "user": "U007",
+          "text": "The magnesium housing prototypes are separate - $12k tooling + ~$800/part for 3 test samples. That's an additional $14.4k from the NRE budget.",
+          "thread_ts": "1712006000.001603"
+        },
+        {
+          "type": "message",
+          "ts": "1712006180.001606",
+          "user": "U011",
+          "text": "NRE budget has $25k remaining. $14.4k for mag housing exploration is approved. Go ahead.",
+          "thread_ts": "1712006000.001603",
+          "reactions": [
+            {
+              "name": "thumbsup",
+              "users": [
+                "U007",
+                "U013"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1712016000.001607",
+          "user": "U007",
+          "text": "Given the FPGA scare, I want second sources for all critical components by PVT. Priority: FPGA (done), LIDAR module, BLDC motors, battery cells.",
+          "thread_ts": "1712016000.001607",
+          "reply_count": 2,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U007",
+            "U017"
+          ],
+          "latest_reply": "1712016120.001609"
+        },
+        {
+          "type": "message",
+          "ts": "1712016060.001608",
+          "user": "U017",
+          "text": "LIDAR: Ouster OS0 is drop-in replacement for Velodyne. Need engineering eval. Motors: Oriental Motor has an equivalent. Battery: Samsung INR21700 as alt to LG.",
+          "thread_ts": "1712016000.001607"
+        },
+        {
+          "type": "message",
+          "ts": "1712016120.001609",
+          "user": "U007",
+          "text": "Get samples of all three alternates. We'll qualify them in parallel with DVT testing.",
+          "thread_ts": "1712016000.001607"
+        },
+        {
+          "type": "message",
+          "ts": "1712026000.001610",
+          "user": "U017",
+          "text": "Molex call done. They're allocating stock from their Asia warehouse. ETA 2 weeks for the connector backlog. They also offered 5% discount on next PO as goodwill."
+        },
+        {
+          "type": "message",
+          "ts": "1712026060.001611",
+          "user": "U007",
+          "text": "Accept the discount, but I want a contractual on-time delivery guarantee for PVT quantities. Put it in the next PO terms."
+        },
+        {
+          "type": "message",
+          "ts": "1712036000.002024",
+          "user": "U007",
+          "text": "DVT unit packaging spec needed. These are going to 3 test labs + 2 customer sites. Need to survive freight shipping (ISTA 3A equivalent).",
+          "thread_ts": "1712036000.002024",
+          "reply_count": 2,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U007",
+            "U017"
+          ],
+          "latest_reply": "1712036120.002026"
+        },
+        {
+          "type": "message",
+          "ts": "1712036060.002025",
+          "user": "U017",
+          "text": "Standard approach: custom foam inserts in a double-wall corrugated box. The robot weighs 18kg so we need the 275# burst strength boxes.",
+          "thread_ts": "1712036000.002024"
+        },
+        {
+          "type": "message",
+          "ts": "1712036120.002026",
+          "user": "U007",
+          "text": "Get quotes for 25 packaging sets (15 robots + 10 spares for repack). Include tilt and shock indicators inside each box.",
+          "thread_ts": "1712036000.002024"
+        },
+        {
+          "type": "message",
+          "ts": "1712038360.002036",
+          "user": "U013",
+          "text": "DyCast confirmed magnesium proto tool kickoff. T0 samples expected in 8 weeks. Cost: $11.8k for tool, $780 per part for 3 samples."
+        },
+        {
+          "type": "message",
+          "ts": "1712038840.002044",
+          "user": "U017",
+          "text": "Velodyne LIDAR PO confirmed. 15 units shipping week of May 12. On track for DVT build schedule.",
+          "reactions": [
+            {
+              "name": "thumbsup",
+              "users": [
+                "U007",
+                "U005"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1712039320.002052",
+          "user": "U007",
+          "text": "Quarterly business review with top 5 suppliers scheduled for next month. Focus: PVT volume commits and long-lead-time buffer stock agreements."
+        },
+        {
+          "type": "message",
+          "ts": "1712039920.002062",
+          "user": "U007",
+          "text": "BOM frozen for DVT. All POs placed. Long-lead items on track. Next milestone: first article inspection in 4 weeks."
+        }
+      ]
+    },
+    {
+      "id": "C003",
+      "name": "thermal-management",
+      "messages": [
+        {
+          "type": "message",
+          "ts": "1711902000.000200",
+          "user": "U003",
+          "text": "Motor 2 hit thermal shutdown during the 4-hour endurance run. Winding temp reached 158C, limit is 155C. Looking at the thermal interface between motor and chassis.",
+          "thread_ts": "1711902000.000200",
+          "reply_count": 9,
+          "reply_users_count": 4,
+          "reply_users": [
+            "U001",
+            "U002",
+            "U003",
+            "U018"
+          ],
+          "latest_reply": "1711902540.000209",
+          "reactions": [
+            {
+              "name": "rotating_light",
+              "users": [
+                "U002",
+                "U018"
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711902060.000201",
+          "user": "U018",
+          "text": "What TIM are you using? The Bergquist Gap Pad 5000S35 we spec'd is 3.5 W/mK. Should be sufficient.",
+          "thread_ts": "1711902000.000200"
+        },
+        {
+          "type": "message",
+          "ts": "1711902120.000202",
+          "user": "U003",
+          "text": "That's what's on the BOM but I'm measuring actual thermal resistance and it's 2x what the datasheet says. Checking if the pad is making full contact.",
+          "thread_ts": "1711902000.000200"
+        },
+        {
+          "type": "message",
+          "ts": "1711902180.000203",
+          "user": "U003",
+          "text": "Found it. The motor flange has a 0.3mm step that creates an air gap under the thermal pad. The pad can't conform to the step - it's too stiff.",
+          "thread_ts": "1711902000.000200",
+          "reactions": [
+            {
+              "name": "eyes",
+              "users": [
+                "U001",
+                "U002",
+                "U018"
+              ],
+              "count": 3
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711902240.000204",
+          "user": "U018",
+          "text": "Switch to Fujipoly XR-Um? It's softer (Shore 00-45 vs Shore 00-65) and conforms to surface irregularities. 5.0 W/mK conductivity too.",
+          "thread_ts": "1711902000.000200"
+        },
+        {
+          "type": "message",
+          "ts": "1711902300.000205",
+          "user": "U003",
+          "text": "Good call. But the root cause is actually the chassis machining - that 0.3mm step shouldn't be there. @U001 can you check the chassis drawing tolerance?",
+          "thread_ts": "1711902000.000200"
+        },
+        {
+          "type": "message",
+          "ts": "1711902360.000206",
+          "user": "U001",
+          "text": "Checked. The motor flange mounting face is spec'd at 0.1mm flatness. The step is a machining defect on this prototype. Production tooling won't have this issue.",
+          "thread_ts": "1711902000.000200"
+        },
+        {
+          "type": "message",
+          "ts": "1711902420.000207",
+          "user": "U003",
+          "text": "OK so for DVT prototypes we need the softer TIM to handle surface variation. For production we can go back to the Gap Pad. Adding both to the BOM with a phase note.",
+          "thread_ts": "1711902000.000200",
+          "reactions": [
+            {
+              "name": "thumbsup",
+              "users": [
+                "U001",
+                "U018",
+                "U002"
+              ],
+              "count": 3
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711902480.000208",
+          "user": "U003",
+          "text": "Also flagging: this thermal issue affects all 4 motors, not just motor 2. The chassis mounting faces on all prototypes likely have the same machining variation.",
+          "thread_ts": "1711902000.000200"
+        },
+        {
+          "type": "message",
+          "ts": "1711902540.000209",
+          "user": "U002",
+          "text": "Confirming - motor 4 showed elevated temps too (148C) during the same test. Was about to hit shutdown.",
+          "thread_ts": "1711902000.000200"
+        },
+        {
+          "type": "message",
+          "ts": "1711912000.000210",
+          "user": "U018",
+          "text": "Battery pack temp during fast charge: 42C peak, 35C steady state. Spec limit is 45C. Adequate margin but worth monitoring as ambient temp increases.",
+          "thread_ts": "1711912000.000210",
+          "reply_count": 2,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U003",
+            "U018"
+          ],
+          "latest_reply": "1711912120.000212"
+        },
+        {
+          "type": "message",
+          "ts": "1711912060.000211",
+          "user": "U003",
+          "text": "What ambient are you testing at? If that's 22C lab temp, we'll be closer to limit in a 35C warehouse.",
+          "thread_ts": "1711912000.000210"
+        },
+        {
+          "type": "message",
+          "ts": "1711912120.000212",
+          "user": "U018",
+          "text": "22C ambient. Good point - I'll add 35C ambient test to the DVT thermal validation matrix.",
+          "thread_ts": "1711912000.000210"
+        },
+        {
+          "type": "message",
+          "ts": "1711922000.000213",
+          "user": "U015",
+          "text": "QA flagged cooling fan noise at 4200rpm. Measured 62dBA at 1m. Product spec is 55dBA max. Need fix before DVT.",
+          "thread_ts": "1711922000.000213",
+          "reply_count": 3,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U003",
+            "U015"
+          ],
+          "latest_reply": "1711922180.000216"
+        },
+        {
+          "type": "message",
+          "ts": "1711922060.000214",
+          "user": "U003",
+          "text": "That's the Sunon MF40201V2. We can drop to 3000rpm and still meet thermal targets if we improve the duct design. Working on CFD sim.",
+          "thread_ts": "1711922000.000213"
+        },
+        {
+          "type": "message",
+          "ts": "1711922120.000215",
+          "user": "U015",
+          "text": "Need the fix validated before Thursday's DVT readiness review. Can you have sim results by then?",
+          "thread_ts": "1711922000.000213"
+        },
+        {
+          "type": "message",
+          "ts": "1711922180.000216",
+          "user": "U003",
+          "text": "Yes, running overnight. Will post results tomorrow AM.",
+          "thread_ts": "1711922000.000213"
+        },
+        {
+          "type": "message",
+          "ts": "1711992000.001200",
+          "user": "U003",
+          "text": "Fujipoly XR-Um test results: thermal resistance dropped from 2.8 C/W to 1.1 C/W with the softer pad. Motor winding temp now peaks at 138C - 17C margin to limit.",
+          "thread_ts": "1711992000.001200",
+          "reply_count": 4,
+          "reply_users_count": 3,
+          "reply_users": [
+            "U002",
+            "U003",
+            "U018"
+          ],
+          "latest_reply": "1711992240.001204",
+          "reactions": [
+            {
+              "name": "tada",
+              "users": [
+                "U001",
+                "U002",
+                "U018"
+              ],
+              "count": 3
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1711992060.001201",
+          "user": "U002",
+          "text": "Excellent. That gives us enough margin even with the gearbox efficiency loss. Thermal is no longer a risk.",
+          "thread_ts": "1711992000.001200"
+        },
+        {
+          "type": "message",
+          "ts": "1711992120.001202",
+          "user": "U018",
+          "text": "What's the cost delta? The Fujipoly is more expensive than the Bergquist per m2.",
+          "thread_ts": "1711992000.001200"
+        },
+        {
+          "type": "message",
+          "ts": "1711992180.001203",
+          "user": "U003",
+          "text": "About $3.50 more per motor, $14 per robot. Worth it for 17C margin vs 13C with the stiffer pad.",
+          "thread_ts": "1711992000.001200"
+        },
+        {
+          "type": "message",
+          "ts": "1711992240.001204",
+          "user": "U003",
+          "text": "Updated the BOM with Fujipoly for DVT builds. Added a note that production may revert to Bergquist if chassis machining tolerances are tighter.",
+          "thread_ts": "1711992000.001200"
+        },
+        {
+          "type": "message",
+          "ts": "1712002000.001205",
+          "user": "U003",
+          "text": "CFD results for the revised fan duct: at 3000rpm we get 1.8 CFM through the heat sink. Required is 1.5 CFM for thermal compliance. 20% margin.",
+          "thread_ts": "1712002000.001205",
+          "reply_count": 2,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U003",
+            "U015"
+          ],
+          "latest_reply": "1712002120.001207"
+        },
+        {
+          "type": "message",
+          "ts": "1712002060.001206",
+          "user": "U015",
+          "text": "What's the noise level at 3000rpm?",
+          "thread_ts": "1712002000.001205"
+        },
+        {
+          "type": "message",
+          "ts": "1712002120.001207",
+          "user": "U003",
+          "text": "Estimated 48dBA at 1m based on the fan curve. Well under the 55dBA spec. The duct redesign helped - better flow path means less turbulent noise.",
+          "thread_ts": "1712002000.001205",
+          "reactions": [
+            {
+              "name": "white_check_mark",
+              "users": [
+                "U015"
+              ],
+              "count": 1
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "ts": "1712012000.001208",
+          "user": "U018",
+          "text": "Main PCB thermal scan: hottest component is the DC-DC converter at 78C. Rated to 105C. 27C margin is adequate.",
+          "thread_ts": "1712012000.001208",
+          "reply_count": 2,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U004",
+            "U018"
+          ],
+          "latest_reply": "1712012120.001210"
+        },
+        {
+          "type": "message",
+          "ts": "1712012060.001209",
+          "user": "U004",
+          "text": "The DC-DC is derated above 85C ambient. At 35C ambient the junction will be around 91C. Still 14C margin.",
+          "thread_ts": "1712012000.001208"
+        },
+        {
+          "type": "message",
+          "ts": "1712012120.001210",
+          "user": "U018",
+          "text": "Good point. I'll add the derating curve to the thermal budget spreadsheet. MCU is at 62C, well within limits.",
+          "thread_ts": "1712012000.001208"
+        },
+        {
+          "type": "message",
+          "ts": "1712022000.001211",
+          "user": "U003",
+          "text": "Thermal DVT test plan: ambient soak from -10C to 50C, thermal cycling -20C to 60C x 100 cycles, thermal shock per IEC 60068-2-14."
+        },
+        {
+          "type": "message",
+          "ts": "1712022060.001212",
+          "user": "U015",
+          "text": "Thermal chamber is booked for weeks 13-14. I'll need 2 complete units for the full thermal validation suite."
+        },
+        {
+          "type": "message",
+          "ts": "1712032000.002008",
+          "user": "U003",
+          "text": "Cold start test at -10C: system boots in 45 seconds. Battery delivers 92% of room-temp capacity. Motor controller needs 30s heater warm-up before operation.",
+          "thread_ts": "1712032000.002008",
+          "reply_count": 3,
+          "reply_users_count": 2,
+          "reply_users": [
+            "U003",
+            "U004"
+          ],
+          "latest_reply": "1712032180.002011"
+        },
+        {
+          "type": "message",
+          "ts": "1712032060.002009",
+          "user": "U004",
+          "text": "The 30s heater warm-up is because the MOSFET Rds(on) increases at cold. Below -5C the current limit kicks in before the motor reaches full torque.",
+          "thread_ts": "1712032000.002008"
+        },
+        {
+          "type": "message",
+          "ts": "1712032120.002010",
+          "user": "U003",
+          "text": "Can the warm-up run in parallel with boot? User sees boot time of 45s regardless, the heater just needs to finish before first move command.",
+          "thread_ts": "1712032000.002008"
+        },
+        {
+          "type": "message",
+          "ts": "1712032180.002011",
+          "user": "U004",
+          "text": "Yes, heater starts at power-on. By the time boot and sensor init complete (~45s), the driver board is warm. Zero additional delay in practice.",
+          "thread_ts": "1712032000.002008"
+        },
+        {
+          "type": "message",
+          "ts": "1712038120.002032",
+          "user": "U018",
+          "text": "Ordered 10x Fujipoly XR-Um thermal pads for DVT. 5-day lead time. Will have on hand before build."
+        },
+        {
+          "type": "message",
+          "ts": "1712038600.002040",
+          "user": "U003",
+          "text": "CFD validation: measured airflow matches sim within 8%. Good correlation. The revised duct design is confirmed for DVT."
+        },
+        {
+          "type": "message",
+          "ts": "1712039080.002048",
+          "user": "U015",
+          "text": "Thermal chamber calibration certificate received. ±0.5C accuracy from -40C to 150C. Ready for DVT."
+        },
+        {
+          "type": "message",
+          "ts": "1712039860.002061",
+          "user": "U003",
+          "text": "Thermal changes frozen: Fujipoly TIM for DVT, revised fan duct at 3000rpm, 35C ambient added to test matrix. All validated."
+        }
+      ]
+    }
+  ]
+}
