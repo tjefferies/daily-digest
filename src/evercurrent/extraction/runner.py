@@ -14,6 +14,7 @@ import asyncio
 import json
 import logging
 from typing import TYPE_CHECKING
+from uuid import uuid4
 
 from evercurrent.config.loader import get_config
 from evercurrent.extraction.prompt import build_coarse_prompt, build_enrichment_prompt
@@ -31,14 +32,21 @@ _MODEL = _pipeline_cfg["model"]
 _MAX_TOKENS = _pipeline_cfg["extraction_max_tokens"]
 
 
-def _merge_atom(raw: dict, enrichment: EnrichmentResponse) -> Atom:
-    """Merge a coarse atom dict with enrichment metadata into a full Atom."""
+def _merge_atom(raw: dict, enrichment: EnrichmentResponse, window: ContextWindow) -> Atom:
+    """Merge a coarse atom dict with enrichment metadata into a full Atom.
+
+    Overrides source.channel and source.thread_ts from the ContextWindow
+    since the LLM cannot infer these from thread_text alone.
+    """
+    source_data = dict(raw.get("source", {}))
+    source_data["channel"] = window.channel
+    source_data["thread_ts"] = window.thread_ts
     return Atom(
-        atom_id=raw["atom_id"],
+        atom_id=uuid4(),
         type=raw["type"],
         summary=raw["summary"],
         detail=raw["detail"],
-        source=AtomSource(**raw["source"]),
+        source=AtomSource(**source_data),
         workstreams=enrichment.workstreams,
         urgency=enrichment.urgency,
         confidence=enrichment.confidence,
@@ -109,7 +117,7 @@ class ExtractionRunner:
                 response_model=CoarseExtractionResponse,
             )
         except Exception:
-            logger.warning("Stage 1 extraction failed for window")
+            logger.warning("Stage 1 extraction failed for window", exc_info=True)
             return []
 
         # Stage 2: enrich each coarse atom
@@ -128,9 +136,9 @@ class ExtractionRunner:
                     ],
                     response_model=EnrichmentResponse,
                 )
-                atoms.append(_merge_atom(raw_atom, enrichment))
+                atoms.append(_merge_atom(raw_atom, enrichment, window))
             except Exception:
-                logger.warning("Stage 2 enrichment failed for atom")
+                logger.warning("Stage 2 enrichment failed for atom", exc_info=True)
                 continue
         return atoms
 
@@ -202,7 +210,7 @@ class AsyncExtractionRunner:
                     response_model=CoarseExtractionResponse,
                 )
             except Exception:
-                logger.warning("Stage 1 extraction failed for window")
+                logger.warning("Stage 1 extraction failed for window", exc_info=True)
                 return []
 
             # Stage 2: enrich each coarse atom
@@ -221,8 +229,8 @@ class AsyncExtractionRunner:
                         ],
                         response_model=EnrichmentResponse,
                     )
-                    atoms.append(_merge_atom(raw_atom, enrichment))
+                    atoms.append(_merge_atom(raw_atom, enrichment, window))
                 except Exception:
-                    logger.warning("Stage 2 enrichment failed for atom")
+                    logger.warning("Stage 2 enrichment failed for atom", exc_info=True)
                     continue
             return atoms
