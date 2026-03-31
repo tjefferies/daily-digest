@@ -21,10 +21,10 @@ persona-specific daily digests:
 | Dimension             | Weight | Signal                                          |
 |-----------------------|--------|--------------------------------------------------|
 | Workstream proximity  | 0.30   | Persona's affinity to atom's workstream(s)       |
-| Role-type alignment   | 0.20   | Role archetype x atom type matrix (4x8)          |
-| Phase alignment       | 0.20   | Per-workstream phase x atom type matrix (5x8)    |
+| Role-type alignment   | 0.20   | Role archetype x atom type matrix (5x8)          |
+| Phase alignment       | 0.20   | Graduated distance scoring across 5 phases       |
 | Urgency               | 0.15   | Atom urgency: critical/high/medium/low           |
-| Social signal         | 0.15   | Collaborator graph overlap, escalation language   |
+| Social signal         | 0.15   | Collaborator graph overlap, participant matching  |
 
 ## Quick Start
 
@@ -98,18 +98,20 @@ meaningfully different digests for each:
 
 ## Quality Gates
 
-Six gates enforced on every commit via `scripts/quality-gates.sh`:
+Eight gates enforced on every commit via `scripts/quality-gates.sh`:
 
-| Gate                          | Tool              | Threshold       |
-|-------------------------------|-------------------|-----------------|
-| Linting                       | ruff check        | Zero violations  |
-| Formatting                    | ruff format       | Zero violations  |
-| Type checking                 | ty check          | Zero errors      |
-| Tests + coverage              | pytest + pytest-cov | >= 90%        |
-| Cyclomatic complexity         | radon cc          | <= 8 per function |
-| Maintainability index         | radon mi          | A rating         |
+| Gate                          | Tool              | Threshold           |
+|-------------------------------|-------------------|---------------------|
+| Linting                       | ruff check        | Zero violations     |
+| Formatting                    | ruff format       | Zero violations     |
+| Type checking                 | ty check          | Zero errors         |
+| Tests + coverage              | pytest + pytest-cov | >= 90%            |
+| Cyclomatic complexity         | radon cc          | <= 8 per function   |
+| Maintainability index         | radon mi          | A rating            |
+| Docstring coverage            | interrogate       | >= 95%              |
+| Dead code detection           | vulture           | min-confidence 80   |
 
-Current stats: **348 tests, 99% coverage, all gates passing.**
+Current stats: **531 tests, 99% coverage, all gates passing.**
 
 ## Evaluation Criteria
 
@@ -140,24 +142,26 @@ change rank position on phase toggle.
 evercurrent/
 ├── src/evercurrent/
 │   ├── app.py                     # FastAPI application
-│   ├── fixtures.py                # Fixture data store
+│   ├── pipeline.py                # Orchestrator (sync + async)
+│   ├── fixtures.py                # In-memory fixture data store
 │   ├── models/                    # Pydantic models
 │   │   ├── atom.py                #   Atom, AtomSource, AtomWorkstreams
 │   │   ├── digest.py              #   DigestSection
-│   │   └── persona.py             #   Persona, DigestPreferences
+│   │   ├── persona.py             #   Persona, DigestPreferences
+│   │   └── responses.py           #   Coarse/Enrichment/Validation responses
 │   ├── dataset/                   # Synthetic Slack dataset
-│   │   ├── messages.py            #   150+ messages across 8 channels
+│   │   ├── messages.py            #   Loads from data/slack_messages.json
 │   │   └── schema.py              #   Message schema validation
 │   ├── ingestion/                 # Layer 1: Message ingestion
 │   │   ├── loader.py              #   Channel message loader
 │   │   ├── threads.py             #   Thread grouping
 │   │   ├── context_window.py      #   Context window builder
 │   │   └── continuations.py       #   Continuation detection
-│   ├── extraction/                # Layer 2: Atom extraction
-│   │   ├── prompt.py              #   Extraction prompt design
-│   │   ├── runner.py              #   LLM extraction runner
-│   │   ├── filter.py              #   Duplicate/noise filtering
-│   │   └── validation.py          #   Atom validation
+│   ├── extraction/                # Layer 2: Two-stage atom extraction
+│   │   ├── prompt.py              #   Coarse + enrichment prompts
+│   │   ├── runner.py              #   Two-stage runner (sync + async)
+│   │   ├── filter.py              #   Confidence filtering
+│   │   └── validation.py          #   Two-pass validation
 │   ├── context/                   # Layer 3: Context backbone
 │   │   ├── roster.py              #   Team roster
 │   │   ├── workstreams.py         #   Workstream registry
@@ -165,24 +169,45 @@ evercurrent/
 │   │   └── personas.py            #   Three demo personas
 │   ├── scoring/                   # Layer 4: Relevance scoring
 │   │   ├── workstream_proximity.py
-│   │   ├── role_alignment.py
-│   │   ├── phase_alignment.py
-│   │   ├── urgency.py
-│   │   ├── social_signal.py
+│   │   ├── role_alignment.py      #   5x8 role-type matrix
+│   │   ├── phase_alignment.py     #   Graduated distance scoring
+│   │   ├── urgency.py             #   Uniform spacing (0.25 intervals)
+│   │   ├── social_signal.py       #   4-level differentiated scoring
 │   │   └── composite.py           #   Weighted composite + ranking
-│   └── generation/                # Layer 5: Digest generation
-│       ├── prompt.py              #   Briefing tone system prompt
-│       ├── runner.py              #   DigestGenerator (Anthropic API)
-│       └── assembler.py           #   DigestAssembler orchestrator
-├── tests/                         # 348 tests, 99% coverage
+│   ├── generation/                # Layer 5: Digest generation
+│   │   ├── prompt.py              #   Briefing tone system prompt
+│   │   ├── runner.py              #   DigestGenerator (sync + async)
+│   │   └── assembler.py           #   DigestAssembler orchestrator
+│   ├── llm/                       # Model-agnostic LLM client harness
+│   │   ├── types.py               #   LLMClient + AsyncLLMClient protocols
+│   │   ├── anthropic.py           #   Anthropic Claude adapter
+│   │   ├── openai.py              #   OpenAI adapter
+│   │   ├── google.py              #   Google Gemini adapter
+│   │   └── factory.py             #   Provider factory
+│   ├── config/                    # YAML-based configuration
+│   │   └── loader.py              #   Config loader with caching
+│   └── graph/                     # Knowledge graph (placeholder)
+│       └── client.py              #   Neo4j client
+├── config/                        # YAML configuration files
+│   ├── pipeline.yml               #   Model, tokens, CORS, thresholds
+│   ├── scoring.yml                #   Weights, matrices, calibrated values
+│   ├── personas.yml               #   Demo persona definitions
+│   ├── phases.yml                 #   Per-workstream phase defaults
+│   └── workstreams.yml            #   Channel/component mappings
+├── data/
+│   └── slack_messages.json        # Slack-API-shaped fixture (307 messages)
+├── tests/                         # 531 tests, 99% coverage
 │   ├── test_evaluation/           #   Eval criteria 1-3 (17 tests)
-│   ├── test_scoring/              #   Scoring dimensions + composite
+│   ├── test_scoring/              #   Scoring dimensions + calibration
 │   ├── test_generation/           #   Prompt, runner, assembler
-│   ├── test_extraction/           #   Prompt, runner, filter, validation
+│   ├── test_extraction/           #   Two-stage, runner, filter, validation
 │   ├── test_ingestion/            #   Loader, threads, context windows
 │   ├── test_context/              #   Roster, workstreams, phases, personas
-│   ├── test_dataset/              #   Messages, schema, buried signals
-│   └── test_models/               #   Atom, digest, persona models
+│   ├── test_dataset/              #   Fixture, schema, buried signals
+│   ├── test_config/               #   YAML config loader
+│   ├── test_llm/                  #   All LLM adapters + factory
+│   ├── test_graph/                #   Neo4j client
+│   └── test_models/               #   Atom, digest, persona, responses
 ├── frontend/
 │   └── src/
 │       ├── App.tsx                #   Main app with state management
@@ -194,8 +219,13 @@ evercurrent/
 │       │   └── PipelineRunner.tsx  #   Pipeline trigger + progress
 │       └── types/                 #   TypeScript interfaces
 ├── scripts/
-│   └── quality-gates.sh           #   Six quality gates
-├── design-document.rst            #   Full technical design document
+│   └── quality-gates.sh           #   Eight quality gates
+├── docs/                          #   Sphinx documentation
+│   ├── design-document.rst        #   Full technical design document
+│   ├── next-steps.rst             #   Follow-on work and scaling plan
+│   └── api/                       #   Auto-generated API reference
+├── vulture_whitelist.py           #   Dead code false positive whitelist
+├── Makefile                       #   Build automation targets
 └── pyproject.toml                 #   Project config (uv, ruff, pytest, radon)
 ```
 
@@ -217,12 +247,13 @@ evercurrent/
 
 ## Tech Stack
 
-| Component   | Technology                                    |
-|-------------|-----------------------------------------------|
-| Backend     | Python 3.13, FastAPI, Pydantic v2, uvicorn    |
-| LLM         | Anthropic Claude API                          |
-| Frontend    | React 18, TypeScript, Tailwind CSS, Vite      |
-| Testing     | pytest, pytest-cov, pytest-asyncio            |
-| Linting     | ruff (lint + format), ty (type check)         |
-| Metrics     | radon (cyclomatic complexity, maintainability) |
-| Deps        | uv (package management)                       |
+| Component   | Technology                                          |
+|-------------|-----------------------------------------------------|
+| Backend     | Python 3.13, FastAPI, Pydantic v2, uvicorn          |
+| LLM         | Model-agnostic (Anthropic, OpenAI, Google) via instructor |
+| Frontend    | React 18, TypeScript, Tailwind CSS, Vite            |
+| Testing     | pytest, pytest-cov, pytest-asyncio                  |
+| Linting     | ruff (lint + format), ty (type check)               |
+| Metrics     | radon (complexity), interrogate (docstrings), vulture (dead code) |
+| Docs        | Sphinx, autodoc, napoleon, sphinx-autodoc-typehints |
+| Deps        | uv (package management)                             |

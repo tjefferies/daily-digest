@@ -288,9 +288,24 @@ engineering communication.
 4.3 Extraction Prompt Architecture
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The extraction LLM receives a system prompt that defines the atom taxonomy,
-the output schema, and instructions for hardware-specific reasoning. The
-important elements of the prompt design:
+Extraction uses a **two-stage pipeline** to reduce cognitive load per LLM
+call and improve extraction quality:
+
+- **Stage 1 (Coarse Extraction):** Identifies events and returns lightweight
+  atom dicts with only core fields: ``type``, ``summary``, ``detail``,
+  ``source``. Uses ``CoarseExtractionResponse`` as the structured output model.
+
+- **Stage 2 (Enrichment):** For each coarse atom, a second LLM call assigns
+  metadata: ``workstreams``, ``urgency``, ``confidence``,
+  ``implicit_decision``, ``phase_relevance``. Uses ``EnrichmentResponse``
+  as the structured output model. The coarse atom and original thread
+  context are provided so the LLM can reason about metadata in context.
+
+The two responses are merged into full ``Atom`` objects. This separation
+means each LLM call has a focused task rather than a monolithic prompt
+asking for everything at once.
+
+The important elements of the prompt design:
 
 **Instruction: Extract conclusions, not discussions.** The LLM is instructed
 to focus on outcomes and decisions, not the deliberation process. A 30-message
