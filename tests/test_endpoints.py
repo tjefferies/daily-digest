@@ -1,4 +1,4 @@
-"""Tests for the FastAPI pipeline endpoint stubs."""
+"""Tests for the FastAPI pipeline endpoints."""
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -29,14 +29,14 @@ class TestPipelineRun:
 
 
 class TestDigestEndpoint:
-    """Tests for GET /digest/{persona_id} stub endpoint."""
+    """Tests for GET /digest/{persona_id} endpoint."""
 
     @pytest.mark.asyncio
     async def test_digest_returns_200(self) -> None:
-        """Verify GET /digest/{persona_id} returns 200."""
+        """Verify GET /digest/{persona_id} returns 200 for known persona."""
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:
-            response = await client.get("/digest/U02ABCDEF")
+            response = await client.get("/digest/U001")
         assert response.status_code == 200
 
     @pytest.mark.asyncio
@@ -44,16 +44,16 @@ class TestDigestEndpoint:
         """Verify response includes the requested persona_id."""
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:
-            response = await client.get("/digest/U02ABCDEF")
+            response = await client.get("/digest/U001")
         data = response.json()
-        assert data["persona_id"] == "U02ABCDEF"
+        assert data["persona_id"] == "U001"
 
     @pytest.mark.asyncio
     async def test_digest_returns_sections(self) -> None:
         """Verify response includes a sections list."""
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:
-            response = await client.get("/digest/U02ABCDEF")
+            response = await client.get("/digest/U001")
         data = response.json()
         assert "sections" in data
         assert isinstance(data["sections"], list)
@@ -64,9 +64,9 @@ class TestDigestEndpoint:
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:
             response = await client.get(
-                "/digest/U02ABCDEF",
+                "/digest/U001",
                 params={"phase_override": "chassis:DVT"},
             )
         assert response.status_code == 200
         data = response.json()
-        assert data["persona_id"] == "U02ABCDEF"
+        assert data["persona_id"] == "U001"

@@ -1,13 +1,16 @@
 """FastAPI application for EverCurrent.
 
 Configures the main application with CORS middleware for local
-frontend development and provides stub endpoints for the digest pipeline.
+frontend development and provides the digest pipeline endpoints.
 """
 
+from datetime import UTC, datetime
 from typing import Any
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+
+from evercurrent.context.personas import get_persona
 
 app = FastAPI(
     title="EverCurrent",
@@ -57,18 +60,36 @@ async def get_digest(
 ) -> dict[str, Any]:
     """Retrieve the generated digest for a specific persona.
 
-    Stub endpoint returning an empty digest structure. Will be
-    wired to real digest generation as pipeline layers are built.
+    Looks up the persona, optionally applies a phase override,
+    and returns the digest response. Without an Anthropic client
+    configured, returns an empty digest structure suitable for
+    frontend development and testing.
 
     Args:
         persona_id: Slack user ID of the persona.
         phase_override: Optional workstream:phase override (e.g. "chassis:DVT").
 
     Returns:
-        A dict with persona_id and empty sections list.
+        A dict with persona_id, generated_at, and sections list.
+
+    Raises:
+        HTTPException: 404 if persona not found, 400 if phase_override invalid.
     """
+    persona = get_persona(persona_id)
+    if persona is None:
+        raise HTTPException(status_code=404, detail=f"Unknown persona: {persona_id}")
+
+    if phase_override is not None:
+        parts = phase_override.split(":")
+        if len(parts) != 2:  # noqa: PLR2004
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid phase_override: {phase_override!r}. Expected 'workstream:phase'",
+            )
+
     return {
         "persona_id": persona_id,
+        "generated_at": datetime.now(tz=UTC).isoformat(),
         "sections": [],
         "phase_override": phase_override,
     }
