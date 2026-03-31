@@ -5,6 +5,7 @@ and the ingestion layer: raw message format, channel registry,
 and team roster.
 """
 
+from evercurrent.dataset.messages import load_messages
 from evercurrent.dataset.schema import (
     CHANNELS,
     SlackMessage,
@@ -19,4 +20,5 @@ __all__ = [
     "SlackReaction",
     "TeamMember",
     "TeamRoster",
+    "load_messages",
 ]
