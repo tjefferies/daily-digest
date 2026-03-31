@@ -1,11 +1,6 @@
 evercurrent.ingestion package
 =============================
 
-.. automodule:: evercurrent.ingestion
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 Submodules
 ----------
 
@@ -16,3 +11,11 @@ Submodules
    evercurrent.ingestion.continuations
    evercurrent.ingestion.loader
    evercurrent.ingestion.threads
+
+Module contents
+---------------
+
+.. automodule:: evercurrent.ingestion
+   :members:
+   :show-inheritance:
+   :undoc-members:

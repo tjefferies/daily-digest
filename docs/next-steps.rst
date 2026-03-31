@@ -316,10 +316,60 @@ Measure via user dismissal rate of action items. High false positive
 rate erodes trust faster than missing items.
 
 
-10. Security and Compliance
+10. Model-Agnostic Client Harness
+-----------------------------------
+
+The pipeline now uses a model-agnostic ``LLMClient`` protocol
+(``src/evercurrent/llm/``) with adapters for Anthropic, OpenAI, and
+Google Gemini. Provider selection is driven by ``config/pipeline.yml``.
+This abstraction enables several follow-on capabilities:
+
+**10.1 On-Premises / Self-Hosted Models**
+
+For teams where data sensitivity prohibits sending Slack content to
+cloud LLM providers (ITAR, trade secrets, export controls), the client
+harness can be extended with adapters for self-hosted inference:
+
+- **vLLM**: High-throughput serving of open-weight models (Llama 3,
+  Mistral, Qwen). Exposes an OpenAI-compatible API, so the existing
+  ``OpenAIAdapter`` works with a custom ``base_url`` pointed at the
+  local vLLM endpoint.
+- **Ollama**: Single-binary local inference for development and small
+  deployments. Useful for engineers who want to run the full pipeline
+  on a laptop without network egress.
+- **Text Generation Inference (TGI)**: Hugging Face's production
+  serving stack with continuous batching and quantization support.
+  Requires a dedicated adapter due to its unique streaming API.
+
+**10.2 Provider Failover and Load Balancing**
+
+The adapter pattern enables transparent failover between providers:
+
+- Primary: Anthropic Claude (highest extraction quality)
+- Fallback: OpenAI GPT-4o (if Anthropic rate-limited or down)
+- Cost tier: Google Gemini Flash (for low-priority batch processing)
+
+A ``FallbackAdapter`` could wrap multiple adapters and try each in
+order, with circuit breaker logic to avoid hammering a failing provider.
+
+**10.3 Model Evaluation Harness**
+
+With a common interface, the same evaluation suite can compare
+extraction quality across providers:
+
+- Run the same test corpus through each provider
+- Compare atom extraction precision/recall
+- Measure cost per 1000 atoms extracted
+- Track latency percentiles (p50, p95, p99)
+
+This data directly informs provider selection decisions and contract
+negotiations.
+
+
+11. Security and Compliance
 -----------------------------
 
-**10.1 On-Premises Inference**
+**11.1 On-Premises Inference**
 
 For teams with strict IP policies, deploy a self-hosted inference stack:
 
@@ -327,20 +377,20 @@ For teams with strict IP policies, deploy a self-hosted inference stack:
 - Local GPU cluster or cloud VPC with no external network egress
 - Model fine-tuning on domain-specific extraction examples
 
-**10.2 Data Retention**
+**11.2 Data Retention**
 
 - Define retention policies per data type (messages: 90 days, atoms:
   1 year, digests: 30 days)
 - Implement TTL-based cleanup for expired records
 - Support right-to-delete for individual user data (GDPR/CCPA)
 
-**10.3 Audit Logging**
+**11.3 Audit Logging**
 
 - Log all data access events (who viewed which digest, when)
 - Log all configuration changes (who changed scoring weights, when)
 - Immutable audit trail for compliance review
 
-**10.4 SOC 2 Considerations**
+**11.4 SOC 2 Considerations**
 
 For enterprise deployment, address SOC 2 Type II requirements:
 

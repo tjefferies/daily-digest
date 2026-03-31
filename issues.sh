@@ -789,6 +789,43 @@ bd dep add "$SVG_ARCH" "$NEXT_STEPS"
 
 echo "    SVG_ARCH=$SVG_ARCH"
 
+# ─── Model-Agnostic LLM Client ──────────────────────────────────────────────
+echo ""
+echo "==> Creating Model-Agnostic LLM Client issue"
+
+LLM_CLIENT=$(bd create \
+  --title="Refactor LLM client to model-agnostic harness supporting Anthropic, Google, and OpenAI" \
+  --type=feature \
+  --priority=2 \
+  --description="Replace all direct Anthropic client references with a model-agnostic client abstraction. Currently the Anthropic SDK client is hardcoded across 4 source modules and 4 test modules.
+
+Source files to refactor (type annotations + imports):
+- src/evercurrent/extraction/runner.py: from anthropic import Anthropic, __init__(self, client: Anthropic)
+- src/evercurrent/extraction/validation.py: from anthropic import Anthropic, validate_atoms(client: Anthropic), validate_single_atom(client: Anthropic)
+- src/evercurrent/generation/runner.py: from anthropic import Anthropic, __init__(self, client: Anthropic)
+- src/evercurrent/generation/assembler.py: from anthropic import Anthropic, __init__(self, client: Anthropic)
+
+Test files with Anthropic-specific mocks (MagicMock simulating Anthropic response shape):
+- tests/test_extraction/test_runner.py: _mock_api_response(), 12+ MagicMock client instances
+- tests/test_extraction/test_validation.py: _mock_validation_response(), 10+ MagicMock client instances
+- tests/test_generation/test_runner.py: _mock_api_response(), 14+ MagicMock client instances
+- tests/test_generation/test_assembler.py: 7+ MagicMock client instances
+
+Implementation plan:
+1. Create src/evercurrent/llm/ package with a Protocol or ABC defining the common client interface (messages.create compatible)
+2. Implement concrete adapters for Anthropic, Google (Gemini), and OpenAI
+3. Add provider selection to config/pipeline.yml
+4. Update all 4 source modules to accept the abstract type
+5. Update all 4 test files to mock against the abstract interface
+6. Write tests for the LLM client abstraction itself in tests/test_llm/
+7. Add a section to docs/next-steps.rst about on-prem/self-hosted model support (vLLM, Ollama, TGI) for data-sensitive deployments" \
+  --silent)
+
+# Must wait until SVG diagram is done
+bd dep add "$LLM_CLIENT" "$SVG_ARCH"
+
+echo "    LLM_CLIENT=$LLM_CLIENT"
+
 # ─── SUMMARY ─────────────────────────────────────────────────────────────────
 echo ""
 echo "✓ Epic hierarchy created successfully."
@@ -819,3 +856,4 @@ echo "    GH Actions:          $GH_ACTIONS"
 echo "    Makefile:            $MAKEFILE"
 echo "    Next Steps:          $NEXT_STEPS"
 echo "    SVG Arch Diagram:    $SVG_ARCH"
+echo "    LLM Client:         $LLM_CLIENT"

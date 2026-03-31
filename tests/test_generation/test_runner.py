@@ -6,9 +6,8 @@ import json
 from unittest.mock import MagicMock
 from uuid import uuid4
 
-from anthropic.types import TextBlock
-
 from evercurrent.generation.runner import DigestGenerator
+from evercurrent.llm.types import LLMResponse
 from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
 from evercurrent.models.persona import DigestPreferences, Persona, ScoringWeights
 from evercurrent.scoring.composite import ScoreBreakdown, ScoredAtom
@@ -84,12 +83,9 @@ def _make_persona(
     )
 
 
-def _mock_api_response(sections: list[dict]) -> MagicMock:  # noqa: ANN401
-    """Create a mock Anthropic API response with given sections."""
-    response_json = json.dumps({"sections": sections})
-    mock_response = MagicMock()
-    mock_response.content = [TextBlock(type="text", text=response_json)]
-    return mock_response
+def _mock_llm_response(sections: list[dict]) -> LLMResponse:
+    """Create a mock LLM response with given sections."""
+    return LLMResponse(text=json.dumps({"sections": sections}))
 
 
 def _valid_section(
@@ -116,7 +112,7 @@ class TestDigestGeneratorInit:
     """Tests for DigestGenerator initialization."""
 
     def test_init_stores_client(self) -> None:
-        """Generator stores the Anthropic client."""
+        """Generator stores the LLM client."""
         client = MagicMock()
         gen = DigestGenerator(client)
         assert gen._client is client  # noqa: SLF001
@@ -134,7 +130,7 @@ class TestDigestGeneratorGenerate:
     def test_generate_returns_digest_sections(self) -> None:
         """Generate returns a list of DigestSection objects."""
         client = MagicMock()
-        client.messages.create.return_value = _mock_api_response(
+        client.create_message.return_value = _mock_llm_response(
             [
                 _valid_section("requires_action", "REQUIRES YOUR ACTION"),
                 _valid_section("decisions_changes", "DECISIONS & CHANGES"),
@@ -152,7 +148,7 @@ class TestDigestGeneratorGenerate:
     def test_generate_passes_persona_context(self) -> None:
         """Generate includes persona context in the API call."""
         client = MagicMock()
-        client.messages.create.return_value = _mock_api_response(
+        client.create_message.return_value = _mock_llm_response(
             [
                 _valid_section(),
             ]
@@ -160,7 +156,7 @@ class TestDigestGeneratorGenerate:
         gen = DigestGenerator(client)
         persona = _make_persona()
         gen.generate([_make_scored_atom()], persona)
-        call_args = client.messages.create.call_args
+        call_args = client.create_message.call_args
         user_content = call_args.kwargs["messages"][0]["content"]
         assert "Maya Chen" in user_content
         assert "IC Engineer" in user_content
@@ -168,7 +164,7 @@ class TestDigestGeneratorGenerate:
     def test_generate_passes_scored_atoms(self) -> None:
         """Generate includes scored atom data in the API call."""
         client = MagicMock()
-        client.messages.create.return_value = _mock_api_response(
+        client.create_message.return_value = _mock_llm_response(
             [
                 _valid_section(),
             ]
@@ -177,7 +173,7 @@ class TestDigestGeneratorGenerate:
         atom = _make_atom(atom_type="BLOCKER")
         scored = [_make_scored_atom(atom=atom, score=0.9, critical=True)]
         gen.generate(scored, _make_persona())
-        call_args = client.messages.create.call_args
+        call_args = client.create_message.call_args
         user_content = call_args.kwargs["messages"][0]["content"]
         assert "BLOCKER" in user_content
         assert "0.9" in user_content
@@ -185,7 +181,7 @@ class TestDigestGeneratorGenerate:
     def test_generate_updates_stats(self) -> None:
         """Generate increments persona and section counters."""
         client = MagicMock()
-        client.messages.create.return_value = _mock_api_response(
+        client.create_message.return_value = _mock_llm_response(
             [
                 _valid_section("requires_action", "REQUIRES YOUR ACTION"),
                 _valid_section("decisions_changes", "DECISIONS & CHANGES"),
@@ -199,7 +195,6 @@ class TestDigestGeneratorGenerate:
     def test_generate_empty_atoms_returns_empty(self) -> None:
         """Generate with empty atom list returns empty sections."""
         client = MagicMock()
-        client.messages.create.return_value = _mock_api_response([])
         gen = DigestGenerator(client)
         sections = gen.generate([], _make_persona())
         assert sections == []
@@ -211,7 +206,7 @@ class TestBroaderContextFiltering:
     def test_broader_context_excluded_when_disabled(self) -> None:
         """Broader context section is filtered when preference is false."""
         client = MagicMock()
-        client.messages.create.return_value = _mock_api_response(
+        client.create_message.return_value = _mock_llm_response(
             [
                 _valid_section("requires_action", "REQUIRES YOUR ACTION"),
                 _valid_section("broader_context", "BROADER CONTEXT"),
@@ -226,7 +221,7 @@ class TestBroaderContextFiltering:
     def test_broader_context_included_when_enabled(self) -> None:
         """Broader context section is kept when preference is true."""
         client = MagicMock()
-        client.messages.create.return_value = _mock_api_response(
+        client.create_message.return_value = _mock_llm_response(
             [
                 _valid_section("requires_action", "REQUIRES YOUR ACTION"),
                 _valid_section("broader_context", "BROADER CONTEXT"),
@@ -245,9 +240,7 @@ class TestResponseParsing:
     def test_invalid_json_returns_empty(self) -> None:
         """Invalid JSON response returns empty list."""
         client = MagicMock()
-        mock_response = MagicMock()
-        mock_response.content = [TextBlock(type="text", text="not json")]
-        client.messages.create.return_value = mock_response
+        client.create_message.return_value = LLMResponse(text="not json")
         gen = DigestGenerator(client)
         sections = gen.generate([_make_scored_atom()], _make_persona())
         assert sections == []
@@ -255,19 +248,15 @@ class TestResponseParsing:
     def test_missing_sections_key_returns_empty(self) -> None:
         """Response without 'sections' key returns empty list."""
         client = MagicMock()
-        mock_response = MagicMock()
-        mock_response.content = [TextBlock(type="text", text='{"data": []}')]
-        client.messages.create.return_value = mock_response
+        client.create_message.return_value = LLMResponse(text='{"data": []}')
         gen = DigestGenerator(client)
         sections = gen.generate([_make_scored_atom()], _make_persona())
         assert sections == []
 
-    def test_non_text_block_returns_empty(self) -> None:
-        """Non-TextBlock response returns empty list."""
+    def test_non_text_response_returns_empty(self) -> None:
+        """ValueError from LLM client returns empty list."""
         client = MagicMock()
-        mock_response = MagicMock()
-        mock_response.content = [MagicMock(spec=[])]
-        client.messages.create.return_value = mock_response
+        client.create_message.side_effect = ValueError("non-text response")
         gen = DigestGenerator(client)
         sections = gen.generate([_make_scored_atom()], _make_persona())
         assert sections == []

@@ -1,7 +1,7 @@
 """Tests for the extraction runner.
 
 Validates that the ExtractionRunner processes ContextWindows through
-the Anthropic API and parses responses into Atom objects.
+the LLM API and parses responses into Atom objects.
 Uses a mock client to avoid real API calls.
 """
 
@@ -14,6 +14,7 @@ from uuid import uuid4
 
 from evercurrent.extraction.runner import ExtractionRunner
 from evercurrent.ingestion.context_window import ContextWindow
+from evercurrent.llm.types import LLMResponse
 from evercurrent.models.atom import Atom
 
 
@@ -58,14 +59,9 @@ def _make_atom_dict(**overrides: Any) -> dict[str, Any]:  # noqa: ANN401
     return base
 
 
-def _mock_api_response(atoms: list[dict[str, Any]]) -> MagicMock:
-    """Create a mock Anthropic API response with given atom JSON."""
-    from anthropic.types import TextBlock
-
-    response = MagicMock()
-    content_block = TextBlock(type="text", text=json.dumps(atoms))
-    response.content = [content_block]
-    return response
+def _mock_llm_response(atoms: list[dict[str, Any]]) -> LLMResponse:
+    """Create a mock LLM response with given atom JSON."""
+    return LLMResponse(text=json.dumps(atoms))
 
 
 class TestExtractionRunnerInit:
@@ -85,7 +81,7 @@ class TestExtractionRunnerExtract:
         """Single context window produces atoms from API response."""
         client = MagicMock()
         atom_data = _make_atom_dict()
-        client.messages.create.return_value = _mock_api_response([atom_data])
+        client.create_message.return_value = _mock_llm_response([atom_data])
         runner = ExtractionRunner(client=client)
         window = _make_context_window()
         atoms = runner.extract([window])
@@ -98,9 +94,9 @@ class TestExtractionRunnerExtract:
         client = MagicMock()
         atom1 = _make_atom_dict(summary="Atom 1")
         atom2 = _make_atom_dict(summary="Atom 2")
-        client.messages.create.side_effect = [
-            _mock_api_response([atom1]),
-            _mock_api_response([atom2]),
+        client.create_message.side_effect = [
+            _mock_llm_response([atom1]),
+            _mock_llm_response([atom2]),
         ]
         runner = ExtractionRunner(client=client)
         windows = [_make_context_window(), _make_context_window(thread_ts="2000.001")]
@@ -110,7 +106,7 @@ class TestExtractionRunnerExtract:
     def test_empty_response_produces_no_atoms(self) -> None:
         """Empty JSON array from API produces no atoms."""
         client = MagicMock()
-        client.messages.create.return_value = _mock_api_response([])
+        client.create_message.return_value = _mock_llm_response([])
         runner = ExtractionRunner(client=client)
         atoms = runner.extract([_make_context_window()])
         assert atoms == []
@@ -121,13 +117,13 @@ class TestExtractionRunnerExtract:
         runner = ExtractionRunner(client=client)
         atoms = runner.extract([])
         assert atoms == []
-        client.messages.create.assert_not_called()
+        client.create_message.assert_not_called()
 
     def test_multiple_atoms_per_window(self) -> None:
         """Single window can produce multiple atoms."""
         client = MagicMock()
         atoms_data = [_make_atom_dict(summary=f"Atom {i}") for i in range(3)]
-        client.messages.create.return_value = _mock_api_response(atoms_data)
+        client.create_message.return_value = _mock_llm_response(atoms_data)
         runner = ExtractionRunner(client=client)
         atoms = runner.extract([_make_context_window()])
         assert len(atoms) == 3
@@ -138,12 +134,8 @@ class TestExtractionRunnerErrorHandling:
 
     def test_invalid_json_skips_window(self) -> None:
         """Invalid JSON response skips that window without crashing."""
-        from anthropic.types import TextBlock
-
         client = MagicMock()
-        bad_response = MagicMock()
-        bad_response.content = [TextBlock(type="text", text="not valid json{")]
-        client.messages.create.return_value = bad_response
+        client.create_message.return_value = LLMResponse(text="not valid json{")
         runner = ExtractionRunner(client=client)
         atoms = runner.extract([_make_context_window()])
         assert atoms == []
@@ -153,7 +145,7 @@ class TestExtractionRunnerErrorHandling:
         client = MagicMock()
         bad_atom = {"type": "INVALID", "summary": "bad"}
         good_atom = _make_atom_dict()
-        client.messages.create.return_value = _mock_api_response([bad_atom, good_atom])
+        client.create_message.return_value = _mock_llm_response([bad_atom, good_atom])
         runner = ExtractionRunner(client=client)
         atoms = runner.extract([_make_context_window()])
         assert len(atoms) == 1
@@ -166,7 +158,7 @@ class TestExtractionRunnerStats:
     def test_stats_tracks_windows_processed(self) -> None:
         """Stats include count of windows processed."""
         client = MagicMock()
-        client.messages.create.return_value = _mock_api_response([_make_atom_dict()])
+        client.create_message.return_value = _mock_llm_response([_make_atom_dict()])
         runner = ExtractionRunner(client=client)
         runner.extract([_make_context_window(), _make_context_window(thread_ts="2000.001")])
         assert runner.stats["windows_processed"] == 2
@@ -175,7 +167,7 @@ class TestExtractionRunnerStats:
         """Stats include count of atoms produced."""
         client = MagicMock()
         atoms_data = [_make_atom_dict() for _ in range(3)]
-        client.messages.create.return_value = _mock_api_response(atoms_data)
+        client.create_message.return_value = _mock_llm_response(atoms_data)
         runner = ExtractionRunner(client=client)
         runner.extract([_make_context_window()])
         assert runner.stats["atoms_produced"] == 3

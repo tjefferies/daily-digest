@@ -1,11 +1,6 @@
 evercurrent.models package
 ==========================
 
-.. automodule:: evercurrent.models
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 Submodules
 ----------
 
@@ -15,3 +10,11 @@ Submodules
    evercurrent.models.atom
    evercurrent.models.digest
    evercurrent.models.persona
+
+Module contents
+---------------
+
+.. automodule:: evercurrent.models
+   :members:
+   :show-inheritance:
+   :undoc-members:

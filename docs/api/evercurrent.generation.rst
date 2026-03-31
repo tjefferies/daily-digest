@@ -1,11 +1,6 @@
 evercurrent.generation package
 ==============================
 
-.. automodule:: evercurrent.generation
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 Submodules
 ----------
 
@@ -15,3 +10,11 @@ Submodules
    evercurrent.generation.assembler
    evercurrent.generation.prompt
    evercurrent.generation.runner
+
+Module contents
+---------------
+
+.. automodule:: evercurrent.generation
+   :members:
+   :show-inheritance:
+   :undoc-members:

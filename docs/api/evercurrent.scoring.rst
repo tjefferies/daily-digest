@@ -1,11 +1,6 @@
 evercurrent.scoring package
 ===========================
 
-.. automodule:: evercurrent.scoring
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 Submodules
 ----------
 
@@ -18,3 +13,11 @@ Submodules
    evercurrent.scoring.social_signal
    evercurrent.scoring.urgency
    evercurrent.scoring.workstream_proximity
+
+Module contents
+---------------
+
+.. automodule:: evercurrent.scoring
+   :members:
+   :show-inheritance:
+   :undoc-members:

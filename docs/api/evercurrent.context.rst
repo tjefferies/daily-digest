@@ -1,11 +1,6 @@
 evercurrent.context package
 ===========================
 
-.. automodule:: evercurrent.context
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 Submodules
 ----------
 
@@ -16,3 +11,11 @@ Submodules
    evercurrent.context.phases
    evercurrent.context.roster
    evercurrent.context.workstreams
+
+Module contents
+---------------
+
+.. automodule:: evercurrent.context
+   :members:
+   :show-inheritance:
+   :undoc-members:

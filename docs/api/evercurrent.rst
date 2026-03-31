@@ -1,11 +1,6 @@
 evercurrent package
 ===================
 
-.. automodule:: evercurrent
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 Subpackages
 -----------
 
@@ -18,6 +13,7 @@ Subpackages
    evercurrent.extraction
    evercurrent.generation
    evercurrent.ingestion
+   evercurrent.llm
    evercurrent.models
    evercurrent.scoring
 
@@ -29,3 +25,11 @@ Submodules
 
    evercurrent.app
    evercurrent.fixtures
+
+Module contents
+---------------
+
+.. automodule:: evercurrent
+   :members:
+   :show-inheritance:
+   :undoc-members:

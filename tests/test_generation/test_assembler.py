@@ -8,11 +8,11 @@ from unittest.mock import MagicMock
 from uuid import uuid4
 
 import pytest
-from anthropic.types import TextBlock
 from httpx import ASGITransport, AsyncClient
 
 from evercurrent.app import app
 from evercurrent.generation.assembler import DigestAssembler
+from evercurrent.llm.types import LLMResponse
 from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
 from evercurrent.models.digest import DigestSection
 from evercurrent.scoring.composite import ScoreBreakdown, ScoredAtom
@@ -69,25 +69,25 @@ def _mock_sections() -> list[DigestSection]:
     ]
 
 
+def _mock_llm_response(sections: list[dict]) -> LLMResponse:
+    """Create a mock LLM response with sections."""
+    return LLMResponse(text=json.dumps({"sections": sections}))
+
+
 class TestDigestAssembler:
     """Tests for the DigestAssembler orchestrator."""
 
     def test_assemble_returns_response_dict(self) -> None:
         """Assembler returns dict with persona_id, generated_at, sections."""
         client = MagicMock()
-        sections_json = json.dumps(
-            {
-                "sections": [
-                    {
-                        "section_type": "requires_action",
-                        "title": "REQUIRES YOUR ACTION",
-                        "items": [],
-                    },
-                ],
-            }
-        )
-        client.messages.create.return_value = MagicMock(
-            content=[TextBlock(type="text", text=sections_json)]
+        client.create_message.return_value = _mock_llm_response(
+            [
+                {
+                    "section_type": "requires_action",
+                    "title": "REQUIRES YOUR ACTION",
+                    "items": [],
+                },
+            ]
         )
         assembler = DigestAssembler(client)
         result = assembler.assemble("U001", atoms=[_make_atom()])
@@ -99,15 +99,10 @@ class TestDigestAssembler:
     def test_assemble_generated_at_is_iso_datetime(self) -> None:
         """Generated_at is a valid ISO datetime string."""
         client = MagicMock()
-        sections_json = json.dumps(
-            {
-                "sections": [
-                    {"section_type": "requires_action", "title": "ACTION", "items": []},
-                ],
-            }
-        )
-        client.messages.create.return_value = MagicMock(
-            content=[TextBlock(type="text", text=sections_json)]
+        client.create_message.return_value = _mock_llm_response(
+            [
+                {"section_type": "requires_action", "title": "ACTION", "items": []},
+            ]
         )
         assembler = DigestAssembler(client)
         result = assembler.assemble("U001", atoms=[_make_atom()])
@@ -123,15 +118,10 @@ class TestDigestAssembler:
     def test_assemble_applies_phase_override(self) -> None:
         """Phase override is applied before scoring."""
         client = MagicMock()
-        sections_json = json.dumps(
-            {
-                "sections": [
-                    {"section_type": "requires_action", "title": "ACTION", "items": []},
-                ],
-            }
-        )
-        client.messages.create.return_value = MagicMock(
-            content=[TextBlock(type="text", text=sections_json)]
+        client.create_message.return_value = _mock_llm_response(
+            [
+                {"section_type": "requires_action", "title": "ACTION", "items": []},
+            ]
         )
         assembler = DigestAssembler(client)
         # chassis:PVT is a valid override for Maya Chen (U001)

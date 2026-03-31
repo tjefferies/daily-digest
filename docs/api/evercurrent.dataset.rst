@@ -1,11 +1,6 @@
 evercurrent.dataset package
 ===========================
 
-.. automodule:: evercurrent.dataset
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 Submodules
 ----------
 
@@ -14,3 +9,11 @@ Submodules
 
    evercurrent.dataset.messages
    evercurrent.dataset.schema
+
+Module contents
+---------------
+
+.. automodule:: evercurrent.dataset
+   :members:
+   :show-inheritance:
+   :undoc-members:

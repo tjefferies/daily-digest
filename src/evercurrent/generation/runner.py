@@ -1,7 +1,7 @@
 """Digest generation runner: per-persona LLM digest generation.
 
 Takes ranked ScoredAtoms from Layer 4, clusters by workstream, and
-passes them through the Anthropic API to produce DigestSection objects
+passes them through the LLM API to produce DigestSection objects
 with the generation prompt defining tone, format, and structure.
 """
 
@@ -11,15 +11,12 @@ import json
 import logging
 from typing import TYPE_CHECKING, Any
 
-from anthropic.types import TextBlock
-
 from evercurrent.config.loader import get_config
 from evercurrent.generation.prompt import build_generation_prompt
 from evercurrent.models.digest import DigestSection
 
 if TYPE_CHECKING:
-    from anthropic import Anthropic
-
+    from evercurrent.llm.types import LLMClient
     from evercurrent.models.persona import Persona
     from evercurrent.scoring.composite import ScoredAtom
 
@@ -34,7 +31,7 @@ class DigestGenerator:
     """Generates digest sections from scored atoms via LLM.
 
     For each persona, constructs a user message containing the persona
-    context and ranked scored atoms, then sends to Anthropic API with
+    context and ranked scored atoms, then sends to the LLM API with
     the generation system prompt. Parses the response into DigestSection
     objects.
 
@@ -42,11 +39,11 @@ class DigestGenerator:
         stats: Dict tracking personas_processed and sections_produced.
     """
 
-    def __init__(self, client: Anthropic) -> None:
-        """Initialize with an Anthropic client.
+    def __init__(self, client: LLMClient) -> None:
+        """Initialize with an LLM client.
 
         Args:
-            client: Anthropic API client instance.
+            client: LLMClient-compatible adapter instance.
         """
         self._client = client
         self._system_prompt = build_generation_prompt()
@@ -74,13 +71,17 @@ class DigestGenerator:
             return []
 
         user_message = self._build_user_message(scored_atoms, persona)
-        response = self._client.messages.create(
-            model=_MODEL,
-            max_tokens=_MAX_TOKENS,
-            system=self._system_prompt,
-            messages=[{"role": "user", "content": user_message}],
-        )
-        sections = self._parse_response(response, persona)
+        try:
+            response = self._client.create_message(
+                model=_MODEL,
+                max_tokens=_MAX_TOKENS,
+                system=self._system_prompt,
+                messages=[{"role": "user", "content": user_message}],
+            )
+        except ValueError:
+            logger.warning("LLM returned non-text response for digest generation")
+            return []
+        sections = self._parse_response(response.text, persona)
         self.stats["personas_processed"] += 1
         self.stats["sections_produced"] += len(sections)
         return sections
@@ -130,27 +131,22 @@ class DigestGenerator:
 
     def _parse_response(
         self,
-        response: Any,  # noqa: ANN401
+        raw_text: str,
         persona: Persona,
     ) -> list[DigestSection]:
-        """Parse API response into DigestSection objects.
+        """Parse LLM response text into DigestSection objects.
 
         Args:
-            response: Raw Anthropic API response.
+            raw_text: Raw text string from the LLM response.
             persona: Persona for broader_context filtering.
 
         Returns:
             List of DigestSection objects. Empty on parse failure.
         """
-        block = response.content[0]
-        if not isinstance(block, TextBlock):
-            logger.warning("Expected TextBlock, got %s", type(block).__name__)
-            return []
-
         try:
-            data: Any = json.loads(block.text)  # noqa: ANN401
+            data: Any = json.loads(raw_text)  # noqa: ANN401
         except json.JSONDecodeError:
-            logger.warning("Failed to parse JSON: %s...", block.text[:100])
+            logger.warning("Failed to parse JSON: %s...", raw_text[:100])
             return []
 
         if not isinstance(data, dict) or "sections" not in data:

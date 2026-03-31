@@ -1,6 +1,9 @@
 # Pipeline configuration: model IDs, token limits, thresholds, CORS.
 
-# Anthropic model used for extraction and generation.
+# LLM provider: 'anthropic', 'openai', or 'google'.
+provider: anthropic
+
+# Model used for extraction and generation.
 model: claude-sonnet-4-20250514
 
 # Token limits.

@@ -1,11 +1,6 @@
 evercurrent.extraction package
 ==============================
 
-.. automodule:: evercurrent.extraction
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 Submodules
 ----------
 
@@ -16,3 +11,11 @@ Submodules
    evercurrent.extraction.prompt
    evercurrent.extraction.runner
    evercurrent.extraction.validation
+
+Module contents
+---------------
+
+.. automodule:: evercurrent.extraction
+   :members:
+   :show-inheritance:
+   :undoc-members:

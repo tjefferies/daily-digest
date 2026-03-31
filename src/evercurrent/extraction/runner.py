@@ -1,6 +1,6 @@
-"""Extraction runner: batch ContextWindows through Anthropic API.
+"""Extraction runner: batch ContextWindows through LLM API.
 
-Processes context windows through Claude to extract structured Atom
+Processes context windows through an LLM to extract structured Atom
 objects. Handles JSON parse failures gracefully and tracks stats.
 """
 
@@ -10,7 +10,6 @@ import json
 import logging
 from typing import TYPE_CHECKING, Any
 
-from anthropic.types import TextBlock
 from pydantic import ValidationError
 
 from evercurrent.config.loader import get_config
@@ -18,9 +17,8 @@ from evercurrent.extraction.prompt import build_extraction_prompt
 from evercurrent.models.atom import Atom
 
 if TYPE_CHECKING:
-    from anthropic import Anthropic
-
     from evercurrent.ingestion.context_window import ContextWindow
+    from evercurrent.llm.types import LLMClient
 
 logger = logging.getLogger(__name__)
 
@@ -36,11 +34,11 @@ class ExtractionRunner:
         stats: Dict tracking windows_processed and atoms_produced.
     """
 
-    def __init__(self, client: Anthropic) -> None:
-        """Initialize with an Anthropic client.
+    def __init__(self, client: LLMClient) -> None:
+        """Initialize with an LLM client.
 
         Args:
-            client: Anthropic API client instance.
+            client: LLMClient-compatible adapter instance.
         """
         self._client = client
         self._system_prompt = build_extraction_prompt()
@@ -75,17 +73,17 @@ class ExtractionRunner:
         Returns:
             List of Atom objects parsed from the API response.
         """
-        response = self._client.messages.create(
-            model=_MODEL,
-            max_tokens=_MAX_TOKENS,
-            system=self._system_prompt,
-            messages=[{"role": "user", "content": window.thread_text}],
-        )
-        block = response.content[0]
-        if not isinstance(block, TextBlock):
-            logger.warning("Expected TextBlock, got %s", type(block).__name__)
+        try:
+            response = self._client.create_message(
+                model=_MODEL,
+                max_tokens=_MAX_TOKENS,
+                system=self._system_prompt,
+                messages=[{"role": "user", "content": window.thread_text}],
+            )
+        except ValueError:
+            logger.warning("LLM returned non-text response for window")
             return []
-        return self._parse_response(block.text)
+        return self._parse_response(response.text)
 
     def _parse_response(self, raw_text: str) -> list[Atom]:
         """Parse JSON response text into Atom objects.

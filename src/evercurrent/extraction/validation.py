@@ -10,13 +10,10 @@ import json
 import logging
 from typing import TYPE_CHECKING
 
-from anthropic.types import TextBlock
-
 from evercurrent.config.loader import get_config
 
 if TYPE_CHECKING:
-    from anthropic import Anthropic
-
+    from evercurrent.llm.types import LLMClient
     from evercurrent.models.atom import Atom
 
 logger = logging.getLogger(__name__)
@@ -49,14 +46,14 @@ Respond with JSON: {{"valid": true/false, "reason": "explanation if invalid"}}
 
 def validate_atoms(
     atoms: list[Atom],
-    client: Anthropic,
+    client: LLMClient,
     context_text: str,
 ) -> list[Atom]:
     """Validate DECISION and SPEC_CHANGE atoms with a second LLM pass.
 
     Args:
         atoms: List of extracted Atom objects.
-        client: Anthropic API client.
+        client: LLMClient-compatible adapter instance.
         context_text: Original thread text for validation context.
 
     Returns:
@@ -72,14 +69,14 @@ def validate_atoms(
 
 def _validate_single(
     atom: Atom,
-    client: Anthropic,
+    client: LLMClient,
     context_text: str,
 ) -> Atom:
     """Run validation on a single atom.
 
     Args:
         atom: The atom to validate.
-        client: Anthropic API client.
+        client: LLMClient-compatible adapter instance.
         context_text: Original conversation text.
 
     Returns:
@@ -90,18 +87,17 @@ def _validate_single(
         atom_json=atom.model_dump_json(indent=2),
     )
 
-    response = client.messages.create(
-        model=_MODEL,
-        max_tokens=_VALIDATION_MAX_TOKENS,
-        messages=[{"role": "user", "content": prompt}],
-    )
-
-    block = response.content[0]
-    if not isinstance(block, TextBlock):
+    try:
+        response = client.create_message(
+            model=_MODEL,
+            max_tokens=_VALIDATION_MAX_TOKENS,
+            messages=[{"role": "user", "content": prompt}],
+        )
+    except ValueError:
         return _demote_atom(atom, "Validation returned non-text response")
 
     try:
-        data = json.loads(block.text)
+        data = json.loads(response.text)
     except json.JSONDecodeError:
         return _demote_atom(atom, "Validation response was not valid JSON")
 

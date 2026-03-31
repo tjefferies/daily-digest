@@ -15,8 +15,7 @@ from evercurrent.generation.runner import DigestGenerator
 from evercurrent.scoring.composite import score_atoms
 
 if TYPE_CHECKING:
-    from anthropic import Anthropic
-
+    from evercurrent.llm.types import LLMClient
     from evercurrent.models.atom import Atom
 
 logger = logging.getLogger(__name__)
@@ -29,15 +28,15 @@ class DigestAssembler:
     LLM-based digest generation into one operation.
 
     Attributes:
-        _client: Anthropic API client.
+        _client: LLM client adapter.
         _generator: DigestGenerator for LLM prose generation.
     """
 
-    def __init__(self, client: Anthropic) -> None:
-        """Initialize with an Anthropic client.
+    def __init__(self, client: LLMClient) -> None:
+        """Initialize with an LLM client.
 
         Args:
-            client: Anthropic API client instance.
+            client: LLMClient-compatible adapter instance.
         """
         self._client = client
         self._generator = DigestGenerator(client)
