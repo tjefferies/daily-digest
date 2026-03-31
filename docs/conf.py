@@ -21,8 +21,21 @@ extensions = [
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
-html_theme = "sphinx_rtd_theme"
+html_theme = "furo"
 html_static_path = ["_static"]
+
+html_theme_options = {
+    "light_css_variables": {
+        "color-brand-primary": "#3F51B5",
+        "color-brand-content": "#3F51B5",
+    },
+    "dark_css_variables": {
+        "color-brand-primary": "#7986CB",
+        "color-brand-content": "#7986CB",
+    },
+    "sidebar_hide_name": False,
+    "navigation_with_keys": True,
+}
 
 # Napoleon settings (Google style docstrings)
 napoleon_google_docstring = True
