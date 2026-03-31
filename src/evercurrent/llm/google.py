@@ -1,4 +1,4 @@
-"""Google Gemini adapter for the LLM client interface.
+"""Google Gemini adapter for the LLM client interface (sync and async).
 
 Wraps a Google GenerativeModel instance to satisfy the LLMClient
 protocol, mapping create_message calls to Gemini's generate_content API.
@@ -56,6 +56,56 @@ class GoogleAdapter:
         if system:
             config["system_instruction"] = system
         response = self._client.generate_content(
+            contents,
+            generation_config=config,
+        )
+        if response.text is None:
+            msg = "Google Gemini returned empty response text"
+            raise ValueError(msg)
+        return LLMResponse(text=response.text)
+
+
+class AsyncGoogleAdapter:
+    """Async adapter wrapping a Google GenerativeModel instance.
+
+    Translates async create_message calls to Gemini's generate_content_async API.
+    """
+
+    def __init__(self, client: Any) -> None:  # noqa: ANN401
+        """Initialize with a Google GenerativeModel instance.
+
+        Args:
+            client: Google GenerativeModel instance.
+        """
+        self._client = client
+
+    async def create_message(
+        self,
+        *,
+        model: str,  # noqa: ARG002
+        max_tokens: int,
+        messages: list[dict[str, str]],
+        system: str = "",
+    ) -> LLMResponse:
+        """Send a message via the Google Gemini API asynchronously.
+
+        Args:
+            model: Gemini model identifier (ignored, set at client init).
+            max_tokens: Maximum tokens in the response.
+            messages: List of message dicts with 'role' and 'content'.
+            system: Optional system instruction.
+
+        Returns:
+            LLMResponse with the extracted text content.
+
+        Raises:
+            ValueError: If the response text is empty or None.
+        """
+        contents = [msg["content"] for msg in messages]
+        config: dict[str, Any] = {"max_output_tokens": max_tokens}
+        if system:
+            config["system_instruction"] = system
+        response = await self._client.generate_content_async(
             contents,
             generation_config=config,
         )

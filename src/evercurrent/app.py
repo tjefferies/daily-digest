@@ -16,9 +16,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from evercurrent.config.loader import get_config
 from evercurrent.context.personas import get_persona
-from evercurrent.generation.assembler import DigestAssembler
-from evercurrent.llm.factory import create_llm_client
-from evercurrent.pipeline import run_pipeline
+from evercurrent.generation.assembler import AsyncDigestAssembler
+from evercurrent.llm.factory import create_async_llm_client
+from evercurrent.pipeline import async_run_pipeline
 
 if TYPE_CHECKING:
     from evercurrent.models.atom import Atom
@@ -71,8 +71,8 @@ async def pipeline_run() -> dict[str, Any]:
     Returns:
         A dict with status and processing stats.
     """
-    client = create_llm_client()
-    result = run_pipeline(client)
+    client = create_async_llm_client()
+    result = await async_run_pipeline(client)
 
     _atom_store.clear()
     _atom_store.extend(result.atoms)
@@ -127,6 +127,6 @@ async def get_digest(
         }
 
     # Wire the assembler with stored atoms
-    client = create_llm_client()
-    assembler = DigestAssembler(client)
-    return assembler.assemble(persona_id, list(_atom_store), phase_override)
+    client = create_async_llm_client()
+    assembler = AsyncDigestAssembler(client)
+    return await assembler.assemble(persona_id, list(_atom_store), phase_override)

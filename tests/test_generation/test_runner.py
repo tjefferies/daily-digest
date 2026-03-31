@@ -1,12 +1,12 @@
-"""Tests for per-persona digest generation runner."""
+"""Tests for per-persona digest generation runner (sync and async)."""
 
 from __future__ import annotations
 
 import json
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
-from evercurrent.generation.runner import DigestGenerator
+from evercurrent.generation.runner import AsyncDigestGenerator, DigestGenerator
 from evercurrent.llm.types import LLMResponse
 from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
 from evercurrent.models.persona import DigestPreferences, Persona, ScoringWeights
@@ -259,4 +259,50 @@ class TestResponseParsing:
         client.create_message.side_effect = ValueError("non-text response")
         gen = DigestGenerator(client)
         sections = gen.generate([_make_scored_atom()], _make_persona())
+        assert sections == []
+
+
+class TestAsyncDigestGenerator:
+    """Tests for the async digest generator."""
+
+    async def test_generate_returns_digest_sections(self) -> None:
+        """Async generator returns a list of DigestSection objects."""
+        client = AsyncMock()
+        client.create_message.return_value = _mock_llm_response(
+            [
+                _valid_section("requires_action", "REQUIRES YOUR ACTION"),
+                _valid_section("decisions_changes", "DECISIONS & CHANGES"),
+            ]
+        )
+        gen = AsyncDigestGenerator(client)
+        scored = [_make_scored_atom()]
+        persona = _make_persona()
+        sections = await gen.generate(scored, persona)
+        assert len(sections) == 2
+        assert sections[0].section_type == "requires_action"
+
+    async def test_generate_empty_atoms_returns_empty(self) -> None:
+        """Async generator with empty atom list returns empty sections."""
+        client = AsyncMock()
+        gen = AsyncDigestGenerator(client)
+        sections = await gen.generate([], _make_persona())
+        assert sections == []
+
+    async def test_generate_updates_stats(self) -> None:
+        """Async generator increments persona and section counters."""
+        client = AsyncMock()
+        client.create_message.return_value = _mock_llm_response(
+            [_valid_section("requires_action", "REQUIRES YOUR ACTION")]
+        )
+        gen = AsyncDigestGenerator(client)
+        await gen.generate([_make_scored_atom()], _make_persona())
+        assert gen.stats["personas_processed"] == 1
+        assert gen.stats["sections_produced"] == 1
+
+    async def test_non_text_response_returns_empty(self) -> None:
+        """Async generator handles ValueError from LLM client."""
+        client = AsyncMock()
+        client.create_message.side_effect = ValueError("non-text")
+        gen = AsyncDigestGenerator(client)
+        sections = await gen.generate([_make_scored_atom()], _make_persona())
         assert sections == []

@@ -886,3 +886,14 @@ KNOWLEDGE_GRAPH=$(bd create \
   --acceptance="1. Neo4j service in docker-compose.yml with health check. 2. Python graph client at src/evercurrent/graph/client.py with async connect/persist/query. 3. Atoms persisted after pipeline extraction. 4. Temporal query: atoms_since(datetime). 5. Tests covering graph client CRUD and temporal queries." \
   --silent)
 echo "    Knowledge Graph:    $KNOWLEDGE_GRAPH"
+
+# ─── CR-1.4: ASYNC PIPELINE ─────────────────────────────────────────────────
+ASYNC_PIPELINE=$(bd create \
+  --title="Async pipeline — replace synchronous serial LLM calls with concurrent execution" \
+  --type=feature \
+  --priority=2 \
+  --description="CR-1.4: FastAPI endpoints are async def but the entire pipeline is synchronous. LLM calls process windows sequentially — 50+ serial round-trips at ~2s each. The pipeline needs to use async/await with concurrent execution (asyncio.gather or similar) to process extraction windows in parallel, dramatically reducing end-to-end latency." \
+  --design="Convert Pipeline methods to async. Use asyncio.gather/TaskGroup for concurrent LLM calls within extraction. Keep FastAPI endpoints async (already are). Ensure the LLM client interface supports async calls. Add concurrency limit to avoid rate-limiting." \
+  --acceptance="1. Pipeline extraction processes windows concurrently via asyncio. 2. LLM client exposes async interface. 3. FastAPI endpoints await pipeline directly (no sync-to-async bridge). 4. All existing tests pass. 5. All 7 quality gates pass." \
+  --silent)
+echo "    Async Pipeline:     $ASYNC_PIPELINE"

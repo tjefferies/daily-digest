@@ -1,4 +1,4 @@
-"""Tests for the extraction runner.
+"""Tests for the extraction runner (sync and async).
 
 Validates that the ExtractionRunner processes ContextWindows through
 the LLM API and parses responses into Atom objects.
@@ -9,10 +9,10 @@ from __future__ import annotations
 
 import json
 from typing import Any
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
-from evercurrent.extraction.runner import ExtractionRunner
+from evercurrent.extraction.runner import AsyncExtractionRunner, ExtractionRunner
 from evercurrent.ingestion.context_window import ContextWindow
 from evercurrent.llm.types import LLMResponse
 from evercurrent.models.atom import Atom
@@ -171,3 +171,85 @@ class TestExtractionRunnerStats:
         runner = ExtractionRunner(client=client)
         runner.extract([_make_context_window()])
         assert runner.stats["atoms_produced"] == 3
+
+
+class TestAsyncExtractionRunnerExtract:
+    """Tests for the async extract method with concurrent processing."""
+
+    async def test_extracts_atoms_from_single_window(self) -> None:
+        """Async runner extracts atoms from a single window."""
+        client = AsyncMock()
+        atom_data = _make_atom_dict()
+        client.create_message.return_value = _mock_llm_response([atom_data])
+        runner = AsyncExtractionRunner(client=client)
+        window = _make_context_window()
+        atoms = await runner.extract([window])
+        assert len(atoms) == 1
+        assert isinstance(atoms[0], Atom)
+        assert atoms[0].type == "DECISION"
+
+    async def test_extracts_from_multiple_windows_concurrently(self) -> None:
+        """Async runner processes multiple windows via asyncio.gather."""
+        client = AsyncMock()
+        atom1 = _make_atom_dict(summary="Atom 1")
+        atom2 = _make_atom_dict(summary="Atom 2")
+        client.create_message.side_effect = [
+            _mock_llm_response([atom1]),
+            _mock_llm_response([atom2]),
+        ]
+        runner = AsyncExtractionRunner(client=client)
+        windows = [_make_context_window(), _make_context_window(thread_ts="2000.001")]
+        atoms = await runner.extract(windows)
+        assert len(atoms) == 2
+
+    async def test_empty_windows_produces_no_atoms(self) -> None:
+        """Async runner with no windows produces no atoms."""
+        client = AsyncMock()
+        runner = AsyncExtractionRunner(client=client)
+        atoms = await runner.extract([])
+        assert atoms == []
+        client.create_message.assert_not_awaited()
+
+    async def test_multiple_atoms_per_window(self) -> None:
+        """Single window can produce multiple atoms in async runner."""
+        client = AsyncMock()
+        atoms_data = [_make_atom_dict(summary=f"Atom {i}") for i in range(3)]
+        client.create_message.return_value = _mock_llm_response(atoms_data)
+        runner = AsyncExtractionRunner(client=client)
+        atoms = await runner.extract([_make_context_window()])
+        assert len(atoms) == 3
+
+    async def test_stats_tracks_windows_processed(self) -> None:
+        """Async runner stats include count of windows processed."""
+        client = AsyncMock()
+        client.create_message.return_value = _mock_llm_response([_make_atom_dict()])
+        runner = AsyncExtractionRunner(client=client)
+        await runner.extract([_make_context_window(), _make_context_window(thread_ts="2000.001")])
+        assert runner.stats["windows_processed"] == 2
+
+    async def test_stats_tracks_atoms_produced(self) -> None:
+        """Async runner stats include count of atoms produced."""
+        client = AsyncMock()
+        atoms_data = [_make_atom_dict() for _ in range(3)]
+        client.create_message.return_value = _mock_llm_response(atoms_data)
+        runner = AsyncExtractionRunner(client=client)
+        await runner.extract([_make_context_window()])
+        assert runner.stats["atoms_produced"] == 3
+
+    async def test_invalid_json_skips_window(self) -> None:
+        """Invalid JSON response is handled gracefully in async runner."""
+        client = AsyncMock()
+        client.create_message.return_value = LLMResponse(text="not valid json{")
+        runner = AsyncExtractionRunner(client=client)
+        atoms = await runner.extract([_make_context_window()])
+        assert atoms == []
+
+    async def test_respects_concurrency_limit(self) -> None:
+        """Async runner limits concurrent LLM calls via semaphore."""
+        client = AsyncMock()
+        client.create_message.return_value = _mock_llm_response([_make_atom_dict()])
+        runner = AsyncExtractionRunner(client=client, max_concurrency=2)
+        windows = [_make_context_window(thread_ts=f"{i}.001") for i in range(5)]
+        atoms = await runner.extract(windows)
+        assert len(atoms) == 5
+        assert runner.stats["windows_processed"] == 5

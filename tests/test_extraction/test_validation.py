@@ -1,4 +1,4 @@
-"""Tests for two-pass validation of SPEC_CHANGE and DECISION atoms.
+"""Tests for two-pass validation of SPEC_CHANGE and DECISION atoms (sync and async).
 
 Validates that high-stakes atoms get a second LLM pass to check
 accuracy, with demotion for atoms that fail validation.
@@ -7,10 +7,10 @@ accuracy, with demotion for atoms that fail validation.
 from __future__ import annotations
 
 import json
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
-from evercurrent.extraction.validation import validate_atoms
+from evercurrent.extraction.validation import async_validate_atoms, validate_atoms
 from evercurrent.llm.types import LLMResponse
 from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
 
@@ -138,3 +138,47 @@ class TestValidationEdgeCases:
         atom = _make_atom("DECISION", confidence=0.8)
         result = validate_atoms([atom], client=client, context_text="text")
         assert result[0].confidence == 0.4
+
+
+class TestAsyncValidation:
+    """Tests for async validation with concurrent LLM calls."""
+
+    async def test_decision_atoms_are_validated(self) -> None:
+        """Async validation validates DECISION atoms."""
+        client = AsyncMock()
+        client.create_message.return_value = _mock_validation_response(True)
+        atom = _make_atom("DECISION")
+        result = await async_validate_atoms([atom], client=client, context_text="text")
+        client.create_message.assert_awaited_once()
+        assert len(result) == 1
+
+    async def test_other_types_skip_validation(self) -> None:
+        """Async validation skips non-DECISION/SPEC_CHANGE atoms."""
+        client = AsyncMock()
+        atoms = [_make_atom("ACTION_ITEM"), _make_atom("RISK")]
+        result = await async_validate_atoms(atoms, client=client, context_text="text")
+        client.create_message.assert_not_awaited()
+        assert len(result) == 2
+
+    async def test_invalid_atom_demoted(self) -> None:
+        """Async validation demotes atoms that fail the second LLM pass."""
+        client = AsyncMock()
+        client.create_message.return_value = _mock_validation_response(False, reason="Overstated")
+        atom = _make_atom("DECISION", confidence=0.9)
+        result = await async_validate_atoms([atom], client=client, context_text="text")
+        assert result[0].confidence == 0.45
+
+    async def test_validates_concurrently(self) -> None:
+        """Async validation processes multiple atoms concurrently."""
+        client = AsyncMock()
+        client.create_message.return_value = _mock_validation_response(True)
+        atoms = [_make_atom("DECISION"), _make_atom("SPEC_CHANGE")]
+        result = await async_validate_atoms(atoms, client=client, context_text="text")
+        assert client.create_message.await_count == 2
+        assert len(result) == 2
+
+    async def test_empty_atom_list(self) -> None:
+        """Async validation with empty list returns empty."""
+        client = AsyncMock()
+        result = await async_validate_atoms([], client=client, context_text="text")
+        assert result == []

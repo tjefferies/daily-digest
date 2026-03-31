@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import pytest
@@ -44,7 +44,7 @@ class TestPipelineRun:
         """Clear atom store between tests."""
         clear_atom_store()
 
-    @patch("evercurrent.app.run_pipeline")
+    @patch("evercurrent.app.async_run_pipeline")
     def test_pipeline_run_returns_200(self, mock_run: MagicMock) -> None:
         """Verify POST /pipeline/run returns 200 with status field."""
         from evercurrent.pipeline import PipelineResult
@@ -55,7 +55,7 @@ class TestPipelineRun:
         )
 
     @pytest.mark.asyncio
-    @patch("evercurrent.app.run_pipeline")
+    @patch("evercurrent.app.async_run_pipeline")
     async def test_pipeline_run_extracts_atoms(self, mock_run: MagicMock) -> None:
         """POST /pipeline/run executes the pipeline and stores atoms."""
         from evercurrent.pipeline import PipelineResult
@@ -76,7 +76,7 @@ class TestPipelineRun:
         assert data["stats"]["atoms_extracted"] == 1
 
     @pytest.mark.asyncio
-    @patch("evercurrent.app.run_pipeline")
+    @patch("evercurrent.app.async_run_pipeline")
     async def test_pipeline_run_returns_stats(self, mock_run: MagicMock) -> None:
         """POST /pipeline/run returns pipeline processing stats."""
         from evercurrent.pipeline import PipelineResult
@@ -169,8 +169,8 @@ class TestDigestEndpoint:
         assert response.status_code == 400
 
     @pytest.mark.asyncio
-    @patch("evercurrent.app.run_pipeline")
-    @patch("evercurrent.app.DigestAssembler")
+    @patch("evercurrent.app.async_run_pipeline")
+    @patch("evercurrent.app.AsyncDigestAssembler")
     async def test_digest_uses_stored_atoms_after_pipeline_run(
         self,
         mock_assembler_cls: MagicMock,
@@ -185,7 +185,7 @@ class TestDigestEndpoint:
             stats={"atoms_extracted": 1, "atoms_after_filter": 1},
         )
 
-        mock_assembler = MagicMock()
+        mock_assembler = AsyncMock()
         mock_assembler.assemble.return_value = {
             "persona_id": "U001",
             "generated_at": "2026-03-31T00:00:00",

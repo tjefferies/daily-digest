@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
-from evercurrent.llm.types import LLMClient, LLMResponse
+from evercurrent.llm.types import AsyncLLMClient, LLMClient, LLMResponse
 
 
 class TestLLMResponse:
@@ -41,3 +41,19 @@ class TestLLMClientProtocol:
             messages=[{"role": "user", "content": "hi"}],
         )
         assert resp.text == "mock response"
+
+
+class TestAsyncLLMClientProtocol:
+    """Tests that the AsyncLLMClient protocol is satisfiable."""
+
+    async def test_async_mock_satisfies_protocol(self) -> None:
+        """An async mock with create_message satisfies AsyncLLMClient."""
+        mock = AsyncMock()
+        mock.create_message.return_value = LLMResponse(text="async response")
+        client: AsyncLLMClient = mock
+        resp = await client.create_message(
+            model="test",
+            max_tokens=100,
+            messages=[{"role": "user", "content": "hi"}],
+        )
+        assert resp.text == "async response"

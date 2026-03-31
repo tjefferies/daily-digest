@@ -1,17 +1,17 @@
-"""Tests for digest assembly and GET /digest endpoint."""
+"""Tests for digest assembly and GET /digest endpoint (sync and async)."""
 
 from __future__ import annotations
 
 import json
 from datetime import datetime
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 
 from evercurrent.app import app
-from evercurrent.generation.assembler import DigestAssembler
+from evercurrent.generation.assembler import AsyncDigestAssembler, DigestAssembler
 from evercurrent.llm.types import LLMResponse
 from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
 from evercurrent.models.digest import DigestSection
@@ -147,6 +147,41 @@ class TestDigestAssembler:
         """Assembler with empty atoms returns empty sections."""
         assembler = DigestAssembler(MagicMock())
         result = assembler.assemble("U001", atoms=[])
+        assert result["sections"] == []
+
+
+class TestAsyncDigestAssembler:
+    """Tests for the async DigestAssembler orchestrator."""
+
+    async def test_assemble_returns_response_dict(self) -> None:
+        """Async assembler returns dict with persona_id, generated_at, sections."""
+        client = AsyncMock()
+        client.create_message.return_value = _mock_llm_response(
+            [
+                {
+                    "section_type": "requires_action",
+                    "title": "REQUIRES YOUR ACTION",
+                    "items": [],
+                },
+            ]
+        )
+        assembler = AsyncDigestAssembler(client)
+        result = await assembler.assemble("U001", atoms=[_make_atom()])
+        assert "persona_id" in result
+        assert "generated_at" in result
+        assert "sections" in result
+        assert result["persona_id"] == "U001"
+
+    async def test_assemble_unknown_persona_returns_error(self) -> None:
+        """Async assembler returns error for unknown persona_id."""
+        assembler = AsyncDigestAssembler(AsyncMock())
+        result = await assembler.assemble("UNKNOWN_USER", atoms=[_make_atom()])
+        assert "error" in result
+
+    async def test_assemble_empty_atoms(self) -> None:
+        """Async assembler with empty atoms returns empty sections."""
+        assembler = AsyncDigestAssembler(AsyncMock())
+        result = await assembler.assemble("U001", atoms=[])
         assert result["sections"] == []
 
 
