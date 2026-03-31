@@ -4,7 +4,15 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock
 
+from pydantic import BaseModel
+
 from evercurrent.llm.types import AsyncLLMClient, LLMClient, LLMResponse
+
+
+class _DummyModel(BaseModel):
+    """Minimal Pydantic model for protocol testing."""
+
+    value: str
 
 
 class TestLLMResponse:
@@ -42,6 +50,21 @@ class TestLLMClientProtocol:
         )
         assert resp.text == "mock response"
 
+    def test_structured_message_returns_pydantic_model(self) -> None:
+        """create_structured_message returns a typed Pydantic model."""
+        mock = MagicMock()
+        expected = _DummyModel(value="structured")
+        mock.create_structured_message.return_value = expected
+        client: LLMClient = mock
+        result = client.create_structured_message(
+            model="test",
+            max_tokens=100,
+            messages=[{"role": "user", "content": "hi"}],
+            response_model=_DummyModel,
+        )
+        assert isinstance(result, _DummyModel)
+        assert result.value == "structured"
+
 
 class TestAsyncLLMClientProtocol:
     """Tests that the AsyncLLMClient protocol is satisfiable."""
@@ -57,3 +80,18 @@ class TestAsyncLLMClientProtocol:
             messages=[{"role": "user", "content": "hi"}],
         )
         assert resp.text == "async response"
+
+    async def test_async_structured_message_returns_pydantic_model(self) -> None:
+        """Async create_structured_message returns a typed Pydantic model."""
+        mock = AsyncMock()
+        expected = _DummyModel(value="async structured")
+        mock.create_structured_message.return_value = expected
+        client: AsyncLLMClient = mock
+        result = await client.create_structured_message(
+            model="test",
+            max_tokens=100,
+            messages=[{"role": "user", "content": "hi"}],
+            response_model=_DummyModel,
+        )
+        assert isinstance(result, _DummyModel)
+        assert result.value == "async structured"

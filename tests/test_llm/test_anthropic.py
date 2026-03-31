@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import json
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from anthropic.types import TextBlock
+from pydantic import BaseModel
 
 from evercurrent.llm.anthropic import AnthropicAdapter, AsyncAnthropicAdapter
 
@@ -103,6 +104,57 @@ class TestAnthropicAdapterCreateMessage:
         assert json.loads(result.text) == [{"type": "DECISION", "summary": "test"}]
 
 
+class _TestModel(BaseModel):
+    """Minimal model for structured output testing."""
+
+    name: str
+    value: int
+
+
+class TestAnthropicAdapterStructuredMessage:
+    """Tests for create_structured_message method."""
+
+    @patch("evercurrent.llm.anthropic.instructor")
+    def test_returns_pydantic_model(self, mock_instructor: MagicMock) -> None:
+        """Structured message returns instructor-generated Pydantic model."""
+        sdk_client = MagicMock()
+        expected = _TestModel(name="test", value=42)
+        mock_patched = MagicMock()
+        mock_patched.messages.create.return_value = expected
+        mock_instructor.from_anthropic.return_value = mock_patched
+
+        adapter = AnthropicAdapter(sdk_client)
+        result = adapter.create_structured_message(
+            model="claude-sonnet-4-20250514",
+            max_tokens=100,
+            messages=[{"role": "user", "content": "extract"}],
+            response_model=_TestModel,
+        )
+        assert isinstance(result, _TestModel)
+        assert result.name == "test"
+        assert result.value == 42
+
+    @patch("evercurrent.llm.anthropic.instructor")
+    def test_passes_response_model_to_instructor(self, mock_instructor: MagicMock) -> None:
+        """Structured message forwards response_model to instructor client."""
+        sdk_client = MagicMock()
+        mock_patched = MagicMock()
+        mock_patched.messages.create.return_value = _TestModel(name="t", value=1)
+        mock_instructor.from_anthropic.return_value = mock_patched
+
+        adapter = AnthropicAdapter(sdk_client)
+        adapter.create_structured_message(
+            model="test-model",
+            max_tokens=500,
+            messages=[{"role": "user", "content": "hi"}],
+            system="sys",
+            response_model=_TestModel,
+        )
+        call_kwargs = mock_patched.messages.create.call_args.kwargs
+        assert call_kwargs["response_model"] is _TestModel
+        assert call_kwargs["model"] == "test-model"
+
+
 class TestAsyncAnthropicAdapter:
     """Tests for the async Anthropic adapter."""
 
@@ -153,3 +205,27 @@ class TestAsyncAnthropicAdapter:
                 max_tokens=100,
                 messages=[{"role": "user", "content": "hi"}],
             )
+
+
+class TestAsyncAnthropicAdapterStructuredMessage:
+    """Tests for async create_structured_message method."""
+
+    @patch("evercurrent.llm.anthropic.instructor")
+    async def test_returns_pydantic_model(self, mock_instructor: MagicMock) -> None:
+        """Async structured message returns instructor-generated Pydantic model."""
+        sdk_client = AsyncMock()
+        expected = _TestModel(name="async", value=99)
+        mock_patched = AsyncMock()
+        mock_patched.messages.create.return_value = expected
+        mock_instructor.from_anthropic.return_value = mock_patched
+
+        adapter = AsyncAnthropicAdapter(sdk_client)
+        result = await adapter.create_structured_message(
+            model="claude-sonnet-4-20250514",
+            max_tokens=100,
+            messages=[{"role": "user", "content": "extract"}],
+            response_model=_TestModel,
+        )
+        assert isinstance(result, _TestModel)
+        assert result.name == "async"
+        assert result.value == 99

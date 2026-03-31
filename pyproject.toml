@@ -15,6 +15,7 @@ dependencies = [
     "pydantic>=2.0",
     "httpx>=0.28",
     "neo4j>=5.28",
+    "instructor>=1.7",
 ]
 
 [project.optional-dependencies]

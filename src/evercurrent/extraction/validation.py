@@ -1,18 +1,19 @@
 """Two-pass validation for SPEC_CHANGE and DECISION atoms (sync and async).
 
-Runs a second LLM call on high-stakes atoms to verify accuracy.
-Invalid atoms have their confidence halved and get a warning annotation.
-The async version validates atoms concurrently via asyncio.gather.
+Runs a second LLM call on high-stakes atoms to verify accuracy using
+instructor for structured output. Invalid atoms have their confidence
+halved and get a warning annotation. The async version validates atoms
+concurrently via asyncio.gather.
 """
 
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 from typing import TYPE_CHECKING
 
 from evercurrent.config.loader import get_config
+from evercurrent.models.responses import ValidationResponse
 
 if TYPE_CHECKING:
     from evercurrent.llm.types import AsyncLLMClient, LLMClient
@@ -74,7 +75,7 @@ def _validate_single(
     client: LLMClient,
     context_text: str,
 ) -> Atom:
-    """Run validation on a single atom.
+    """Run validation on a single atom using structured output.
 
     Args:
         atom: The atom to validate.
@@ -90,21 +91,17 @@ def _validate_single(
     )
 
     try:
-        response = client.create_message(
+        response = client.create_structured_message(
             model=_MODEL,
             max_tokens=_VALIDATION_MAX_TOKENS,
             messages=[{"role": "user", "content": prompt}],
+            response_model=ValidationResponse,
         )
-    except ValueError:
-        return _demote_atom(atom, "Validation returned non-text response")
+    except Exception:
+        return _demote_atom(atom, "Validation structured output failed")
 
-    try:
-        data = json.loads(response.text)
-    except json.JSONDecodeError:
-        return _demote_atom(atom, "Validation response was not valid JSON")
-
-    if not data.get("valid", False):
-        reason = data.get("reason", "Validation failed")
+    if not response.valid:
+        reason = response.reason or "Validation failed"
         return _demote_atom(atom, reason)
 
     return atom
@@ -161,7 +158,7 @@ async def _async_validate_single(
     client: AsyncLLMClient,
     context_text: str,
 ) -> Atom:
-    """Run async validation on a single atom.
+    """Run async validation on a single atom using structured output.
 
     Args:
         atom: The atom to validate.
@@ -177,21 +174,17 @@ async def _async_validate_single(
     )
 
     try:
-        response = await client.create_message(
+        response = await client.create_structured_message(
             model=_MODEL,
             max_tokens=_VALIDATION_MAX_TOKENS,
             messages=[{"role": "user", "content": prompt}],
+            response_model=ValidationResponse,
         )
-    except ValueError:
-        return _demote_atom(atom, "Validation returned non-text response")
+    except Exception:
+        return _demote_atom(atom, "Validation structured output failed")
 
-    try:
-        data = json.loads(response.text)
-    except json.JSONDecodeError:
-        return _demote_atom(atom, "Validation response was not valid JSON")
-
-    if not data.get("valid", False):
-        reason = data.get("reason", "Validation failed")
+    if not response.valid:
+        reason = response.reason or "Validation failed"
         return _demote_atom(atom, reason)
 
     return atom

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
@@ -12,9 +11,9 @@ from httpx import ASGITransport, AsyncClient
 
 from evercurrent.app import app
 from evercurrent.generation.assembler import AsyncDigestAssembler, DigestAssembler
-from evercurrent.llm.types import LLMResponse
 from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
 from evercurrent.models.digest import DigestSection
+from evercurrent.models.responses import DigestResponse
 from evercurrent.scoring.composite import ScoreBreakdown, ScoredAtom
 
 
@@ -55,23 +54,16 @@ def _make_scored(score: float = 0.7, critical: bool = False) -> ScoredAtom:
     )
 
 
-def _mock_sections() -> list[DigestSection]:
-    """Create mock digest sections."""
-    return [
-        DigestSection(
-            section_type="requires_action",
-            title="REQUIRES YOUR ACTION",
-        ),
-        DigestSection(
-            section_type="decisions_changes",
-            title="DECISIONS & CHANGES",
-        ),
-    ]
-
-
-def _mock_llm_response(sections: list[dict]) -> LLMResponse:
-    """Create a mock LLM response with sections."""
-    return LLMResponse(text=json.dumps({"sections": sections}))
+def _mock_digest_response() -> DigestResponse:
+    """Create a mock DigestResponse for structured output."""
+    return DigestResponse(
+        sections=[
+            DigestSection(
+                section_type="requires_action",
+                title="REQUIRES YOUR ACTION",
+            ),
+        ]
+    )
 
 
 class TestDigestAssembler:
@@ -80,15 +72,7 @@ class TestDigestAssembler:
     def test_assemble_returns_response_dict(self) -> None:
         """Assembler returns dict with persona_id, generated_at, sections."""
         client = MagicMock()
-        client.create_message.return_value = _mock_llm_response(
-            [
-                {
-                    "section_type": "requires_action",
-                    "title": "REQUIRES YOUR ACTION",
-                    "items": [],
-                },
-            ]
-        )
+        client.create_structured_message.return_value = _mock_digest_response()
         assembler = DigestAssembler(client)
         result = assembler.assemble("U001", atoms=[_make_atom()])
         assert "persona_id" in result
@@ -99,11 +83,7 @@ class TestDigestAssembler:
     def test_assemble_generated_at_is_iso_datetime(self) -> None:
         """Generated_at is a valid ISO datetime string."""
         client = MagicMock()
-        client.create_message.return_value = _mock_llm_response(
-            [
-                {"section_type": "requires_action", "title": "ACTION", "items": []},
-            ]
-        )
+        client.create_structured_message.return_value = _mock_digest_response()
         assembler = DigestAssembler(client)
         result = assembler.assemble("U001", atoms=[_make_atom()])
         # Should parse without error
@@ -118,11 +98,7 @@ class TestDigestAssembler:
     def test_assemble_applies_phase_override(self) -> None:
         """Phase override is applied before scoring."""
         client = MagicMock()
-        client.create_message.return_value = _mock_llm_response(
-            [
-                {"section_type": "requires_action", "title": "ACTION", "items": []},
-            ]
-        )
+        client.create_structured_message.return_value = _mock_digest_response()
         assembler = DigestAssembler(client)
         # chassis:PVT is a valid override for Maya Chen (U001)
         result = assembler.assemble(
@@ -156,15 +132,7 @@ class TestAsyncDigestAssembler:
     async def test_assemble_returns_response_dict(self) -> None:
         """Async assembler returns dict with persona_id, generated_at, sections."""
         client = AsyncMock()
-        client.create_message.return_value = _mock_llm_response(
-            [
-                {
-                    "section_type": "requires_action",
-                    "title": "REQUIRES YOUR ACTION",
-                    "items": [],
-                },
-            ]
-        )
+        client.create_structured_message.return_value = _mock_digest_response()
         assembler = AsyncDigestAssembler(client)
         result = await assembler.assemble("U001", atoms=[_make_atom()])
         assert "persona_id" in result

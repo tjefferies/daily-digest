@@ -897,3 +897,14 @@ ASYNC_PIPELINE=$(bd create \
   --acceptance="1. Pipeline extraction processes windows concurrently via asyncio. 2. LLM client exposes async interface. 3. FastAPI endpoints await pipeline directly (no sync-to-async bridge). 4. All existing tests pass. 5. All 7 quality gates pass." \
   --silent)
 echo "    Async Pipeline:     $ASYNC_PIPELINE"
+
+# ─── CR-3.1: STRUCTURED OUTPUT ENFORCEMENT ──────────────────────────────────
+STRUCTURED_OUTPUT=$(bd create \
+  --title="Structured output enforcement — replace json.loads() with instructor + Pydantic models" \
+  --type=feature \
+  --priority=1 \
+  --description="CR-3.1: Both extraction and generation rely on json.loads() as the only parse step. When the LLM returns markdown-fenced JSON or adds explanatory text, the pipeline silently drops the entire response. This is the #1 production ML engineering concern — every major LLM occasionally returns non-JSON responses. Silent data loss is unacceptable." \
+  --design="Add instructor library to pyproject.toml. Replace raw json.loads() parsing in extraction runner and generation runner with instructor-patched clients that return typed Pydantic models directly. Reuse existing Atom and DigestSection Pydantic models as the response schemas. Support both sync and async clients. Instructor handles retries, markdown fence stripping, and schema validation automatically." \
+  --acceptance="1. instructor added to pyproject.toml dependencies. 2. Extraction runner uses instructor to get list[Atom] directly from LLM. 3. Generation runner uses instructor to get structured DigestSection responses. 4. Both sync and async paths use instructor. 5. No more silent data loss from malformed JSON. 6. All existing tests continue to pass. 7. All 7 quality gates pass." \
+  --silent)
+echo "    Structured Output:  $STRUCTURED_OUTPUT"

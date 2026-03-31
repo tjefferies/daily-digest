@@ -1,26 +1,24 @@
 """Extraction runner: batch ContextWindows through LLM API (sync and async).
 
-Processes context windows through an LLM to extract structured Atom
-objects. Handles JSON parse failures gracefully and tracks stats.
-The async runner processes windows concurrently via asyncio.gather.
+Processes context windows through an LLM using instructor for structured
+output to extract typed Atom objects directly. The async runner processes
+windows concurrently via asyncio.gather with a semaphore.
 """
 
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
-from typing import TYPE_CHECKING, Any
-
-from pydantic import ValidationError
+from typing import TYPE_CHECKING
 
 from evercurrent.config.loader import get_config
 from evercurrent.extraction.prompt import build_extraction_prompt
-from evercurrent.models.atom import Atom
+from evercurrent.models.responses import ExtractionResponse
 
 if TYPE_CHECKING:
     from evercurrent.ingestion.context_window import ContextWindow
     from evercurrent.llm.types import AsyncLLMClient, LLMClient
+    from evercurrent.models.atom import Atom
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +29,9 @@ _MAX_TOKENS = _pipeline_cfg["extraction_max_tokens"]
 
 class ExtractionRunner:
     """Runs LLM extraction on context windows to produce Atoms.
+
+    Uses instructor for structured output, returning typed Atom objects
+    directly from the LLM without manual JSON parsing.
 
     Attributes:
         stats: Dict tracking windows_processed and atoms_produced.
@@ -67,66 +68,26 @@ class ExtractionRunner:
         return all_atoms
 
     def _process_window(self, window: ContextWindow) -> list[Atom]:
-        """Process a single context window through the API.
+        """Process a single context window through structured output.
 
         Args:
             window: A single ContextWindow to extract from.
 
         Returns:
-            List of Atom objects parsed from the API response.
+            List of Atom objects from the structured API response.
         """
         try:
-            response = self._client.create_message(
+            response = self._client.create_structured_message(
                 model=_MODEL,
                 max_tokens=_MAX_TOKENS,
                 system=self._system_prompt,
                 messages=[{"role": "user", "content": window.thread_text}],
+                response_model=ExtractionResponse,
             )
-        except ValueError:
-            logger.warning("LLM returned non-text response for window")
+        except Exception:
+            logger.warning("Structured extraction failed for window")
             return []
-        return _parse_response(response.text)
-
-    def _parse_response(self, raw_text: str) -> list[Atom]:
-        """Parse JSON response text into Atom objects.
-
-        Args:
-            raw_text: Raw JSON string from the API.
-
-        Returns:
-            List of successfully parsed Atom objects.
-            Invalid JSON or schema failures are logged and skipped.
-        """
-        return _parse_response(raw_text)
-
-
-def _parse_response(raw_text: str) -> list[Atom]:
-    """Parse JSON response text into Atom objects.
-
-    Args:
-        raw_text: Raw JSON string from the API.
-
-    Returns:
-        List of successfully parsed Atom objects.
-        Invalid JSON or schema failures are logged and skipped.
-    """
-    try:
-        data: Any = json.loads(raw_text)
-    except json.JSONDecodeError:
-        logger.warning("Failed to parse JSON response: %s...", raw_text[:100])
-        return []
-
-    if not isinstance(data, list):
-        logger.warning("Expected JSON array, got %s", type(data).__name__)
-        return []
-
-    atoms: list[Atom] = []
-    for item in data:
-        try:
-            atoms.append(Atom(**item))
-        except ValidationError:
-            logger.warning("Atom validation failed: %s", item.get("summary", "unknown"))
-    return atoms
+        return response.atoms
 
 
 _DEFAULT_CONCURRENCY = 10
@@ -136,7 +97,8 @@ class AsyncExtractionRunner:
     """Async runner that extracts atoms from context windows concurrently.
 
     Uses asyncio.gather with a semaphore to limit concurrent LLM calls,
-    avoiding rate-limit errors while maximizing throughput.
+    avoiding rate-limit errors while maximizing throughput. Uses instructor
+    for structured output.
 
     Attributes:
         stats: Dict tracking windows_processed and atoms_produced.
@@ -184,23 +146,24 @@ class AsyncExtractionRunner:
         return all_atoms
 
     async def _process_window(self, window: ContextWindow) -> list[Atom]:
-        """Process a single context window through the async API.
+        """Process a single context window through async structured output.
 
         Args:
             window: A single ContextWindow to extract from.
 
         Returns:
-            List of Atom objects parsed from the API response.
+            List of Atom objects from the structured API response.
         """
         async with self._semaphore:
             try:
-                response = await self._client.create_message(
+                response = await self._client.create_structured_message(
                     model=_MODEL,
                     max_tokens=_MAX_TOKENS,
                     system=self._system_prompt,
                     messages=[{"role": "user", "content": window.thread_text}],
+                    response_model=ExtractionResponse,
                 )
-            except ValueError:
-                logger.warning("LLM returned non-text response for window")
+            except Exception:
+                logger.warning("Structured extraction failed for window")
                 return []
-            return _parse_response(response.text)
+            return response.atoms
