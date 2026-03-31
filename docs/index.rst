@@ -12,6 +12,7 @@ personalized daily digests.
    :caption: Contents
 
    design-document
+   next-steps
    api/modules
 
 Indices and tables
