@@ -1,5 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+
+# Testing / Coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Type checking
+.ty/
+.mypy_cache/
+
+# Ruff
+.ruff_cache/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.*
+
+# Node (frontend)
+node_modules/
+frontend/dist/
+frontend/build/
 
 # Beads / Dolt files (added by bd init)
 .dolt/
 *.db
 .beads-credential-key
+.beads/dolt-server.lock
+.beads/dolt-server.log
+.beads/dolt-server.pid
+.beads/dolt-server.port
