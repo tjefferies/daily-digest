@@ -908,3 +908,69 @@ STRUCTURED_OUTPUT=$(bd create \
   --acceptance="1. instructor added to pyproject.toml dependencies. 2. Extraction runner uses instructor to get list[Atom] directly from LLM. 3. Generation runner uses instructor to get structured DigestSection responses. 4. Both sync and async paths use instructor. 5. No more silent data loss from malformed JSON. 6. All existing tests continue to pass. 7. All 7 quality gates pass." \
   --silent)
 echo "    Structured Output:  $STRUCTURED_OUTPUT"
+
+# ─── CR-4.1: SCORING CALIBRATION ────────────────────────────────────────────
+SCORING_CALIBRATION=$(bd create \
+  --title="Calibrate scoring dimensions — normalize distributions across five dimensions" \
+  --type=bug \
+  --priority=2 \
+  --description="CR-4.1: The five scoring dimensions (workstream_proximity, role_type_alignment, phase_alignment, urgency, social_signal) have different distributions. Discrete 4-value dimensions (urgency) vs continuous dimensions create unequal influence. The relative influence of each dimension doesn't match the stated persona weights. Urgency and social_signal have 0.3-0.5 step sizes that dominate ranking decisions regardless of weight configuration. Need to normalize distributions so persona weights actually control relative influence." \
+  --design="Normalize each scoring dimension to [0,1] continuous range before applying persona weights. Options: (1) min-max normalization per dimension, (2) z-score normalization, (3) rank-based normalization. Urgency mapping needs finer granularity than current 4-value discrete (critical=1.0, high=0.7, medium=0.4, low=0.1). Social signal similarly needs smoother distribution. After normalization, verify that changing a persona weight actually shifts ranking outcomes proportionally." \
+  --acceptance="1. All five scoring dimensions produce values in [0,1] continuous range. 2. Changing a persona weight by X% shifts that dimension's contribution by ~X%. 3. No single dimension dominates ranking regardless of weight config. 4. Existing test assertions updated to reflect calibrated scores. 5. All 7 quality gates pass." \
+  --silent)
+echo "    Scoring Calibration: $SCORING_CALIBRATION"
+
+# ─── VULTURE DEAD CODE DETECTION ────────────────────────────────────────────
+VULTURE=$(bd create \
+  --title="Add vulture for dead code detection — integrate into quality gates and remove all dead code" \
+  --type=task \
+  --priority=2 \
+  --description="Add vulture to the project toolchain and iteratively remove ALL dead code from the codebase. Vulture statically analyzes Python to find unused functions, variables, imports, classes, and attributes. Integrate into pyproject.toml (dependency + config), scripts/quality-gates.sh (as a gate), GitHub Actions CI pipeline, and Makefile. Then run vulture iteratively — fix findings, re-run, repeat until clean." \
+  --design="1. Add vulture to dev dependencies in pyproject.toml. 2. Configure vulture in pyproject.toml ([tool.vulture] section) with min_confidence=80 and a whitelist file for false positives (e.g. Pydantic model_config, pytest fixtures, __all__ exports). 3. Add vulture gate to scripts/quality-gates.sh. 4. Add vulture step to GitHub Actions workflow. 5. Add vulture target to Makefile. 6. Run vulture iteratively: review each finding, remove genuine dead code, add confirmed false positives to whitelist. Repeat until zero findings." \
+  --acceptance="1. vulture added to pyproject.toml dev dependencies. 2. vulture configured in pyproject.toml with whitelist for false positives. 3. vulture runs as a quality gate in scripts/quality-gates.sh. 4. vulture runs in GitHub Actions CI pipeline. 5. vulture target added to Makefile. 6. All dead code removed from codebase. 7. vulture passes with zero findings. 8. All 7 existing quality gates still pass." \
+  --silent)
+echo "    Vulture:            $VULTURE"
+
+# ─── CR-3.2: TWO-STAGE EXTRACTION ───────────────────────────────────────────
+TWO_STAGE=$(bd create \
+  --title="Two-stage extraction — split monolithic prompt into coarse extract then enrich" \
+  --type=feature \
+  --priority=2 \
+  --description="CR-3.2: The 88-line extraction prompt asks the LLM to do too much in one pass: extract events, classify type, assign confidence, identify participants, tag workstreams, determine urgency, assess phase relevance, and detect implicit decisions. This cognitive overload degrades quality on every dimension simultaneously. Split into a two-stage pipeline: Stage 1 (coarse extract) identifies events and produces minimal atoms. Stage 2 (enrich) takes each coarse atom and adds confidence, workstream tags, urgency, phase relevance, and implicit decision detection." \
+  --design="1. Research optimal task decomposition for LLM extraction. 2. Design Stage 1 prompt: focused on event identification — type, summary, detail, source, key_participants only. Simpler schema = higher recall. 3. Design Stage 2 prompt(s): enrichment passes adding confidence, workstreams, urgency, phase_relevance. Could be single enrich prompt or parallel micro-prompts per dimension. 4. Update ExtractionRunner to chain stages: extract → enrich → merge into final Atom. 5. Preserve async concurrency — Stage 2 enrichments can run in parallel. 6. Use instructor structured output for both stages. 7. Define intermediate Pydantic models for Stage 1 output (CoarseAtom) distinct from final Atom." \
+  --acceptance="1. Extraction split into two distinct LLM stages with separate prompts. 2. Stage 1 prompt focused on event identification only. 3. Stage 2 enriches with metadata (confidence, workstreams, urgency, phase). 4. Final Atom output matches existing schema — downstream pipeline unchanged. 5. Both stages use instructor structured output. 6. Async runner processes Stage 2 enrichments concurrently. 7. All existing tests updated or replaced. 8. All 7 quality gates pass." \
+  --silent)
+echo "    Two-Stage Extract:  $TWO_STAGE"
+
+# ─── SLACK API-SHAPED DATASET FIXTURE ────────────────────────────────────────
+SLACK_FIXTURE=$(bd create \
+  --title="Restructure dataset to load from Slack-API-shaped static JSON fixture" \
+  --type=feature \
+  --priority=2 \
+  --description="Deep research the Slack Python SDK (https://docs.slack.dev/messaging/retrieving-messages/) and restructure src/evercurrent/dataset/messages.py to load from a flat static .json file that EXACTLY matches the Slack API response shape as of March 2026. Current synthetic dataset uses an ad-hoc format. The fixture should mirror conversations.history and conversations.replies schemas — ts, thread_ts, user, text, reply_count, replies, reactions, blocks, etc. Next steps (NOT in scope): swap flat file for live slack_sdk.WebClient. Steps: 1) Add slack-sdk dep. 2) Create SlackIngestionClient. 3) Channel iteration + pagination. 4) OAuth token management. 5) Replace file loader with live client behind common interface." \
+  --design="1. Research Slack API response schemas: conversations.history, conversations.replies — document exact field names, types, nesting. 2. Create static JSON fixture file (data/slack_fixture.json) matching Slack API shape exactly. 3. Restructure messages.py to load from fixture. 4. Update ContextWindow builder and ingestion layer to consume Slack-shaped data. 5. Ensure downstream pipeline stages still work. 6. Document Slack API fields and next steps for live connection in docstrings." \
+  --acceptance="1. Static JSON fixture matches Slack conversations.history + conversations.replies response schema exactly. 2. messages.py loads from the fixture file. 3. All existing pipeline tests pass with restructured data. 4. Docstring documents Slack API fields and next steps for live connection. 5. No Slack SDK client code written — only fixture and loader. 6. All 7 quality gates pass." \
+  --silent)
+echo "    Slack Fixture:      $SLACK_FIXTURE"
+
+# ─── DOCUMENTATION UPDATE ───────────────────────────────────────────────────
+DOCS_UPDATE=$(bd create \
+  --title="Update README.md and docs/*.rst to reflect current repo state" \
+  --type=task \
+  --priority=3 \
+  --description="Deep-review the current state of the codebase — architecture, implemented layers, models, pipelines, quality gates, dependencies — and update README.md and all docs/*.rst files to accurately reflect what exists now. Documentation has drifted from implementation: features have been added (instructor structured output, async pipeline, Neo4j backbone, composite scoring) that aren't reflected in docs. The README should serve as an accurate entry point for evaluators and future contributors." \
+  --design="1. Read every module under src/evercurrent/ to inventory implemented features. 2. Cross-reference against existing README.md and docs/*.rst for gaps/stale content. 3. Update README.md: project overview, architecture diagram (text), quickstart, environment setup, quality gates, layer-by-layer status. 4. Update docs/*.rst: ensure design-document.rst, any API docs, and architecture docs match reality. 5. Remove references to unimplemented features; add references to implemented ones (instructor, async, Neo4j, scoring calibration, etc.)." \
+  --acceptance="1. README.md accurately describes current architecture and all implemented layers. 2. All docs/*.rst files reflect current implementation state. 3. No references to unimplemented features without clear 'planned' markers. 4. Setup/quickstart instructions actually work. 5. All 7 quality gates pass." \
+  --silent)
+echo "    Docs Update:        $DOCS_UPDATE"
+
+# ─── SPHINX MATERIAL THEME ──────────────────────────────────────────────────
+SPHINX_THEME=$(bd create \
+  --title="Switch Sphinx docs theme to Material (sphinx-immaterial)" \
+  --type=task \
+  --priority=3 \
+  --description="Change the Sphinx documentation theme from the current default to a Material Design theme. Use sphinx-immaterial (or furo as fallback) for a modern, responsive, searchable documentation site. Update conf.py, add the theme to pyproject.toml dev dependencies, and verify all existing .rst files render correctly under the new theme." \
+  --design="1. Add sphinx-immaterial to pyproject.toml dev dependencies. 2. Update docs/conf.py: set html_theme = 'sphinx_immaterial' and configure theme options (palette, font, repo_url, navigation). 3. Build docs locally to verify all .rst files render correctly. 4. Fix any theme-specific markup issues (admonitions, tables, code blocks). 5. Update Makefile docs target if needed." \
+  --acceptance="1. sphinx-immaterial added to pyproject.toml dev dependencies. 2. docs/conf.py uses Material theme. 3. All existing .rst files render correctly. 4. Docs build without warnings. 5. All 7 quality gates pass." \
+  --silent)
+echo "    Sphinx Theme:       $SPHINX_THEME"
