@@ -4,7 +4,7 @@
 provider: anthropic
 
 # Model used for extraction and generation.
-model: claude-sonnet-4-20250514
+model: claude-haiku-4-5
 
 # Token limits.
 extraction_max_tokens: 4096
