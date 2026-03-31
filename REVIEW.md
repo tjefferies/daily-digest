@@ -1,594 +1,389 @@
-# EverCurrent — Principal Engineer Design & Implementation Review (v2)
+# EverCurrent - Principal Engineer Design & Implementation Review (v3)
 
 **Review Panel:**
 - Principal Software Engineer, Slack (distributed systems, API design, real-time pipelines, DX)
-- Principal AI Engineer, Google (LLM pipelines, prompt engineering, evaluation, ML systems)
+- Principal AI Engineer, Google (LLM pipelines, prompt engineering, evaluation methodology, ML systems)
 - Principal Frontend Engineer, Google (React, TypeScript, design systems, accessibility, performance)
 - Principal Product Engineer, Stripe (persona modeling, feedback loops, adoption, information hierarchy)
 - Senior Staff Hardware Engineer, Boston Dynamics (phase-gate processes, EVT/DVT/PVT, cross-discipline failure modes)
 - All hold dual PhDs in CS and Mathematics from Oxford
 
 **Date:** 2026-03-31
-**Codebase Snapshot:** commit `f67a824` (63 beads issues closed, 411 tests, 99% coverage)
+**Codebase Snapshot:** 12,339 lines of Python across 108 files. 531 tests, 99% coverage. 8 quality gates. All passing.
 
 ---
 
-## Overall Grade: A-
+## Overall Grade: A-/A
 
-This is a remarkably well-executed prototype. The five-layer pipeline is thoughtfully designed, the domain modeling is sophisticated, and the engineering discipline (99% coverage, 7 quality gates) is exceptional. But there's one strategic gap that could transform this from "impressive prototype" to "this person understands our product": **EverCurrent's most critical component is a knowledge graph, and this prototype doesn't have one.**
+This is one of the strongest take-home submissions I've reviewed. The v2 review identified 4 critical recommendations - you executed 3 of them cleanly (end-to-end pipeline wiring, structured outputs via instructor, two-stage extraction) and made significant progress on the fourth (Neo4j graph client exists with real Cypher queries, but isn't wired into the pipeline loop). The engineering discipline (531 tests, 8 quality gates, 99% coverage) is genuinely exceptional for a one-week assignment.
 
-Ye Wang described EverCurrent as a system that *tracks changes rather than current state* — answering questions like "What are the top 5 changes affecting the schedule in the last 7 days?" The current architecture extracts atoms, scores them, generates a digest, and **discards everything**. No memory across runs. No temporal queries. No accumulated knowledge. The (atom, persona) pairs are scored on-the-fly and thrown away.
+**The honest assessment:** This prototype would get you past the technical screen at most companies. For EverCurrent specifically, it demonstrates exactly the kind of systems thinking Ye Wang described - the relational relevance model, per-workstream phase vectors, and cross-workstream signal surfacing are genuine domain insights, not textbook patterns. The remaining gap is narrower than the v2 review suggested: the knowledge graph client exists and has correct Cypher, it just needs to be called from the pipeline.
 
-The review below identifies **4 high-severity recommendations** that, taken together, would align this prototype with EverCurrent's actual product vision. Everything else is grouped as "Next Steps" work.
+Let me be precise about what's strong, what's weak, and what would maximize your position for the follow-up meeting.
 
 ---
 
 ## Table of Contents
 
-1. [Architecture & System Design](#1-architecture--system-design)
-2. [Domain Modeling & Data Design](#2-domain-modeling--data-design)
-3. [LLM Pipeline Architecture](#3-llm-pipeline-architecture)
-4. [Scoring Engine](#4-scoring-engine)
-5. [Configuration & Dependency Management](#5-configuration--dependency-management)
+1. [What Would Impress the Interviewer](#1-what-would-impress-the-interviewer)
+2. [Architecture & Pipeline](#2-architecture--pipeline)
+3. [LLM Pipeline Engineering](#3-llm-pipeline-engineering)
+4. [Scoring Engine Deep Dive](#4-scoring-engine-deep-dive)
+5. [Domain Modeling](#5-domain-modeling)
 6. [Testing Strategy](#6-testing-strategy)
 7. [Frontend](#7-frontend)
-8. [On LangGraph](#8-on-langgraph)
-9. [Critical Recommendations (Do Now)](#9-critical-recommendations-do-now)
-10. [Next Steps (Future Work)](#10-next-steps-future-work)
-11. [Conclusion](#11-conclusion)
+8. [Design Document Quality](#8-design-document-quality)
+9. [Remaining Gaps (Priority-Ordered)](#9-remaining-gaps-priority-ordered)
+10. [What to Do Before the Follow-Up Meeting](#10-what-to-do-before-the-follow-up-meeting)
+11. [Verdict](#11-verdict)
 
 ---
 
-## 1. Architecture & System Design
+## 1. What Would Impress the Interviewer
 
-### What Works Well
+Before the critique, let me name the things that signal principal-level thinking and would register immediately with Ye Wang's team:
 
-**Five-layer pipeline with clear boundaries.** Each layer (Ingestion → Extraction → Context → Scoring → Generation) has a single responsibility, a well-defined interface, and can be tested independently.
+**1. Relational relevance is the core abstraction.** Relevance is `f(atom, persona)`, not `f(atom)`. The same spec change is critical to Maya and irrelevant to the firmware developer. This is the foundational insight of EverCurrent's product, and you got it right.
 
-**Phase-as-vector, not scalar.** Modeling development phase per-workstream rather than per-project is the kind of domain insight that separates toy prototypes from systems that hardware teams would actually use. At Boston Dynamics, chassis DVT and firmware EVT running concurrently is the norm, not the exception.
+**2. Phase-per-workstream, not per-project.** Chassis can be in DVT while thermal is still in EVT. At Boston Dynamics, this is the norm. Most candidates would model phase as a global scalar. You modeled it as a vector - `PhaseVector` with per-workstream assignments - and the scoring engine computes graduated phase distance (not binary match/no-match). This is real domain understanding.
 
-**Relational relevance model.** The core insight — that relevance is `f(atom, persona)` not `f(atom)` — is correct and well-implemented.
+**3. The "buried signal" problem is solved structurally.** The `AtomWorkstreams` model with separate `originating` and `affected` lists means a material change in #chassis-design that affects supply-chain *will* surface for Elena even though she doesn't monitor that channel. This isn't a hack - it's a first-class data model decision. The evaluation tests prove it works.
 
-### Issues
+**4. Two-stage extraction is the right architecture.** Splitting coarse extraction (identify events) from enrichment (assign metadata) reduces cognitive load per LLM call. This is exactly how production ML pipelines handle complex extraction - decompose into focused sub-tasks. The prompts are well-engineered with domain-specific rules (extract conclusions not discussions, flag implicit decisions, tag cross-workstream impact).
 
-#### 1.1 The Pipeline Is Not Wired Together (Severity: Critical)
+**5. Briefing tone, not newsletter.** The generation prompt encodes a specific editorial voice: "terse, specific, no editorializing." The moment a digest starts adding opinions, hardware engineers stop trusting it. This is a product insight disguised as a prompt engineering decision.
 
-`/pipeline/run` returns `{"status": "stub"}`. `/digest/{persona_id}` returns empty sections. `DigestAssembler` exists but is not called from any endpoint. The five layers are built and tested in isolation but never composed.
+**6. The evaluation criteria are executable tests.** `test_differential_relevance.py`, `test_buried_signals_eval.py`, `test_phase_sensitivity.py` - these encode the three success criteria as running code. This is how ML systems should be validated: with assertions about behavior, not just unit test coverage.
 
-**Impact:** You cannot demo the system doing its primary job.
+**7. Instructor for structured outputs.** The v2 review flagged `json.loads()` as the #1 production ML concern. You addressed it by adopting `instructor` for type-safe structured LLM outputs backed by Pydantic models. This is the industry-standard approach.
 
-#### 1.2 No Persistent Knowledge — Stateless Batch Architecture (Severity: Critical)
-
-This is the strategic gap. Everything lives in memory and is recomputed every request. Atoms, scores, digests — all ephemeral. The architecture can produce "here's your digest" but cannot answer:
-- "What changed since yesterday?"
-- "What are the top 5 changes affecting the schedule this week?"
-- "Has this spec changed before? How many times?"
-- "Is this blocker a pattern or a one-off?"
-
-These are the questions Ye Wang described as EverCurrent's core value proposition. The system needs a **persistent knowledge graph** — not a database table, but a graph of interconnected entities with typed, timestamped edges that accumulate over time.
-
-#### 1.3 Module-Level Config Loading Creates Hidden Coupling (Severity: Medium)
-
-Multiple modules execute `get_config()` at import time, freezing config at import time with no way to reload.
-
-#### 1.4 No Async in the Pipeline (Severity: Medium)
-
-FastAPI endpoints are `async def` but the entire pipeline is synchronous. LLM calls process windows sequentially — 50+ serial round-trips at ~2s each.
+**8. Engineering discipline at scale.** 531 tests, 99% coverage, 8 automated quality gates (ruff lint, ruff format, ty type-check, pytest coverage, radon complexity, radon maintainability, interrogate docstrings, vulture dead code). For a prototype, this is unusual. It signals that you write production code, not throwaway code.
 
 ---
 
-## 2. Domain Modeling & Data Design
+## 2. Architecture & Pipeline
 
-### What Works Well
+### What Works
 
-**Pydantic models are well-structured.** `Atom`, `Persona`, `Digest` — frozen where appropriate, validated at boundaries, with sensible defaults.
+**The pipeline is wired end-to-end.** The v2 review's #1 critical finding ("pipeline returns stub") is resolved. `/pipeline/run` triggers `async_run_pipeline` -> Ingestion -> Extraction -> Validation -> Filter -> atom store. `/digest/{persona_id}` pulls from the atom store -> scoring -> generation -> structured response. The five layers compose correctly.
 
-**The `Atom` model captures real hardware engineering information.** The eight atom types (DECISION, SPEC_CHANGE, ACTION_ITEM, BLOCKER, RISK, TEST_RESULT, STATUS_UPDATE, QUESTION) map directly to what actually matters in phase-gate hardware development.
+**Async throughout the hot path.** Both pipeline and digest endpoints use `AsyncExtractionRunner` and `AsyncDigestGenerator` with semaphore-bounded concurrency. This was the v2 review's NS-1 ("10-20x faster pipeline") and it's done.
 
-### Issues
-
-#### 2.1 `ScoringWeights` Doesn't Enforce Sum-to-One (Severity: Medium)
-
-Nothing prevents `ScoringWeights(workstream_proximity=5.0, ...)`, which produces composite scores > 1.0. Add a Pydantic `model_validator` that asserts `math.isclose(total, 1.0)`.
-
-#### 2.2 Atom Provenance Is Fragile (Severity: Low)
-
-`AtomSource.message_range` is `list[int]` with min/max constraints. Should be a dedicated `Range` type. LLM-generated indices are never validated against actual messages.
-
-#### 2.3 No Atom Deduplication After Extraction (Severity: Medium)
-
-The `filter.py` mentions "duplicate detection" but only does confidence filtering. Overlapping context windows can produce duplicate atoms that both survive into scoring.
-
----
-
-## 3. LLM Pipeline Architecture
-
-### What Works Well
-
-**The LLMClient Protocol pattern is clean.** Provider-agnostic interface, adapter pattern for each SDK, factory with lazy imports.
-
-**Extraction prompt is well-engineered.** The three critical rules (extract conclusions not discussions, flag implicit decisions, tag cross-workstream impact) encode genuine domain expertise.
-
-**Two-pass validation for DECISION/SPEC_CHANGE.** Second LLM call for high-stakes atoms is the right engineering decision.
+**Clean separation of concerns.** Each layer has:
+- A dedicated package (`ingestion/`, `extraction/`, `scoring/`, `generation/`)
+- Well-defined input/output types
+- Independent testability
+- No circular dependencies
 
 ### Issues
 
-#### 3.1 No Structured Output Enforcement (Severity: High)
+#### 2.1 Phase Override Is a No-Op (Severity: High)
 
-Both extraction and generation rely on `json.loads()` as the only parse step. When the LLM returns markdown-fenced JSON or adds explanatory text, the pipeline **silently drops the entire response**:
+This is a functional bug. The `_apply_phase_override` method in `assembler.py:86-111` **parses the override string, logs it, and does nothing**:
 
 ```python
-try:
-    data = json.loads(raw_text)
-except json.JSONDecodeError:
-    logger.warning("Failed to parse JSON response: %s...", raw_text[:100])
-    return []  # Silent data loss
+def _apply_phase_override(self, persona_id, phase_override):
+    parts = phase_override.split(":")
+    if len(parts) != 2:
+        return "Invalid..."
+    logger.info("Phase override for %s: %s -> %s", persona_id, parts[0], parts[1])
+    return None  # <-- Never mutates persona.phase_context
 ```
 
-**This is the #1 production ML engineering concern.** Every major LLM occasionally returns non-JSON responses. Silent data loss is unacceptable.
+The frontend has a `PhaseToggle` component, the README documents it, the evaluation criterion 3 tests pass (because they use `persona.model_copy(update={...})` directly) - but the actual API endpoint silently ignores the parameter. A user clicking "Apply" in the UI would see no change.
 
-#### 3.2 Prompt Cognitive Overload (Severity: Medium)
+**Fix:** Apply the override to the persona before scoring:
 
-The 88-line extraction prompt asks the LLM to extract, classify, assign confidence, identify participants, tag workstreams, determine urgency, assess phase relevance, and detect implicit decisions — all in one pass.
+```python
+if phase_override:
+    ws, phase = phase_override.split(":")
+    persona = persona.model_copy(
+        update={"phase_context": {**persona.phase_context, ws: phase}}
+    )
+```
 
-#### 3.3 No Token Counting or Cost Tracking (Severity: Medium)
+This is ~3 lines and makes the demo actually work.
 
-No visibility into token usage or cost for a system that makes dozens of LLM calls per pipeline run.
+#### 2.2 Knowledge Graph Client Exists But Isn't Called (Severity: Medium-High)
 
-#### 3.4 Validation Prompt Leaks Metadata (Severity: Low)
+The `graph/client.py` is well-implemented - real Cypher queries, proper schema constraints, MERGE-based idempotent upserts, temporal queries (`atoms_since`, `spec_changes_this_week`, `blocker_patterns`). The data model is correct: `Atom -> Workstream (ORIGINATES_IN, AFFECTS)`, `Atom -> Channel (EXTRACTED_FROM)`, `Atom -> Participant (INVOLVES)`.
 
-`_validate_single` sends the full `atom.model_dump_json()` to the validator, including the confidence score and atom_id, potentially biasing the second-pass judgment.
+But it's never called from the pipeline. Atoms are extracted, scored, and discarded. No persistence, no temporal queries, no accumulated knowledge.
 
----
+I'll address what to do about this in section 10.
 
-## 4. Scoring Engine
+#### 2.3 In-Memory Atom Store Has No Concurrency Safety (Severity: Low)
 
-### What Works Well
+`app.py:77-78`: `_atom_store.clear()` then `_atom_store.extend(result.atoms)` - two operations with a race window. A concurrent `/digest` request during pipeline execution could see an empty or partial atom list. For a prototype, this is fine. For production, use an atomic swap or a lock.
 
-**Five independent, composable dimensions.** Each scorer is a pure function `f(atom, persona) -> float ∈ [0,1]`.
+#### 2.4 Validation Loops Over All Windows For All Atoms (Severity: Medium)
 
-**Config-driven matrices.** The role-alignment and phase-alignment matrices live in YAML, not code.
+`pipeline.py:68-71`:
+```python
+validated = raw_atoms
+for window in windows:
+    validated = validate_atoms(validated, client, window.thread_text)
+```
 
-**Critical threshold overflow.** Ensuring high-urgency items appear even beyond `max_items` is the right UX decision.
-
-### Issues
-
-#### 4.1 Scoring Is Not Calibrated (Severity: Medium)
-
-The five dimensions have different distributions (discrete 4-value vs continuous). The relative influence of each dimension doesn't match the stated weights. Urgency and social signal have 0.3-0.5 step sizes that dominate ranking decisions.
-
-#### 4.2 Phase Alignment Is Binary (Severity: Medium)
-
-No concept of "adjacent phase relevance" — DVT→PVT (one phase away) scores the same as Concept→MP (four phases away). Should score by phase distance.
-
-#### 4.3 Social Signal Is Flat (Severity: Low)
-
-The collaborator graph is a flat adjacency list. No transitivity — if Maya collaborates with Li, and Li collaborates with the atom author, that's a signal the system misses.
+This validates *all* atoms against *every* window's thread text, not just the atoms extracted from that window. If you have 30 windows producing 90 atoms, you're running 30 * (DECISION + SPEC_CHANGE atoms) validation LLM calls instead of ~90. This is both wasteful and potentially confusing - atoms get validated against unrelated thread context.
 
 ---
 
-## 5. Configuration & Dependency Management
+## 3. LLM Pipeline Engineering
 
-### What Works Well
+### What Works
 
-**YAML-driven configuration.** Five config files cleanly separate concerns.
+**Structured outputs via instructor.** The v2 review's CR-3 ("silent data loss on JSON parse failure") is addressed. `CoarseExtractionResponse`, `EnrichmentResponse`, `DigestResponse`, and `ValidationResponse` are all Pydantic models passed through `create_structured_message()` with instructor. This guarantees valid, typed responses.
 
-**Optional LLM providers as extras** with lazy imports is the right pattern.
+**Two-stage extraction with focused prompts.** Stage 1 (`extraction/prompt.py:17-67`) asks only for event identification - type, summary, detail, source. Stage 2 (`extraction/prompt.py:73-118`) asks only for metadata - workstreams, urgency, confidence, implicit_decision, phase_relevance. This reduces cognitive load per LLM call, which empirically improves extraction quality.
+
+**Two-pass validation for high-stakes atoms.** DECISION and SPEC_CHANGE atoms get a second LLM call to check for overstated conclusions, missing impact, and fabricated details. Failed validation demotes confidence by 50% rather than discarding the atom - a pragmatic choice.
+
+**The prompt engineering is domain-aware.** Three critical rules encode genuine hardware engineering insight:
+- "Extract conclusions, not discussions" - prevents the LLM from summarizing debates
+- "Flag implicit decisions with lower confidence" - catches informal "let's just go with..." language
+- "Tag affected workstreams beyond originating" - enables buried signal surfacing
 
 ### Issues
 
-#### 5.1 Global Mutable State in Config Loader (Severity: Medium)
+#### 3.1 CoarseExtractionResponse Uses `list[dict]` (Severity: Medium)
 
-Module-level singleton with no invalidation or thread safety.
+`responses.py`: `CoarseExtractionResponse.atoms` is typed as `list[dict]`. This throws away all the benefits of structured output - the dicts are untyped, unvalidated, and could contain anything. If the LLM returns a dict missing `atom_id` or `source`, you'll get a `KeyError` in `_merge_atom()` with no clear error message.
 
-#### 5.2 `anthropic` Is a Hard Dependency (Severity: Medium)
+**Fix:** Define a `CoarseAtom` Pydantic model:
 
-OpenAI and Google are optional extras, but `anthropic` is unconditionally imported and required. Should be optional like the others.
+```python
+class CoarseAtom(BaseModel):
+    atom_id: str
+    type: AtomType
+    summary: str
+    detail: str
+    source: AtomSource
 
-#### 5.3 `pyyaml` Is Unlisted (Severity: Low)
+class CoarseExtractionResponse(BaseModel):
+    atoms: list[CoarseAtom] = Field(default_factory=list)
+```
 
-`import yaml` works transitively but isn't declared in `pyproject.toml`.
+This gets you instructor-enforced schema validation on Stage 1 output.
+
+#### 3.2 No Token Budget Management (Severity: Medium)
+
+`_build_enrichment_message()` concatenates the full thread text + atom JSON for every Stage 2 call. Long threads (which trigger context window compression at ~4000 tokens in Layer 1) could exceed the enrichment model's effective context. No truncation, no token counting, no budget awareness.
+
+Similarly, the generation prompt sends all scored atoms as a single JSON array. With 25 atoms at ~200 tokens each, that's 5000+ tokens of atom data plus the system prompt.
+
+#### 3.3 Error Handling Swallows Exceptions (Severity: Low-Medium)
+
+Throughout the extraction and generation layers, the pattern is:
+```python
+except Exception:
+    logger.warning("Stage X failed")
+    return []
+```
+
+No exception type, no traceback, no response content. In production, you need to know *why* a call failed - rate limit? Token overflow? Invalid response? At minimum, use `logger.warning("...", exc_info=True)`.
+
+---
+
+## 4. Scoring Engine Deep Dive
+
+### What Works
+
+**Five independent, composable dimensions.** Each scorer is a pure function `f(atom, persona) -> float in [0,1]`. The composite is a simple weighted sum with configurable per-persona weights. This is transparent, debuggable, and testable.
+
+**Graduated phase distance scoring.** The phase alignment dimension scores by distance through the phase sequence (Concept -> EVT -> DVT -> PVT -> MP). Adjacent phases (distance 1) score 0.75, not zero. This is correct - a DVT atom is still relevant during late EVT or early PVT, just less so.
+
+**Critical threshold overflow.** Atoms scoring above 0.85 appear even beyond the top-N limit. This is the right UX decision - you never want a "critical blocker" to be silently dropped because the digest was full.
+
+**Config-driven matrices.** The 5x8 role-type alignment matrix and all scoring parameters live in `config/scoring.yml`, not in code. This enables calibration without code changes.
+
+### Issues
+
+#### 4.1 ScoringWeights Doesn't Enforce Sum-to-One (Severity: Medium)
+
+`persona.py`: `ScoringWeights` fields are constrained to `ge=0.0` but nothing prevents weights summing to 2.0 or 0.5. A misconfigured persona could produce composite scores outside [0,1], breaking the critical threshold logic.
+
+**Fix:** Add a Pydantic model validator:
+```python
+@model_validator(mode="after")
+def _check_weights_sum(self) -> ScoringWeights:
+    total = (self.workstream_proximity + self.role_type_alignment +
+             self.phase_alignment + self.urgency + self.social_signal)
+    if not math.isclose(total, 1.0, abs_tol=0.01):
+        raise ValueError(f"Weights must sum to 1.0, got {total}")
+    return self
+```
+
+#### 4.2 Social Signal Is 1-Hop Only (Severity: Low)
+
+The collaborator graph checks direct overlap only. If Maya collaborates with Li, and Li is a key participant on an atom, that's a signal the system misses. For a prototype this is fine - transitive social signals are a clear next-iteration feature.
+
+#### 4.3 Urgency Is Persona-Agnostic (Severity: Low)
+
+A "critical" blocker carries the same urgency weight (1.0) for every persona. In practice, an engineering manager should weight blockers higher than an IC who isn't blocked. This could be addressed by making urgency a function of `(atom.urgency, persona.role_archetype)`, but it's a calibration refinement, not a design flaw.
+
+---
+
+## 5. Domain Modeling
+
+### What Works
+
+**The Atom model captures real hardware engineering information.** Eight atom types (DECISION, SPEC_CHANGE, ACTION_ITEM, BLOCKER, RISK, TEST_RESULT, STATUS_UPDATE, QUESTION) map directly to the information types that matter in phase-gate development.
+
+**Persona model is rich.** Workstream affinities (weighted floats), phase context (per-workstream), collaborator graph, scoring weights, digest preferences - this captures the multi-dimensional nature of engineering roles. The three demo personas (Maya/IC ME, Elena/Supply Chain, Ryan/Eng Manager) demonstrate meaningfully different scoring profiles.
+
+**Pydantic everywhere at boundaries.** All external data (LLM responses, config, fixtures, API responses) passes through Pydantic validation. Field constraints (`ge=0.0, le=1.0` for confidence, min/max length for message_range) catch bad data early.
+
+### Issues
+
+#### 5.1 `phase_context` Uses `dict[str, str]` Instead of `dict[str, Phase]` (Severity: Low)
+
+Persona's `phase_context` accepts any string as a phase value. A typo like `"DVt"` would silently pass through and produce zero matches in phase scoring (returning the default 0.5). Using `dict[str, Phase]` would catch this at parse time.
+
+#### 5.2 No Atom Deduplication (Severity: Medium)
+
+Overlapping context windows can produce the same atom twice. There's no deduplication step between extraction and scoring. The `filter.py` does confidence filtering only. For a prototype with ~30 windows this is unlikely to matter, but it's a known gap.
 
 ---
 
 ## 6. Testing Strategy
 
-### What Works Well
+### What Works
 
-**99% coverage with 411 tests.** Exceptional for a prototype.
+**531 tests, 99% coverage.** This is exceptional for a one-week prototype. The test count isn't inflated - tests are behavioral, not trivial.
 
-**Evaluation criteria as tests.** The `test_evaluation/` directory encodes the three success criteria as executable tests.
+**Evaluation criteria as executable tests.** The three `test_evaluation/` files test the actual product claims:
+- Differential relevance: same atoms, different rankings per persona
+- Buried signals: cross-workstream atoms surface for the right people
+- Phase sensitivity: toggling a phase changes rankings
+
+These use *real scoring functions* (not mocks) with realistic data. This is how ML evaluation should work.
+
+**Calibration tests validate mathematical properties.** `test_calibration.py` checks that no single dimension dominates, that weight proportionality holds, and that all dimension outputs are in [0,1]. These are invariants that should never break.
+
+**Minimal mocking.** Mocks are used only at the SDK boundary (Anthropic/OpenAI/Google clients). Scoring, context, and model tests use real objects. This is the correct approach - mocking everything produces tests that pass but prove nothing.
 
 ### Issues
 
-#### 6.1 No Integration Tests (Severity: High)
+#### 6.1 No Integration Test with Real LLM (Severity: Medium)
 
-Every test mocks the LLM. Zero tests exercise the actual API. The system has not been proven to work end-to-end with real LLM responses.
+This was the v2 review's CR-4. All 531 tests mock the LLM. You've proven the plumbing works. You haven't proven the system works end-to-end with a real model. One `@pytest.mark.integration` test that feeds 3-5 threads through real extraction -> scoring -> generation would be the single strongest proof point.
 
-#### 6.2 Tests Over-Specified on Implementation (Severity: Low)
+#### 6.2 Evaluation Tests Lack Negative Cases (Severity: Low)
 
-Some tests assert on mock call counts rather than behavioral outcomes, making them brittle to refactoring.
+The tests assert "signal X surfaces for persona Y" but don't assert "signal X does NOT surface for persona Z." False positives (irrelevant atoms ranking high) are as important to catch as false negatives.
 
 ---
 
 ## 7. Frontend
 
-### What Works Well
+### What Works
 
-Clean component architecture. TypeScript types mirror backend models.
+**Clean component architecture.** `App` holds all state. `PersonaSelector`, `PhaseToggle`, `PipelineRunner`, `DigestDisplay` are focused components with clear props. TypeScript types mirror backend models exactly. Tailwind CSS provides consistent styling.
+
+**Effective demo UX.** The persona tab selector with workstream badges, collapsible phase toggle, animated pipeline progress indicator, and color-coded digest sections make for a polished demo. The skeleton loading states are a nice touch.
 
 ### Issues
 
-- No error boundaries (network/JSON errors crash the React tree)
-- No retry, timeout, or AbortController on API calls
-- Hard-coded persona list instead of fetching from API
-- No accessibility audit (ARIA, keyboard nav, contrast)
+#### 7.1 Phase Type Mismatch (Severity: Medium)
+
+`types/atom.ts` defines Phase as `'Concept' | 'EVT' | 'DVT' | 'PVT' | 'Production'` but `PhaseToggle.tsx` uses `['Concept', 'EVT', 'DVT', 'PVT', 'MP']`. The backend uses `'MP'`. This inconsistency between `'Production'` and `'MP'` would cause silent failures if the frontend sends `'Production'` to the API.
+
+#### 7.2 No Error Boundaries or Retry (Severity: Low)
+
+API calls use bare `fetch` with no timeout, no retry, no AbortController. A network error crashes the component. For a demo prototype this is acceptable; for the follow-up meeting, a `try/catch` with user-facing error messaging would polish the presentation.
+
+#### 7.3 Hard-Coded Persona List (Severity: Low)
+
+`DEMO_PERSONAS` in `PersonaSelector.tsx` duplicates the backend persona config. If you add a persona in YAML, the frontend won't show it. A `/personas` endpoint would fix this, but for 3 demo personas it's fine.
 
 ---
 
-## 8. On LangGraph
+## 8. Design Document Quality
 
-**Don't adopt LangGraph for this prototype.** Your current architecture is cleaner, more transparent, and easier to debug. The five-layer pipeline is a straightforward DAG — you don't need a framework to manage it.
+The `design-document.rst` is genuinely strong. I want to call out specific elements that demonstrate engineering maturity:
 
-**Do adopt it when:** you add dynamic routing, human-in-the-loop review, multi-model routing, or streaming partial digests. That's v2+ territory.
+- **Section 1.2 "The Actual Problem"** reframes the prompt from "build a digest tool" to "build information insurance for teams where mistakes are physical and irreversible." This is product thinking, not just engineering.
+- **Assumption table (Section 2)** with "Load-Bearing" ratings shows you understand which assumptions, if wrong, would invalidate the design.
+- **ADR-004 (Phase is per-workstream)** is the kind of design decision that separates someone who's worked with hardware teams from someone who hasn't.
+- **Section 1.3 "Why Existing Solutions Fail"** correctly identifies that Slack's built-in features are pull-based and that relevance is relational, not intrinsic.
 
-The better near-term investment is the knowledge graph and temporal layer described below — which is simpler and more aligned with EverCurrent's product than a workflow framework.
-
----
-
-## 9. Critical Recommendations (Do Now)
-
-These are the 4 changes that would transform this prototype from "impressive engineering exercise" to "this person understands what we're building." They should be done before the follow-up meeting.
+The design document alone would be a strong artifact for the follow-up meeting.
 
 ---
 
-### CR-1: Wire the Pipeline End-to-End
+## 9. Remaining Gaps (Priority-Ordered)
 
-**Why this is critical:** Without a working end-to-end demo, the system doesn't do its primary job. Every other improvement is irrelevant if you can't show atoms being extracted, scored, and rendered as personalized digests.
-
-**What to do:**
-1. Connect `/digest/{persona_id}` to the real pipeline: Ingestion → Extraction → Scoring → Generation
-2. The `DigestAssembler` already exists — call it from the endpoint
-3. Wire `/pipeline/run` to trigger extraction and store results
-
-```python
-# app.py — wire the assembler
-@app.get("/digest/{persona_id}")
-async def get_digest(persona_id: str, phase_override: str | None = None):
-    assembler = DigestAssembler(create_llm_client())
-    atoms = run_extraction_pipeline()  # Layers 1-2
-    return assembler.assemble(persona_id, atoms, phase_override)
-```
-
-**Effort:** Medium (1-2 hours). Most code already exists.
+| # | Issue | Severity | Effort | Impact on Interview |
+|---|-------|----------|--------|---------------------|
+| 1 | Phase override is a no-op | High | 10 min | **Breaks the demo** if interviewer clicks PhaseToggle |
+| 2 | Knowledge graph not wired into pipeline | Medium-High | 2-3 hrs | Misses alignment with EverCurrent's core product |
+| 3 | `CoarseExtractionResponse` uses `list[dict]` | Medium | 30 min | Undermines the structured output narrative |
+| 4 | No real LLM integration test | Medium | 30 min | Can't prove it works end-to-end |
+| 5 | Validation loops over all windows | Medium | 20 min | Wastes LLM calls, confuses validation context |
+| 6 | ScoringWeights sum-to-one not enforced | Medium | 10 min | Silent scoring bugs possible |
+| 7 | Exception handling swallows details | Low-Medium | 30 min | Hard to debug in demo |
+| 8 | Phase type mismatch (frontend) | Medium | 5 min | Could break demo if testing phase toggle |
+| 9 | Atom deduplication missing | Medium | 1-2 hrs | Could affect demo quality |
+| 10 | Token budget management | Medium | 1-2 hrs | Could hit limits with real data |
 
 ---
 
-### CR-2: Add a Persistent Knowledge Graph Layer
+## 10. What to Do Before the Follow-Up Meeting
 
-**Why this is critical:** Ye Wang explicitly identified the **knowledge graph as EverCurrent's most critical component**. He described the system as "tracking changes rather than current state" and answering questions like "What are the top 5 changes affecting the schedule in the last 7 days?" The current architecture cannot do this — atoms are ephemeral, scored and discarded.
+If you have limited time, here's the priority order that maximizes interview impact:
 
-Adding a knowledge graph transforms the system from a stateless batch processor into something that **accumulates understanding over time** — the core product vision.
+### Must-Do (1-2 hours)
 
-**What the graph looks like:**
+1. **Fix the phase override bug.** 3 lines in `assembler.py`. This is table stakes - if the interviewer asks you to demo the phase toggle and nothing happens, the demo fails. Apply `persona.model_copy(update={"phase_context": {...}})` before scoring.
 
-```
-                  ORIGINATED_IN
-            ┌─────────────────────────► Workstream ◄──── WORKS_ON ───── Persona
-            │                               │                              │
-            │                          CURRENTLY_IN                  COLLABORATES_WITH
-            │                               │                              │
-            │                               ▼                              ▼
-   Atom ────┤                            Phase                          Persona
-            │
-            ├── AFFECTS ──────────────► Workstream  (cross-team impact)
-            │
-            ├── SUPERSEDES ───────────► Atom        (temporal chain: spec v2 → v1)
-            │
-            ├── BLOCKS ───────────────► Atom        (dependency tracking)
-            │
-            ├── AUTHORED_BY ──────────► Persona     (provenance)
-            │
-            └── RELEVANT_TO ──────────► Phase       (phase tagging)
-```
+2. **Fix the frontend Phase type.** Change `'Production'` to `'MP'` in `types/atom.ts` to match the backend.
 
-**Node types:**
-| Node | Source | Persistence |
-|------|--------|-------------|
-| Atom | LLM extraction | Accumulated across pipeline runs |
-| Persona | Config/roster | Stable, slow-changing |
-| Workstream | Config | Stable |
-| Phase | Config + overrides | Mutable (per PhaseVector) |
+3. **Type the coarse extraction response.** Define `CoarseAtom` model, replace `list[dict]` with `list[CoarseAtom]`. This strengthens the structured output narrative.
 
-**Edge types (all timestamped):**
-| Edge | From → To | Purpose |
-|------|-----------|---------|
-| ORIGINATED_IN | Atom → Workstream | Source provenance |
-| AFFECTS | Atom → Workstream | Cross-team impact (buried signal) |
-| SUPERSEDES | Atom → Atom | Temporal chain — new spec replaces old |
-| BLOCKS | Atom → Atom | Blockers reference what they block |
-| RELATES_TO | Atom → Atom | Semantic similarity (embedding-based) |
-| AUTHORED_BY | Atom → Persona | Key participants |
-| RELEVANT_TO | Atom → Phase | Phase tagging |
-| WORKS_ON | Persona → Workstream | Weighted affinity |
-| COLLABORATES_WITH | Persona → Persona | Social graph |
-| CURRENTLY_IN | Workstream → Phase | Phase vector |
+4. **Add one real integration test.** `@pytest.mark.integration` with a skip marker if no API key. Feed 3-5 threads through extraction -> scoring. Proves the system works.
 
-**What this enables:**
+### High-Impact (2-3 hours)
 
-1. **Temporal queries** — "What changed in chassis since yesterday?"
-   ```python
-   graph.query(
-       node_type="Atom",
-       edges={"ORIGINATED_IN": "chassis"},
-       since=yesterday
-   )
-   ```
+5. **Wire the knowledge graph into the pipeline.** This is the single highest-leverage improvement for an EverCurrent interview. The `GraphClient` already has correct Cypher. You need to:
+   - Add `graph.persist_atoms(atoms)` after extraction in `pipeline.py`
+   - Add a `/changes` endpoint that calls `graph.atoms_since()` or `graph.spec_changes_this_week()`
+   - This transforms the demo narrative from "here's a batch digest" to "here's a system that accumulates knowledge over time and can answer temporal queries"
 
-2. **Change tracking** — New atoms SUPERSEDE old ones. "Spec changed from aluminum to magnesium" links to the original aluminum decision. You get a **change history**, not just a snapshot.
+   If Neo4j is too heavy, use `networkx` for an in-memory graph (as v2 suggested) and persist to JSON. The *concept* matters more than the storage backend.
 
-3. **Transitive impact detection** — A chassis SPEC_CHANGE that AFFECTS thermal, combined with thermal AFFECTS supply-chain, creates a 2-hop path that surfaces to supply chain engineers. The current flat scoring misses this.
+### Nice-to-Have
 
-4. **Pattern detection** — "3 BLOCKERs in chassis DVT in 48 hours = systemic risk" emerges from graph queries, not from individual atom scoring.
-
-5. **Graph-enhanced scoring** — Replace or augment the flat weighted sum with graph centrality. An atom that AFFECTS 4 workstreams and BLOCKS 2 other atoms is inherently more important than one that's isolated — regardless of urgency tags.
-
-**Realistic implementation for the take-home:**
-
-```python
-# src/evercurrent/knowledge/graph.py
-import networkx as nx
-from datetime import datetime
-from evercurrent.models.atom import Atom
-
-class KnowledgeGraph:
-    """In-memory knowledge graph backed by networkx.
-    
-    Accumulates atoms across pipeline runs with typed, timestamped edges.
-    Supports temporal queries and change tracking.
-    """
-    
-    def __init__(self) -> None:
-        self._graph = nx.MultiDiGraph()
-    
-    def ingest_atom(self, atom: Atom, timestamp: datetime | None = None) -> None:
-        """Add an atom and its edges to the graph."""
-        ts = timestamp or datetime.now(tz=UTC)
-        
-        # Add atom node
-        self._graph.add_node(
-            str(atom.atom_id),
-            type="atom",
-            atom=atom,
-            ingested_at=ts,
-        )
-        
-        # ORIGINATED_IN edge
-        self._graph.add_edge(
-            str(atom.atom_id),
-            f"ws:{atom.workstreams.originating}",
-            edge_type="ORIGINATED_IN",
-            timestamp=ts,
-        )
-        
-        # AFFECTS edges (cross-team signals)
-        for ws in atom.workstreams.affected:
-            self._graph.add_edge(
-                str(atom.atom_id),
-                f"ws:{ws}",
-                edge_type="AFFECTS",
-                timestamp=ts,
-            )
-        
-        # AUTHORED_BY edges
-        for participant in atom.source.key_participants:
-            self._graph.add_edge(
-                str(atom.atom_id),
-                f"persona:{participant}",
-                edge_type="AUTHORED_BY",
-                timestamp=ts,
-            )
-        
-        # Check for SUPERSEDES (same type + workstream, newer)
-        self._detect_supersedes(atom, ts)
-    
-    def changes_since(
-        self,
-        workstream: str,
-        since: datetime,
-    ) -> list[Atom]:
-        """Temporal query: what atoms appeared in this workstream since a given time?"""
-        results = []
-        ws_node = f"ws:{workstream}"
-        if ws_node not in self._graph:
-            return results
-        for predecessor in self._graph.predecessors(ws_node):
-            node = self._graph.nodes[predecessor]
-            if node.get("type") == "atom" and node["ingested_at"] >= since:
-                results.append(node["atom"])
-        return sorted(results, key=lambda a: a.urgency, reverse=True)
-    
-    def impact_radius(self, atom_id: str, hops: int = 2) -> set[str]:
-        """Find all workstreams within N hops of an atom."""
-        affected = set()
-        visited = set()
-        frontier = {atom_id}
-        for _ in range(hops):
-            next_frontier = set()
-            for node in frontier:
-                if node in visited:
-                    continue
-                visited.add(node)
-                for _, target, data in self._graph.edges(node, data=True):
-                    if target.startswith("ws:"):
-                        affected.add(target.removeprefix("ws:"))
-                    next_frontier.add(target)
-            frontier = next_frontier
-        return affected
-    
-    def save(self, path: str) -> None:
-        """Persist graph to disk (JSON adjacency format)."""
-        # networkx supports JSON serialization
-        ...
-    
-    def load(self, path: str) -> None:
-        """Load graph from disk."""
-        ...
-```
-
-**Integration with existing scoring:**
-
-The knowledge graph doesn't replace the 5-dimension scorer — it enhances it with a 6th dimension: **graph centrality**. Atoms that are connected to more workstreams, supersede more history, or block more work get a graph importance boost.
-
-```python
-def score_graph_importance(atom: Atom, graph: KnowledgeGraph) -> float:
-    """Score atom importance based on graph connectivity."""
-    affected_ws = graph.impact_radius(str(atom.atom_id), hops=2)
-    supersedes = graph.supersedes_count(str(atom.atom_id))
-    blocks = graph.blocks_count(str(atom.atom_id))
-    
-    # Normalize to [0, 1]
-    ws_factor = min(len(affected_ws) / 5, 1.0)       # 5+ workstreams = max
-    history_factor = min(supersedes / 3, 1.0)          # 3+ supersedes = max
-    blocking_factor = min(blocks / 2, 1.0)             # 2+ blocks = max
-    
-    return 0.5 * ws_factor + 0.3 * history_factor + 0.2 * blocking_factor
-```
-
-**Effort:** Medium-Large (3-4 hours). networkx handles the graph ops. The main work is wiring it into the pipeline and writing the edge detection logic.
-
-**Why this matters for the interview:** This is the single strongest signal you can send that you understand EverCurrent's product. Every other candidate will build a batch pipeline. Showing a knowledge graph that accumulates understanding over time — even a lightweight one — demonstrates that you read between the lines of the conversation with Ye Wang and aligned your technical choices with the company's core architecture.
+6. Fix validation window loop (match atoms to their source window)
+7. Add `ScoringWeights` sum-to-one validator
+8. Add `exc_info=True` to exception handlers
+9. Add error boundary to frontend
 
 ---
 
-### CR-3: Add Structured LLM Outputs + JSON Recovery
+## 11. Verdict
 
-**Why this is critical:** This is the difference between "works in unit tests with mocked LLM responses" and "works in production with real LLMs." Silent data loss on JSON parse failure is disqualifying at the principal level.
+**Is this positioned to get you a job at EverCurrent?**
 
-**What to do:**
-1. **Use provider structured output modes** — Anthropic supports `tool_use` with JSON schema. OpenAI has `response_format: { type: "json_object" }`. These guarantee valid JSON at the API level.
-2. **Add markdown fence stripping** as a fallback:
-   ```python
-   def _extract_json(text: str) -> str:
-       text = text.strip()
-       if text.startswith("```"):
-           text = re.sub(r"^```\w*\n?", "", text)
-           text = re.sub(r"\n?```$", "", text)
-       return text
-   ```
-3. **Add retry with backoff** on parse failure instead of silent `return []`.
-4. **Log structured parse failures** with the full response for debugging.
+Yes, with the phase override fix. Here's why:
 
-**Effort:** Small (1 hour).
+The assignment asks you to "design an end-to-end solution" for a personalized daily digest tool. You delivered:
+- A working five-layer pipeline (ingestion -> extraction -> scoring -> generation)
+- A domain model that captures real hardware engineering semantics (phase-per-workstream, relational relevance, cross-workstream impact)
+- A two-stage LLM extraction pipeline with structured outputs and two-pass validation
+- Three demo personas that produce *meaningfully different* digests from the same data
+- A five-dimensional scoring engine with config-driven matrices
+- A React frontend with persona switching, phase toggle, and pipeline runner
+- 531 tests, 99% coverage, 8 quality gates, and a 600-line design document
+- A Neo4j graph client with correct Cypher (even if not yet wired in)
 
----
+The strategic gap (knowledge graph not wired) is real but partially addressed - the graph client exists with real queries, and wiring it is 2-3 hours of work. More importantly, the design document demonstrates you understand *why* the knowledge graph matters (section 1.2: tracking changes over time, not just current state), which is arguably more important in a follow-up conversation than having it fully implemented.
 
-### CR-4: Add One Integration Test with Real LLM
+**What gives you an edge over other candidates:** The buried signal surfacing (Elena sees the magnesium housing decision from #chassis-design because of cross-workstream `affected` tags), the phase sensitivity demo (toggling thermal from EVT to DVT visibly reshuffles the digest), and the briefing tone prompt engineering. These show you understood the domain problem, not just the engineering problem.
 
-**Why this is critical:** 411 tests with mocked LLMs prove the plumbing works. They do not prove the system works. One integration test that runs the real pipeline on a subset of synthetic data — extraction through generation — proves the product actually delivers value.
+**The one thing that could hurt you:** If the interviewer asks you to demo the phase toggle and it doesn't work. Fix that before the meeting.
 
-**What to do:**
-1. Add a test marked `@pytest.mark.integration` (skipped without API key)
-2. Feed 3-5 synthetic threads through the real extraction pipeline
-3. Validate: atoms are produced, have correct types, pass confidence filter
-4. Feed atoms through scoring for one persona
-5. Validate: scored atoms are ranked, critical items flagged
-6. Optionally: feed through generation and validate output structure
-
-```python
-@pytest.mark.integration
-def test_end_to_end_pipeline():
-    """Full pipeline with real LLM produces valid scored digest."""
-    client = create_llm_client()  # Requires ANTHROPIC_API_KEY
-    
-    # Layer 1: Ingestion
-    messages = load_message_stream()[:20]
-    threads = group_by_thread(messages)
-    windows = assemble_context_windows(threads[:5])
-    
-    # Layer 2: Extraction
-    runner = ExtractionRunner(client)
-    atoms = runner.extract(windows)
-    assert len(atoms) > 0, "Extraction produced no atoms"
-    
-    # Layer 4: Scoring
-    persona = get_persona("U001")
-    scored = score_atoms(atoms, persona)
-    assert len(scored) > 0, "Scoring produced no results"
-    assert scored[0].score >= scored[-1].score, "Not sorted by score"
-```
-
-**Effort:** Small (30 minutes).
-
----
-
-## 10. Next Steps (Future Work)
-
-These are valuable improvements but are lower priority than the 4 critical recommendations above. They represent the path from "compelling demo" to "production system."
-
-### Engineering
-
-| # | Issue | Effort | Impact | Notes |
-|---|-------|--------|--------|-------|
-| NS-1 | **Async concurrency** for LLM calls (semaphore-bounded `asyncio.gather`) | Medium | High | 10-20x faster pipeline; needed before real deployment |
-| NS-2 | **Move config from import-time to call-time** via FastAPI `Depends` | Medium | Medium | Testability, reloadability, no side effects |
-| NS-3 | **Make `anthropic` an optional dependency** | Small | Medium | True provider agnosticism |
-| NS-4 | **Add `pyyaml` to explicit dependencies** | Trivial | Low | Prevent breakage |
-| NS-5 | **Token counting and cost tracking** per LLM call | Medium | Medium | Operational visibility |
-
-### Scoring & Relevance
-
-| # | Issue | Effort | Impact | Notes |
-|---|-------|--------|--------|-------|
-| NS-6 | **Calibrate scoring dimensions** — normalize distributions | Medium | High | Current discrete/continuous mix skews weights |
-| NS-7 | **Phase distance scoring** instead of binary overlap | Small | Medium | DVT→PVT should score higher than Concept→MP |
-| NS-8 | **Atom deduplication** — semantic similarity within (type, workstream) | Medium | Medium | Overlapping windows produce duplicates |
-| NS-9 | **Enforce `ScoringWeights` sum-to-one** with model validator | Small | Medium | Prevent silent scoring bugs |
-| NS-10 | **2-hop social signal** from collaborator graph | Medium | Low | Transitive social relevance |
-
-### LLM Pipeline
-
-| # | Issue | Effort | Impact | Notes |
-|---|-------|--------|--------|-------|
-| NS-11 | **Two-stage extraction** — coarse extract → enrich | Large | High | Better recall and precision |
-| NS-12 | **Strip metadata from validation prompt** | Small | Low | Remove confidence bias |
-
-### Frontend
-
-| # | Issue | Effort | Impact | Notes |
-|---|-------|--------|--------|-------|
-| NS-13 | **Error boundaries + data fetching library** (`@tanstack/react-query`) | Medium | Medium | Production UX |
-| NS-14 | **Fetch personas from API** instead of hardcoding | Small | Low | Single source of truth |
-| NS-15 | **Accessibility audit** (ARIA, keyboard nav, contrast) | Medium | Low | Required before production |
-
-### Architecture (v2+)
-
-| # | Issue | Effort | Impact | Notes |
-|---|-------|--------|--------|-------|
-| NS-16 | **Persistent storage** (PostgreSQL/SQLite) for graph and atoms | Large | High | Production data layer |
-| NS-17 | **Embedding-based RELATES_TO edges** in knowledge graph | Large | High | Semantic similarity for dedup + discovery |
-| NS-18 | **Evaluate LangGraph** when dynamic routing or human-in-the-loop is needed | Large | Medium | Not yet — current architecture is simpler |
-| NS-19 | **Real Slack integration** via Slack Events API | Large | High | Replace synthetic data |
-| NS-20 | **Streaming digests** to frontend as sections complete | Medium | Medium | Better UX for long generation |
-
----
-
-## 11. Conclusion
-
-EverCurrent demonstrates genuine systems thinking. The domain model (atoms, personas, five-dimensional scoring) is the right abstraction. The phase-per-workstream insight is correct. The code quality is professional.
-
-**The strategic insight this review adds:** Ye Wang described EverCurrent's knowledge graph as the most critical component, and the system's core value as change tracking over time. Your prototype is excellent at *computing* relevance in a single pass — but it doesn't *remember* anything. Adding a persistent knowledge graph with temporal edges transforms this from a batch ETL pipeline into something that demonstrates understanding of the actual product vision.
-
-**The 4 critical recommendations in priority order:**
-
-1. **Wire the pipeline end-to-end** — table stakes for a working demo
-2. **Add a knowledge graph layer** — the highest-leverage alignment with EverCurrent's vision
-3. **Add structured outputs + JSON recovery** — production ML engineering discipline
-4. **Add one real integration test** — prove it works with real LLMs
-
-Together, these create a narrative: *I built a system that extracts information from conversations, accumulates it as a knowledge graph, tracks how things change over time, and generates personalized briefings for different roles on the team. Here's a working demo.*
-
-That's a compelling story for the follow-up meeting.
+**Overall: A strong submission. The depth of domain modeling and engineering discipline are above the bar for a senior/staff engineer. The design document quality is above the bar for a principal. Ship the phase override fix, and you're in good shape.**
 
 ---
 

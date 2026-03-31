@@ -4,9 +4,6 @@
 EverCurrent Daily Digest Tool: Technical Design Document
 =====================================================================
 
-.. contents:: Table of Contents
-   :depth: 3
-   :local:
 
 .. note::
 
@@ -161,37 +158,53 @@ interface contract.
 3.2 Data Flow
 ~~~~~~~~~~~~~
 
-The daily digest pipeline executes in four phases, triggered by a scheduled
-job at a configurable time (default: 06:00 local time).
+The daily digest pipeline executes in four phases. In the prototype, it is
+triggered on demand via ``POST /pipeline/run``. In production, this would be
+a scheduled job at a configurable time (default: 06:00 local time).
 
-**Phase 1, Harvest (Layer 1).** The ingestion layer queries the Slack API
-(or reads from the event log) for all messages, thread replies, reactions,
-and file-share events from the previous 24-hour window. Messages are grouped
-into conversational units: a top-level message and all its thread replies
-form a single unit. Top-level messages that are clearly continuations of
-earlier conversations (detected via @-mentions, quote blocks, or explicit
-references) are linked to their antecedents.
+**Phase 1, Harvest (Layer 1).** The ingestion layer loads messages from
+the data source (in the prototype, a JSON fixture file containing 307
+Slack-API-shaped messages across 8 channels; in production, the Slack API).
+Messages are grouped into conversational units: a top-level message and all
+its thread replies form a single ``ThreadBundle``. Top-level messages that
+are clearly continuations of earlier conversations (detected via a hybrid
+approach combining structural signals — @-mentions, quote blocks,
+back-references — with semantic embedding similarity as a fallback) are
+linked to their antecedent threads. Each bundle is then assembled into a
+``ContextWindow``: short threads are included in full, while long threads
+are compressed to the root message, the 3 most-reacted replies, and the
+final 5 messages (preserving the narrative arc within LLM token limits).
 
-**Phase 2, Extract (Layer 2).** Each conversational unit is passed through
-the extraction pipeline, which produces zero or more *information atoms*. An
-atom is a structured record representing a single discrete piece of
-information that someone on the team might need to know. The extraction LLM
-is prompted to identify atoms of specific types (enumerated in section 4.2)
-and to tag each atom with metadata including affected workstreams, involved
-people, and urgency signals.
+**Phase 2, Extract (Layer 2).** Each context window is passed through a
+**two-stage extraction pipeline**. Stage 1 (coarse extraction) identifies
+events and returns lightweight atom dicts with core fields (``type``,
+``summary``, ``detail``, ``source``) via a ``CoarseExtractionResponse``.
+Stage 2 (enrichment) makes a second LLM call per atom to assign metadata
+(``workstreams``, ``urgency``, ``confidence``, ``implicit_decision``,
+``phase_relevance``) via an ``EnrichmentResponse``. The two responses are
+merged into full ``Atom`` objects. Both stages use ``instructor`` for
+Pydantic-validated structured output.
 
-**Phase 3, Score (Layers 3 + 4).** For each persona, every atom is scored
-across multiple relevance dimensions (enumerated in section 5.2). The
+After extraction, atoms undergo **two-pass validation**: ``DECISION`` and
+``SPEC_CHANGE`` atoms are re-checked against their source context by a
+separate LLM call. Atoms that fail validation have their confidence halved
+and a warning appended to their detail field. Finally, a **confidence
+filter** (default threshold: 0.7) removes low-confidence atoms.
+
+**Phase 3, Score (Layers 3 + 4).** For each persona, every validated atom
+is scored across five relevance dimensions (enumerated in section 5.2). The
 context backbone provides the world model needed for scoring: which
 workstreams this person tracks, what phase each workstream is in, and what
-types of information are phase-appropriate. Atoms are then clustered by
-topic/workstream and sorted by composite relevance score within each cluster.
+types of information are phase-appropriate. Atoms are sorted by composite
+relevance score. The top *N* atoms (default: 25) are selected, with
+critical-threshold overflow ensuring atoms scoring above 0.85 are never
+dropped even if they fall outside the top *N*.
 
-**Phase 4, Generate (Layer 5).** The top-scored atoms for each persona,
-along with their cluster structure and the persona's context, are passed to
-a generation LLM that produces the final digest. The digest is structured
-into priority-tiered sections with natural-language summaries and
-source-linked references back to the original Slack threads.
+**Phase 4, Generate (Layer 5).** The scored atoms for each persona, along
+with the persona's context, are passed to a generation LLM that produces
+the final digest. The digest is structured into four priority-tiered
+sections with natural-language summaries and source-linked references back
+to the original Slack threads.
 
 ---------------------------------------------------------------------------
 4. Extraction Pipeline (Layer 2)
@@ -214,11 +227,21 @@ The reconstruction algorithm operates in three passes:
 timestamp (``thread_ts``). This captures all explicitly threaded replies.
 
 **Pass 2, Implicit threading.** Identify top-level messages that are
-continuations of earlier conversations. Signals include: direct @-mentions
-of someone who posted recently, quote-block references to earlier messages,
-and semantic similarity above a threshold to recent thread conclusions.
-These messages are linked to their antecedent threads as "continuation
-units."
+continuations of earlier conversations. Detection uses a hybrid approach
+with structural (keyword/regex) matching as a fast-path and semantic
+(embedding) matching as a fallback. The structural fast-path fires three
+signals: direct @-mentions of thread participants, quote-block references
+to text from earlier threads, and back-reference patterns ("re:" or
+"following up on" followed by keywords matching thread content). Standalone
+messages not matched by structural checks are passed to a semantic fallback
+that computes cosine similarity between message embeddings and thread
+embeddings, linking messages above a configurable similarity threshold
+(default 0.45). All detection is channel-aware (a message can only
+continue a thread in the same channel) and first-match (a standalone
+message is linked to at most one bundle). Structural matches carry
+confidence 1.0; semantic matches carry the cosine similarity score.
+These messages are linked to their antecedent threads as
+"continuation units."
 
 **Pass 3, Context windowing.** For each conversational unit, assemble a
 context window that includes: the full thread (if under the token limit),
@@ -363,10 +386,9 @@ deadline is not merely unhelpful. It is actively dangerous. The extraction
 pipeline includes three safeguards:
 
 **Confidence scoring.** Every atom carries a confidence score. Atoms below a
-configurable threshold (default: 0.7) are either excluded from the digest
-or presented in a clearly marked "unverified" section. The confidence score
-reflects the LLM's assessment of how clearly the information was stated in
-the source material.
+configurable threshold (default: 0.7) are excluded from the digest by the
+confidence filter. The confidence score reflects the LLM's assessment of
+how clearly the information was stated in the source material.
 
 **Source anchoring.** Every atom includes a direct link to the originating
 Slack thread and message range. The digest never presents information without
@@ -375,11 +397,13 @@ seems surprising, and it keeps the LLM honest. The reader can always check.
 
 **Extraction validation.** For the highest-risk atom types (``SPEC_CHANGE``,
 ``DECISION``), the pipeline runs a second LLM pass that receives the
-original thread and the extracted atom and asks: "Does this atom accurately
-represent what was discussed? Is anything overstated, understated, or
-fabricated?" Atoms that fail this validation check are flagged or demoted.
-This is computationally expensive but justified for high-risk atom types
-where the cost of error is high.
+original thread and the extracted atom and checks for overstated conclusions,
+understated impact, and fabricated details. Atoms that fail validation are
+demoted: their confidence is halved (e.g., 0.8 becomes 0.4) and a
+``[Validation warning: reason]`` annotation is appended to the detail field.
+This often pushes them below the confidence filter threshold, effectively
+removing them from the digest. This is computationally expensive but
+justified for high-risk atom types where the cost of error is high.
 
 ---------------------------------------------------------------------------
 5. Relevance Scoring (Layer 4)
@@ -424,11 +448,11 @@ all workstreams:
        "chassis": 1.0,
        "thermal": 0.85,
        "drivetrain": 0.4,
-       "enclosure": 0.6,
+       "supply-chain": 0.3,
        "power-systems": 0.2,
-       "sensors": 0.1,
-       "firmware": 0.05,
-       "supply-chain": 0.3
+       "sensors": 0.15,
+       "firmware": 0.1,
+       "end-effector": 0.1
      }
    }
 
@@ -447,10 +471,11 @@ atoms in their domain. This is encoded as a role-type affinity matrix:
 
    Role Archetype    DECISION  SPEC_CHG  ACTION  BLOCKER  RISK  TEST  STATUS  QUESTION
    ──────────────    ────────  ────────  ──────  ───────  ────  ────  ──────  ────────
-   IC Engineer         0.7       0.9      0.6     0.5    0.4   0.9    0.3      0.6
-   Eng Manager         0.8       0.7      0.8     0.9    0.9   0.5    0.7      0.5
-   Supply Chain        0.9       0.9      0.5     0.6    0.8   0.3    0.4      0.4
-   Product Manager     0.7       0.5      0.6     0.8    0.9   0.3    0.6      0.4
+   IC Engineer         0.8       1.0      0.7     0.6    0.5   1.0    0.3      0.6
+   Eng Manager         1.0       0.7      0.8     1.0    0.9   0.6    0.9      0.5
+   Program Manager     0.9       0.5      0.9     1.0    1.0   0.4    1.0      0.3
+   Supply Chain        0.7       0.9      0.8     0.7    1.0   0.3    0.5      0.4
+   Executive           1.0       0.4      0.5     1.0    1.0   0.3    0.8      0.2
 
 **Dimension 3, Phase Alignment (weight: 0.20 default).** Is this atom the
 kind of information that matters during the current phase of the relevant
@@ -462,22 +487,29 @@ This dimension captures the fact that people's focus changes over time. Not
 because people change, but because the *type of information that matters*
 changes as the project progresses.
 
-Phase alignment is modeled as a phase-type relevance matrix:
+Phase alignment is modeled as **graduated distance scoring** across a
+linear phase order (Concept=0, EVT=1, DVT=2, PVT=3, MP=4). The score
+decreases as the distance between an atom's phase relevance and the
+persona's current workstream phase increases:
 
 .. code-block:: text
 
-   Phase     DECISION  SPEC_CHG  ACTION  BLOCKER  RISK  TEST  STATUS  QUESTION
-   ─────     ────────  ────────  ──────  ───────  ────  ────  ──────  ────────
-   Concept     0.9       0.5      0.4     0.3    0.5   0.2    0.3      0.8
-   EVT         0.7       0.9      0.7     0.7    0.6   0.9    0.5      0.7
-   DVT         0.6       0.8      0.8     0.8    0.8   0.9    0.6      0.5
-   PVT         0.5       0.6      0.7     0.8    0.9   0.8    0.8      0.4
-   MP          0.4       0.5      0.6     0.7    0.8   0.6    0.9      0.3
+   Phase Distance    Score
+   ──────────────    ─────
+   0 (exact match)   1.0
+   1 (adjacent)      0.75
+   2                  0.5
+   3                  0.25
+   4 (max distance)   0.1
+
+Atoms with no phase relevance default to 0.5. Personas with no phases
+in their context also default to 0.5.
 
 Because different workstreams are in different phases simultaneously (per
-assumption A5), the phase lookup is per-workstream, not per-project. If an
-atom affects multiple workstreams in different phases, the maximum phase
-alignment score is used.
+assumption A5), the phase lookup is per-workstream, not per-project. For
+each (atom phase, persona workstream phase) pair, the distance is
+computed. The minimum distance across all pairs is used, which yields the
+maximum alignment score.
 
 **Dimension 4, Urgency (weight: 0.15 default).** Does this atom require
 near-term action or awareness? Urgency is a property of the atom itself
@@ -556,7 +588,7 @@ signal.
 .. code-block:: json
 
    {
-     "user_id": "U02ABCDEF",
+     "user_id": "U001",
      "name": "Maya Chen",
      "role_archetype": "IC Engineer",
      "title": "Senior Mechanical Engineer",
@@ -564,12 +596,16 @@ signal.
        "chassis": 1.0,
        "thermal": 0.85,
        "drivetrain": 0.4,
-       "enclosure": 0.6,
-       "power-systems": 0.2
+       "supply-chain": 0.3,
+       "power-systems": 0.2,
+       "sensors": 0.15,
+       "firmware": 0.1,
+       "end-effector": 0.1
      },
      "phase_context": {
        "chassis": "DVT",
-       "thermal": "EVT"
+       "thermal": "EVT",
+       "drivetrain": "DVT"
      },
      "scoring_weights": {
        "workstream_proximity": 0.30,
@@ -578,7 +614,7 @@ signal.
        "urgency": 0.15,
        "social_signal": 0.15
      },
-     "collaborator_graph": ["U03XYZABC", "U04QRSTUV"],
+     "collaborator_graph": ["U003", "U008", "U013", "U020"],
      "digest_preferences": {
        "max_items": 25,
        "critical_threshold": 0.85,
@@ -917,9 +953,11 @@ be scope inflation that distracts from the core thesis.
      - Best LLM library ecosystem (Anthropic SDK), fast prototyping,
        strong typing with Pydantic for atom schemas.
    * - LLM Provider
-     - Anthropic API (Claude Sonnet)
+     - Model-agnostic via ``instructor`` (Anthropic, OpenAI, Google).
+       Default: ``claude-sonnet-4-20250514``.
      - Strong instruction-following for structured extraction,
-       cost-effective for batch processing, reliable JSON output mode.
+       cost-effective for batch processing. ``instructor`` provides
+       Pydantic-validated structured output across all providers.
    * - Data Store
      - In-memory (prototype) / SQLite (optional)
      - No persistence needed for a take-home demo. The synthetic dataset

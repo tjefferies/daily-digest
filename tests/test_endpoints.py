@@ -205,7 +205,7 @@ class TestDigestEndpoint:
         # Assembler should have been called with the stored atoms
         mock_assembler.assemble.assert_called_once()
         call_args = mock_assembler.assemble.call_args
-        # assemble(persona_id, atoms, phase_override) — atoms is arg[1]
+        # Second positional arg to assemble() is the atoms list
         assert len(call_args[0][1]) == 1
 
     @pytest.mark.asyncio

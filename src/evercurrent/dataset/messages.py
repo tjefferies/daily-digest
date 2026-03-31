@@ -8,7 +8,7 @@ The fixture uses Slack API field names (ts, user, thread_ts, reactions
 with count). This loader transforms those fields into the internal
 SlackMessage model used by the ingestion layer.
 
-Next Steps — Live Slack Connection:
+Next Steps - Live Slack Connection:
     1. Add slack-sdk to pyproject.toml dependencies.
     2. Create a SlackIngestionClient wrapping slack_sdk.WebClient.
     3. Implement channel iteration using conversations_list().

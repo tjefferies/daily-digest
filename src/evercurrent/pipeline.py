@@ -17,9 +17,11 @@ from evercurrent.extraction.filter import confidence_filter
 from evercurrent.extraction.runner import AsyncExtractionRunner, ExtractionRunner
 from evercurrent.extraction.validation import async_validate_atoms, validate_atoms
 from evercurrent.ingestion.context_window import assemble_context_windows
+from evercurrent.ingestion.continuations import detect_continuations
 from evercurrent.ingestion.threads import group_by_thread
 
 if TYPE_CHECKING:
+    from evercurrent.ingestion.embeddings import Embedder
     from evercurrent.llm.types import AsyncLLMClient, LLMClient
     from evercurrent.models.atom import Atom
 
@@ -39,11 +41,56 @@ class PipelineResult:
     stats: dict[str, Any] = field(default_factory=dict)
 
 
-def run_pipeline(client: LLMClient) -> PipelineResult:
+def _extract_standalones(
+    messages: list[Any],
+    bundles: list[Any],
+) -> list[Any]:
+    """Identify top-level messages not assigned to any thread bundle.
+
+    Args:
+        messages: All loaded SlackMessage objects.
+        bundles: ThreadBundles from Pass 1 structural grouping.
+
+    Returns:
+        Messages that have no thread_ts and whose message_ts is not a
+        bundle root (i.e. truly standalone top-level messages).
+    """
+    bundle_roots = {b.root_message.message_ts for b in bundles}
+    return [m for m in messages if m.thread_ts is None and m.message_ts not in bundle_roots]
+
+
+def _merge_continuations(
+    bundles: list[Any],
+    continuation_matches: list[Any],
+) -> int:
+    """Merge continuation messages back into their matched thread bundles.
+
+    Args:
+        bundles: ThreadBundles to merge into (mutated in place).
+        continuation_matches: ContinuationMatch objects from detect_continuations.
+
+    Returns:
+        Total number of continuation messages merged.
+    """
+    match_map = {m.root_message.message_ts: m for m in continuation_matches}
+    merged = 0
+    for bundle in bundles:
+        match = match_map.get(bundle.root_message.message_ts)
+        if match:
+            bundle.replies.extend(match.continuations)
+            merged += len(match.continuations)
+    return merged
+
+
+def run_pipeline(
+    client: LLMClient,
+    embedder: Embedder | None = None,
+) -> PipelineResult:
     """Run the full extraction pipeline: Ingestion → Extraction → Filter → Validation.
 
     Args:
         client: LLMClient-compatible adapter for LLM API calls.
+        embedder: Optional text embedder for semantic continuation detection.
 
     Returns:
         PipelineResult with validated, filtered atoms and processing stats.
@@ -51,11 +98,18 @@ def run_pipeline(client: LLMClient) -> PipelineResult:
     # Layer 1: Ingestion
     messages = load_messages()
     bundles = group_by_thread(messages)
+
+    # Pass 2: Continuation detection (hybrid keyword + semantic)
+    standalones = _extract_standalones(messages, bundles)
+    continuation_matches = detect_continuations(bundles, standalones, embedder=embedder)
+    continuations_merged = _merge_continuations(bundles, continuation_matches)
+
     windows = assemble_context_windows(bundles)
     logger.info(
-        "Ingestion: %d messages → %d threads → %d windows",
+        "Ingestion: %d messages → %d threads (%d continuations) → %d windows",
         len(messages),
         len(bundles),
+        continuations_merged,
         len(windows),
     )
 
@@ -83,6 +137,8 @@ def run_pipeline(client: LLMClient) -> PipelineResult:
         stats={
             "messages_loaded": len(messages),
             "threads_found": len(bundles),
+            "standalones_found": len(standalones),
+            "continuations_merged": continuations_merged,
             "context_windows": len(windows),
             "atoms_extracted": len(raw_atoms),
             "atoms_after_filter": len(atoms),
@@ -90,7 +146,10 @@ def run_pipeline(client: LLMClient) -> PipelineResult:
     )
 
 
-async def async_run_pipeline(client: AsyncLLMClient) -> PipelineResult:
+async def async_run_pipeline(
+    client: AsyncLLMClient,
+    embedder: Embedder | None = None,
+) -> PipelineResult:
     """Run the full extraction pipeline asynchronously with concurrent LLM calls.
 
     Uses AsyncExtractionRunner for concurrent window processing and
@@ -99,6 +158,7 @@ async def async_run_pipeline(client: AsyncLLMClient) -> PipelineResult:
 
     Args:
         client: AsyncLLMClient-compatible adapter for async LLM API calls.
+        embedder: Optional text embedder for semantic continuation detection.
 
     Returns:
         PipelineResult with validated, filtered atoms and processing stats.
@@ -106,11 +166,18 @@ async def async_run_pipeline(client: AsyncLLMClient) -> PipelineResult:
     # Layer 1: Ingestion (CPU-bound, no async needed)
     messages = load_messages()
     bundles = group_by_thread(messages)
+
+    # Pass 2: Continuation detection (hybrid keyword + semantic)
+    standalones = _extract_standalones(messages, bundles)
+    continuation_matches = detect_continuations(bundles, standalones, embedder=embedder)
+    continuations_merged = _merge_continuations(bundles, continuation_matches)
+
     windows = assemble_context_windows(bundles)
     logger.info(
-        "Ingestion: %d messages → %d threads → %d windows",
+        "Ingestion: %d messages → %d threads (%d continuations) → %d windows",
         len(messages),
         len(bundles),
+        continuations_merged,
         len(windows),
     )
 
@@ -138,6 +205,8 @@ async def async_run_pipeline(client: AsyncLLMClient) -> PipelineResult:
         stats={
             "messages_loaded": len(messages),
             "threads_found": len(bundles),
+            "standalones_found": len(standalones),
+            "continuations_merged": continuations_merged,
             "context_windows": len(windows),
             "atoms_extracted": len(raw_atoms),
             "atoms_after_filter": len(atoms),

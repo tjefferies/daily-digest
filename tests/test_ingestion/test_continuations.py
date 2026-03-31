@@ -1,12 +1,45 @@
 """Tests for thread reconstruction Pass 2: implicit continuation detection.
 
 Validates that top-level messages are linked to antecedent threads
-via @-mentions, quote blocks, and explicit back-references.
+via @-mentions, quote blocks, explicit back-references, and semantic
+similarity (hybrid keyword + embedding approach).
 """
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from evercurrent.dataset.schema import SlackMessage
 from evercurrent.ingestion.continuations import detect_continuations
 from evercurrent.ingestion.threads import ThreadBundle
+
+if TYPE_CHECKING:
+    from evercurrent.ingestion.embeddings import Embedder
+
+
+class MockEmbedder:
+    """Deterministic embedder mapping known texts to fixed vectors.
+
+    Keys are matched case-insensitively. Unknown texts get a zero vector.
+    """
+
+    def __init__(self, mapping: dict[str, list[float]]) -> None:
+        """Initialize with a text-to-vector mapping.
+
+        Args:
+            mapping: Dict of text → embedding vector. Keys are lowercased.
+        """
+        self._mapping = {k.lower(): v for k, v in mapping.items()}
+        self._dim = len(next(iter(mapping.values()))) if mapping else 3
+
+    def embed(self, texts: list[str]) -> list[list[float]]:
+        """Return pre-defined vectors for known texts, zeros otherwise."""
+        zero = [0.0] * self._dim
+        return [self._mapping.get(t.lower().strip(), zero) for t in texts]
+
+
+# Verify MockEmbedder satisfies the protocol at import time.
+_: type[Embedder] = MockEmbedder  # type: ignore[assignment]
 
 
 def _msg(
@@ -135,3 +168,139 @@ class TestContinuationEdgeCases:
         standalone = _msg("1000.001", "@U002 hey")
         result = detect_continuations([], [standalone])
         assert len(result) == 0
+
+
+class TestSemanticContinuation:
+    """Detect continuations via semantic embedding similarity."""
+
+    def test_semantic_match_links_related_messages(self) -> None:
+        """Semantically similar standalone links to matching thread."""
+        thread = _bundle(
+            root=_msg("1000.001", "Motor overheating during endurance test"),
+        )
+        standalone = _msg("1000.003", "thermal paste application was inconsistent")
+        embedder = MockEmbedder(
+            {
+                "motor overheating during endurance test": [0.9, 0.1, 0.0],
+                "thermal paste application was inconsistent": [0.85, 0.15, 0.0],
+            }
+        )
+        result = detect_continuations(
+            [thread],
+            [standalone],
+            embedder=embedder,
+            similarity_threshold=0.4,
+        )
+        assert len(result) == 1
+        assert result[0].confidence < 1.0
+
+    def test_semantic_below_threshold_does_not_link(self) -> None:
+        """Low similarity does not create a link."""
+        thread = _bundle(root=_msg("1000.001", "Chassis weight budget"))
+        standalone = _msg("1000.003", "Lunch in the break room")
+        embedder = MockEmbedder(
+            {
+                "chassis weight budget": [1.0, 0.0, 0.0],
+                "lunch in the break room": [0.0, 0.0, 1.0],
+            }
+        )
+        result = detect_continuations(
+            [thread],
+            [standalone],
+            embedder=embedder,
+            similarity_threshold=0.4,
+        )
+        assert len(result) == 0
+
+    def test_structural_match_takes_precedence_over_semantic(self) -> None:
+        """Regex match yields confidence=1.0 even when embedder is provided."""
+        thread = _bundle(
+            root=_msg("1000.001", "Magnesium housing analysis"),
+        )
+        standalone = _msg("1000.003", "re: magnesium housing - updated")
+        embedder = MockEmbedder({})
+        result = detect_continuations(
+            [thread],
+            [standalone],
+            embedder=embedder,
+            similarity_threshold=0.4,
+        )
+        assert len(result) == 1
+        assert result[0].confidence == 1.0
+
+    def test_semantic_requires_same_channel(self) -> None:
+        """Semantic match respects channel boundary."""
+        thread = _bundle(
+            root=_msg("1000.001", "Motor overheating", channel="#thermal-management"),
+        )
+        standalone = _msg(
+            "1000.003",
+            "Motor overheating fixed",
+            channel="#firmware",
+        )
+        embedder = MockEmbedder(
+            {
+                "motor overheating": [1.0, 0.0, 0.0],
+                "motor overheating fixed": [0.99, 0.01, 0.0],
+            }
+        )
+        result = detect_continuations(
+            [thread],
+            [standalone],
+            embedder=embedder,
+            similarity_threshold=0.4,
+        )
+        assert len(result) == 0
+
+    def test_no_embedder_uses_regex_only(self) -> None:
+        """Without embedder, only regex matching is used."""
+        thread = _bundle(root=_msg("1000.001", "Motor overheating"))
+        standalone = _msg("1000.003", "thermal paste was inconsistent")
+        result = detect_continuations([thread], [standalone])
+        assert len(result) == 0
+
+    def test_semantic_picks_best_match_among_bundles(self) -> None:
+        """When multiple bundles are in the same channel, picks highest similarity."""
+        thermal_thread = _bundle(
+            root=_msg("1000.001", "Thermal paste application process"),
+        )
+        weight_thread = _bundle(
+            root=_msg("1000.002", "Chassis weight budget review"),
+        )
+        standalone = _msg("1000.003", "Updated the paste application procedure")
+        embedder = MockEmbedder(
+            {
+                "thermal paste application process": [0.9, 0.1, 0.0],
+                "chassis weight budget review": [0.1, 0.0, 0.9],
+                "updated the paste application procedure": [0.85, 0.15, 0.0],
+            }
+        )
+        result = detect_continuations(
+            [thermal_thread, weight_thread],
+            [standalone],
+            embedder=embedder,
+            similarity_threshold=0.4,
+        )
+        assert len(result) == 1
+        assert result[0].root_message.message_ts == "1000.001"
+
+    def test_confidence_reflects_similarity_score(self) -> None:
+        """Semantic match confidence equals the cosine similarity."""
+        thread = _bundle(
+            root=_msg("1000.001", "FPGA timing closure"),
+        )
+        standalone = _msg("1000.003", "Timing constraints resolved")
+        embedder = MockEmbedder(
+            {
+                "fpga timing closure": [0.8, 0.2, 0.0],
+                "timing constraints resolved": [0.7, 0.3, 0.0],
+            }
+        )
+        result = detect_continuations(
+            [thread],
+            [standalone],
+            embedder=embedder,
+            similarity_threshold=0.4,
+        )
+        assert len(result) == 1
+        assert 0.4 < result[0].confidence < 1.0

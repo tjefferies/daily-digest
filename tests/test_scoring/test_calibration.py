@@ -2,7 +2,7 @@
 
 Validates that all five scoring dimensions produce well-distributed
 values in [0, 1] and that persona weights control relative influence
-proportionally — no single dimension dominates ranking.
+proportionally - no single dimension dominates ranking.
 """
 
 from __future__ import annotations

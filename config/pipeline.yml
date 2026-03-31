@@ -17,6 +17,11 @@ context_window:
   tail_count: 5
   chars_per_token: 4
 
+# Thread continuation detection (Pass 2).
+continuations:
+  similarity_threshold: 0.45
+  embedding_model: all-MiniLM-L6-v2
+
 # Extraction confidence filter threshold.
 confidence_threshold: 0.7
 

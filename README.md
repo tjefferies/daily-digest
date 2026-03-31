@@ -251,7 +251,7 @@ evercurrent/
 |-------------|-----------------------------------------------------|
 | Backend     | Python 3.13, FastAPI, Pydantic v2, uvicorn          |
 | LLM         | Model-agnostic (Anthropic, OpenAI, Google) via instructor |
-| Frontend    | React 18, TypeScript, Tailwind CSS, Vite            |
+| Frontend    | React 19, TypeScript, Tailwind CSS, Vite            |
 | Testing     | pytest, pytest-cov, pytest-asyncio                  |
 | Linting     | ruff (lint + format), ty (type check)               |
 | Metrics     | radon (complexity), interrogate (docstrings), vulture (dead code) |

@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 920" font-family="'Segoe UI', Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1060" font-family="'Segoe UI', Helvetica, Arial, sans-serif">
   <defs>
     <linearGradient id="layerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#e8f4fd"/>
@@ -11,6 +11,10 @@
     <linearGradient id="outputGrad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#d4edda"/>
       <stop offset="100%" stop-color="#c3e6cb"/>
+    </linearGradient>
+    <linearGradient id="filterGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f8d7da"/>
+      <stop offset="100%" stop-color="#f5c6cb"/>
     </linearGradient>
     <filter id="shadow" x="-2%" y="-2%" width="104%" height="108%">
       <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.12"/>
@@ -26,7 +30,7 @@
 
   <!-- Input: Slack Messages -->
   <rect x="260" y="72" width="280" height="50" rx="25" fill="url(#inputGrad)" stroke="#d4a017" stroke-width="1.5" filter="url(#shadow)"/>
-  <text x="400" y="101" text-anchor="middle" font-size="14" font-weight="600" fill="#856404">Slack Messages</text>
+  <text x="400" y="101" text-anchor="middle" font-size="14" font-weight="600" fill="#856404">Slack Messages (JSON fixtures)</text>
 
   <!-- Arrow: Input -> L1 -->
   <line x1="400" y1="122" x2="400" y2="148" stroke="#5a6c7d" stroke-width="2" marker-end="url(#arrow)"/>
@@ -36,76 +40,100 @@
   <rect x="80" y="152" width="44" height="100" rx="10 0 0 10" fill="#4a90c4"/>
   <text x="102" y="208" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" transform="rotate(-90 102 208)">L1</text>
   <text x="142" y="182" font-size="16" font-weight="700" fill="#1a2a3a">Ingestion</text>
-  <text x="142" y="202" font-size="12" fill="#3a5a7a">Slack event capture and thread reconstruction</text>
-  <text x="142" y="220" font-size="11" fill="#5a7a9a">Channel routing | Thread grouping | Context windows | Append-only event log</text>
-  <text x="142" y="238" font-size="11" fill="#5a7a9a">Channel metadata | 24-hour sliding window | Conversational unit assembly</text>
+  <text x="142" y="202" font-size="12" fill="#3a5a7a">Channel loading, thread reconstruction, and context window assembly</text>
+  <text x="142" y="220" font-size="11" fill="#5a7a9a">Channel routing | Thread grouping into ThreadBundles | Continuation detection</text>
+  <text x="142" y="238" font-size="11" fill="#5a7a9a">Token-based context window compression | Conversational unit assembly</text>
 
   <!-- Arrow: L1 -> L2 -->
   <line x1="400" y1="252" x2="400" y2="278" stroke="#5a6c7d" stroke-width="2" marker-end="url(#arrow)"/>
-  <text x="412" y="270" font-size="10" fill="#5a6c7d" font-style="italic">raw messages + thread structure</text>
+  <text x="412" y="270" font-size="10" fill="#5a6c7d" font-style="italic">context windows (thread text + metadata)</text>
 
   <!-- Layer 2: Extraction -->
-  <rect x="80" y="282" width="680" height="100" rx="10" fill="url(#layerGrad)" stroke="#4a90c4" stroke-width="1.5" filter="url(#shadow)"/>
-  <rect x="80" y="282" width="44" height="100" rx="10 0 0 10" fill="#3a7cb8"/>
-  <text x="102" y="338" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" transform="rotate(-90 102 338)">L2</text>
-  <text x="142" y="312" font-size="16" font-weight="700" fill="#1a2a3a">Extraction Pipeline</text>
-  <text x="142" y="332" font-size="12" fill="#3a5a7a">LLM-powered structured information extraction</text>
-  <text x="142" y="350" font-size="11" fill="#5a7a9a">Atom typing (spec changes, risks, decisions, blockers, action items, test results)</text>
-  <text x="142" y="368" font-size="11" fill="#5a7a9a">Entity linking | Confidence scoring | Validation pipeline</text>
+  <rect x="80" y="282" width="680" height="120" rx="10" fill="url(#layerGrad)" stroke="#4a90c4" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="80" y="282" width="44" height="120" rx="10 0 0 10" fill="#3a7cb8"/>
+  <text x="102" y="348" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" transform="rotate(-90 102 348)">L2</text>
+  <text x="142" y="312" font-size="16" font-weight="700" fill="#1a2a3a">Two-Stage Extraction</text>
+  <text x="142" y="332" font-size="12" fill="#3a5a7a">LLM-powered structured extraction via instructor (Pydantic models)</text>
+  <!-- Two-stage sub-boxes -->
+  <rect x="150" y="344" width="270" height="44" rx="6" fill="#fff" stroke="#4a90c4" stroke-width="1" opacity="0.8"/>
+  <text x="160" y="362" font-size="11" font-weight="600" fill="#1a2a3a">Stage 1: Coarse Extraction</text>
+  <text x="160" y="378" font-size="10" fill="#5a7a9a">Identify events: type, summary, detail, source</text>
+  <rect x="440" y="344" width="300" height="44" rx="6" fill="#fff" stroke="#4a90c4" stroke-width="1" opacity="0.8"/>
+  <text x="450" y="362" font-size="11" font-weight="600" fill="#1a2a3a">Stage 2: Enrichment</text>
+  <text x="450" y="378" font-size="10" fill="#5a7a9a">Workstreams, urgency, confidence, phase relevance</text>
+  <!-- Arrow between stages -->
+  <line x1="420" y1="366" x2="435" y2="366" stroke="#4a90c4" stroke-width="1.5" marker-end="url(#arrow)"/>
 
-  <!-- Arrow: L2 -> L3 -->
-  <line x1="400" y1="382" x2="400" y2="408" stroke="#5a6c7d" stroke-width="2" marker-end="url(#arrow)"/>
-  <text x="412" y="400" font-size="10" fill="#5a6c7d" font-style="italic">typed atoms + metadata</text>
+  <!-- Arrow: L2 -> Filter -->
+  <line x1="400" y1="402" x2="400" y2="422" stroke="#5a6c7d" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Filter + Validation gate -->
+  <rect x="200" y="426" width="400" height="40" rx="8" fill="url(#filterGrad)" stroke="#c0392b" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="400" y="443" text-anchor="middle" font-size="12" font-weight="600" fill="#721c24">Confidence Filter (≥ 0.7)</text>
+  <text x="400" y="458" text-anchor="middle" font-size="10" fill="#943e48">+ Two-pass validation against source context</text>
+
+  <!-- Arrow: Filter -> L3 -->
+  <line x1="400" y1="466" x2="400" y2="486" stroke="#5a6c7d" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="412" y="480" font-size="10" fill="#5a6c7d" font-style="italic">validated atoms</text>
 
   <!-- Layer 3: Context Backbone -->
-  <rect x="80" y="412" width="680" height="100" rx="10" fill="url(#layerGrad)" stroke="#4a90c4" stroke-width="1.5" filter="url(#shadow)"/>
-  <rect x="80" y="412" width="44" height="100" rx="10 0 0 10" fill="#2d6aa0"/>
-  <text x="102" y="468" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" transform="rotate(-90 102 468)">L3</text>
-  <text x="142" y="442" font-size="16" font-weight="700" fill="#1a2a3a">Context Backbone</text>
-  <text x="142" y="462" font-size="12" fill="#3a5a7a">Structured world model for persona-aware scoring</text>
-  <text x="142" y="480" font-size="11" fill="#5a7a9a">Team roster + roles | Workstream registry | Per-workstream phase vectors</text>
-  <text x="142" y="498" font-size="11" fill="#5a7a9a">Component-to-workstream mapping | Persona models | Collaborator graphs</text>
+  <rect x="80" y="490" width="680" height="100" rx="10" fill="url(#layerGrad)" stroke="#4a90c4" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="80" y="490" width="44" height="100" rx="10 0 0 10" fill="#2d6aa0"/>
+  <text x="102" y="546" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" transform="rotate(-90 102 546)">L3</text>
+  <text x="142" y="520" font-size="16" font-weight="700" fill="#1a2a3a">Context Backbone</text>
+  <text x="142" y="540" font-size="12" fill="#3a5a7a">Structured world model for persona-aware scoring</text>
+  <text x="142" y="558" font-size="11" fill="#5a7a9a">Team roster + roles | Workstream registry | Per-workstream phase vectors (PhaseVector)</text>
+  <text x="142" y="576" font-size="11" fill="#5a7a9a">Component-to-workstream mapping | Persona models | Collaborator graphs</text>
 
   <!-- Arrow: L3 -> L4 -->
-  <line x1="400" y1="512" x2="400" y2="538" stroke="#5a6c7d" stroke-width="2" marker-end="url(#arrow)"/>
-  <text x="412" y="530" font-size="10" fill="#5a6c7d" font-style="italic">atoms + persona + phase context</text>
+  <line x1="400" y1="590" x2="400" y2="616" stroke="#5a6c7d" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="412" y="608" font-size="10" fill="#5a6c7d" font-style="italic">atoms + persona + phase context</text>
 
   <!-- Layer 4: Relevance Scoring -->
-  <rect x="80" y="542" width="680" height="120" rx="10" fill="url(#layerGrad)" stroke="#4a90c4" stroke-width="1.5" filter="url(#shadow)"/>
-  <rect x="80" y="542" width="44" height="120" rx="10 0 0 10" fill="#1f5a8a"/>
-  <text x="102" y="608" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" transform="rotate(-90 102 608)">L4</text>
-  <text x="142" y="570" font-size="16" font-weight="700" fill="#1a2a3a">Relevance Scoring</text>
-  <text x="142" y="590" font-size="12" fill="#3a5a7a">Five-dimension composite scoring per atom-persona pair</text>
+  <rect x="80" y="620" width="680" height="130" rx="10" fill="url(#layerGrad)" stroke="#4a90c4" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="80" y="620" width="44" height="130" rx="10 0 0 10" fill="#1f5a8a"/>
+  <text x="102" y="691" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" transform="rotate(-90 102 691)">L4</text>
+  <text x="142" y="648" font-size="16" font-weight="700" fill="#1a2a3a">Relevance Scoring</text>
+  <text x="142" y="668" font-size="12" fill="#3a5a7a">Five-dimension composite scoring per (atom, persona) pair</text>
   <!-- Scoring dimensions: 3 across top row, 2 across bottom row -->
-  <text x="150" y="612" font-size="11" fill="#5a7a9a" font-weight="600">Workstream Proximity (0.30)</text>
-  <text x="380" y="612" font-size="11" fill="#5a7a9a" font-weight="600">Role Alignment (0.20)</text>
-  <text x="580" y="612" font-size="11" fill="#5a7a9a" font-weight="600">Phase Alignment (0.20)</text>
-  <text x="150" y="632" font-size="11" fill="#5a7a9a" font-weight="600">Urgency (0.15)</text>
-  <text x="380" y="632" font-size="11" fill="#5a7a9a" font-weight="600">Social Signal (0.15)</text>
-  <text x="142" y="650" font-size="11" fill="#5a7a9a">Clustering by topic/workstream | Priority-tier ranking</text>
+  <text x="150" y="690" font-size="11" fill="#5a7a9a" font-weight="600">Workstream Proximity (0.30)</text>
+  <text x="380" y="690" font-size="11" fill="#5a7a9a" font-weight="600">Role Alignment (0.20)</text>
+  <text x="580" y="690" font-size="11" fill="#5a7a9a" font-weight="600">Phase Alignment (0.20)</text>
+  <text x="150" y="710" font-size="11" fill="#5a7a9a" font-weight="600">Urgency (0.15)</text>
+  <text x="380" y="710" font-size="11" fill="#5a7a9a" font-weight="600">Social Signal (0.15)</text>
+  <text x="142" y="735" font-size="11" fill="#5a7a9a">Critical threshold overflow (≥ 0.85 always included) | Priority-tier ranking</text>
 
   <!-- Arrow: L4 -> L5 -->
-  <line x1="400" y1="662" x2="400" y2="688" stroke="#5a6c7d" stroke-width="2" marker-end="url(#arrow)"/>
-  <text x="412" y="680" font-size="10" fill="#5a6c7d" font-style="italic">ranked, clustered atoms + generated prose</text>
+  <line x1="400" y1="750" x2="400" y2="776" stroke="#5a6c7d" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="412" y="768" font-size="10" fill="#5a6c7d" font-style="italic">ranked ScoredAtoms with dimension breakdowns</text>
 
   <!-- Layer 5: Digest Generation -->
-  <rect x="80" y="692" width="680" height="100" rx="10" fill="url(#layerGrad)" stroke="#4a90c4" stroke-width="1.5" filter="url(#shadow)"/>
-  <rect x="80" y="692" width="44" height="100" rx="10 0 0 10" fill="#14476a"/>
-  <text x="102" y="748" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" transform="rotate(-90 102 748)">L5</text>
-  <text x="142" y="720" font-size="16" font-weight="700" fill="#1a2a3a">Digest Generation</text>
-  <text x="142" y="740" font-size="12" fill="#3a5a7a">LLM-generated personalized daily briefings</text>
-  <text x="142" y="758" font-size="11" fill="#5a7a9a">Briefing tone | Four sections: Requires Action | Decisions | Progress | Context</text>
-  <text x="142" y="776" font-size="11" fill="#5a7a9a">Source-linked references to original Slack threads | Persona-specific framing</text>
+  <rect x="80" y="780" width="680" height="100" rx="10" fill="url(#layerGrad)" stroke="#4a90c4" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="80" y="780" width="44" height="100" rx="10 0 0 10" fill="#14476a"/>
+  <text x="102" y="836" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" transform="rotate(-90 102 836)">L5</text>
+  <text x="142" y="808" font-size="16" font-weight="700" fill="#1a2a3a">Digest Generation</text>
+  <text x="142" y="828" font-size="12" fill="#3a5a7a">LLM-generated personalized daily briefings (instructor + DigestResponse)</text>
+  <text x="142" y="846" font-size="11" fill="#5a7a9a">Briefing tone | Four sections: Requires Action | Decisions &amp; Changes | Progress &amp; Risks | Broader Context</text>
+  <text x="142" y="864" font-size="11" fill="#5a7a9a">Source-linked references (#channel, thread_ts) | Persona-specific framing</text>
 
   <!-- Arrow: L5 -> Output -->
-  <line x1="400" y1="792" x2="400" y2="818" stroke="#5a6c7d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="400" y1="880" x2="400" y2="906" stroke="#5a6c7d" stroke-width="2" marker-end="url(#arrow)"/>
 
   <!-- Output: Personalized Daily Digest -->
-  <rect x="220" y="822" width="360" height="55" rx="27" fill="url(#outputGrad)" stroke="#28a745" stroke-width="1.5" filter="url(#shadow)"/>
-  <text x="400" y="848" text-anchor="middle" font-size="14" font-weight="600" fill="#155724">Personalized Daily Digest</text>
-  <text x="400" y="866" text-anchor="middle" font-size="11" fill="#3a7a4a">One per engineer, tailored to their context</text>
+  <rect x="140" y="910" width="520" height="55" rx="27" fill="url(#outputGrad)" stroke="#28a745" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="400" y="936" text-anchor="middle" font-size="14" font-weight="600" fill="#155724">Personalized Daily Digest</text>
+  <text x="400" y="954" text-anchor="middle" font-size="11" fill="#3a7a4a">One per engineer — relevance is f(atom, persona), not f(atom)</text>
+
+  <!-- API layer on the right -->
+  <rect x="770" y="152" width="24" height="728" rx="5" fill="#e8daef" stroke="#8e44ad" stroke-width="1" stroke-dasharray="4,2"/>
+  <text x="782" y="530" text-anchor="middle" font-size="9" fill="#6c3483" transform="rotate(90 782 530)">FastAPI: /health | /pipeline/run | /digest/{persona_id}</text>
 
   <!-- Config sidebar -->
-  <rect x="30" y="152" width="34" height="640" rx="5" fill="#f0f0f0" stroke="#ccc" stroke-width="1" stroke-dasharray="4,2"/>
-  <text x="47" y="480" text-anchor="middle" font-size="9" fill="#888" transform="rotate(-90 47 480)">YAML Config (workstreams, phases, scoring, personas, pipeline)</text>
+  <rect x="6" y="152" width="34" height="728" rx="5" fill="#f0f0f0" stroke="#ccc" stroke-width="1" stroke-dasharray="4,2"/>
+  <text x="23" y="530" text-anchor="middle" font-size="9" fill="#888" transform="rotate(-90 23 530)">YAML Config (pipeline, scoring weights, personas, phases, workstreams)</text>
+
+  <!-- Knowledge Graph (future) callout -->
+  <rect x="580" y="490" width="170" height="44" rx="6" fill="#fff" stroke="#aaa" stroke-width="1" stroke-dasharray="4,2" opacity="0.7"/>
+  <text x="665" y="508" text-anchor="middle" font-size="10" font-weight="600" fill="#888">Neo4j Knowledge Graph</text>
+  <text x="665" y="522" text-anchor="middle" font-size="9" fill="#aaa">Schema ready, not yet wired</text>
 </svg>

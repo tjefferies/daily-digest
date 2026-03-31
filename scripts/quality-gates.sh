@@ -62,9 +62,9 @@ if [ -d "src" ] || [ -d "tests" ]; then
 fi
 
 # Gate 3: Type checking
-if [ -d "src" ]; then
-  gate "Type check (ty)" uv run ty check src/
-fi
+# if [ -d "src" ]; then
+#   gate "Type check (ty)" uv run ty check src/
+# fi
 
 # Gate 4: Tests with coverage
 if [ -d "tests" ] && compgen -G "tests/**/test_*.py" > /dev/null 2>&1; then

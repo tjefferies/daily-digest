@@ -114,7 +114,7 @@ class GraphClient:
     async def ensure_schema(self) -> None:
         """Create constraints and indexes if they don't exist.
 
-        Idempotent — safe to call on every startup.
+        Idempotent - safe to call on every startup.
         """
         async with self._driver.session() as session:
             for stmt in _SCHEMA_STATEMENTS:

@@ -878,7 +878,7 @@ echo "    Env Var Audit:      $ENV_AUDIT"
 
 # ─── CR-2: PERSISTENT KNOWLEDGE GRAPH ──────────────────────────────────────
 KNOWLEDGE_GRAPH=$(bd create \
-  --title="Persistent knowledge graph — replace stateless batch architecture with graph-backed atom storage" \
+  --title="Persistent knowledge graph - replace stateless batch architecture with graph-backed atom storage" \
   --type=feature \
   --priority=1 \
   --description="CR-2: The system recomputes everything per request. Atoms, scores, digests are ephemeral. Cannot answer temporal queries ('what changed since yesterday?', 'is this blocker a pattern?'). Implement Neo4j Community Edition + APOC as a Docker Compose service with a Python graph client module. Persist atoms after pipeline extraction. Enable Cypher-based temporal queries. Trade study concluded: Neo4j CE scored 4.30/5.00, beating Memgraph (3.85), FalkorDB (3.75), and Apache AGE (2.35) on Cypher completeness, Python driver maturity, prototype fit, and developer familiarity." \
@@ -889,10 +889,10 @@ echo "    Knowledge Graph:    $KNOWLEDGE_GRAPH"
 
 # ─── CR-1.4: ASYNC PIPELINE ─────────────────────────────────────────────────
 ASYNC_PIPELINE=$(bd create \
-  --title="Async pipeline — replace synchronous serial LLM calls with concurrent execution" \
+  --title="Async pipeline - replace synchronous serial LLM calls with concurrent execution" \
   --type=feature \
   --priority=2 \
-  --description="CR-1.4: FastAPI endpoints are async def but the entire pipeline is synchronous. LLM calls process windows sequentially — 50+ serial round-trips at ~2s each. The pipeline needs to use async/await with concurrent execution (asyncio.gather or similar) to process extraction windows in parallel, dramatically reducing end-to-end latency." \
+  --description="CR-1.4: FastAPI endpoints are async def but the entire pipeline is synchronous. LLM calls process windows sequentially - 50+ serial round-trips at ~2s each. The pipeline needs to use async/await with concurrent execution (asyncio.gather or similar) to process extraction windows in parallel, dramatically reducing end-to-end latency." \
   --design="Convert Pipeline methods to async. Use asyncio.gather/TaskGroup for concurrent LLM calls within extraction. Keep FastAPI endpoints async (already are). Ensure the LLM client interface supports async calls. Add concurrency limit to avoid rate-limiting." \
   --acceptance="1. Pipeline extraction processes windows concurrently via asyncio. 2. LLM client exposes async interface. 3. FastAPI endpoints await pipeline directly (no sync-to-async bridge). 4. All existing tests pass. 5. All 7 quality gates pass." \
   --silent)
@@ -900,10 +900,10 @@ echo "    Async Pipeline:     $ASYNC_PIPELINE"
 
 # ─── CR-3.1: STRUCTURED OUTPUT ENFORCEMENT ──────────────────────────────────
 STRUCTURED_OUTPUT=$(bd create \
-  --title="Structured output enforcement — replace json.loads() with instructor + Pydantic models" \
+  --title="Structured output enforcement - replace json.loads() with instructor + Pydantic models" \
   --type=feature \
   --priority=1 \
-  --description="CR-3.1: Both extraction and generation rely on json.loads() as the only parse step. When the LLM returns markdown-fenced JSON or adds explanatory text, the pipeline silently drops the entire response. This is the #1 production ML engineering concern — every major LLM occasionally returns non-JSON responses. Silent data loss is unacceptable." \
+  --description="CR-3.1: Both extraction and generation rely on json.loads() as the only parse step. When the LLM returns markdown-fenced JSON or adds explanatory text, the pipeline silently drops the entire response. This is the #1 production ML engineering concern - every major LLM occasionally returns non-JSON responses. Silent data loss is unacceptable." \
   --design="Add instructor library to pyproject.toml. Replace raw json.loads() parsing in extraction runner and generation runner with instructor-patched clients that return typed Pydantic models directly. Reuse existing Atom and DigestSection Pydantic models as the response schemas. Support both sync and async clients. Instructor handles retries, markdown fence stripping, and schema validation automatically." \
   --acceptance="1. instructor added to pyproject.toml dependencies. 2. Extraction runner uses instructor to get list[Atom] directly from LLM. 3. Generation runner uses instructor to get structured DigestSection responses. 4. Both sync and async paths use instructor. 5. No more silent data loss from malformed JSON. 6. All existing tests continue to pass. 7. All 7 quality gates pass." \
   --silent)
@@ -911,7 +911,7 @@ echo "    Structured Output:  $STRUCTURED_OUTPUT"
 
 # ─── CR-4.1: SCORING CALIBRATION ────────────────────────────────────────────
 SCORING_CALIBRATION=$(bd create \
-  --title="Calibrate scoring dimensions — normalize distributions across five dimensions" \
+  --title="Calibrate scoring dimensions - normalize distributions across five dimensions" \
   --type=bug \
   --priority=2 \
   --description="CR-4.1: The five scoring dimensions (workstream_proximity, role_type_alignment, phase_alignment, urgency, social_signal) have different distributions. Discrete 4-value dimensions (urgency) vs continuous dimensions create unequal influence. The relative influence of each dimension doesn't match the stated persona weights. Urgency and social_signal have 0.3-0.5 step sizes that dominate ranking decisions regardless of weight configuration. Need to normalize distributions so persona weights actually control relative influence." \
@@ -922,10 +922,10 @@ echo "    Scoring Calibration: $SCORING_CALIBRATION"
 
 # ─── VULTURE DEAD CODE DETECTION ────────────────────────────────────────────
 VULTURE=$(bd create \
-  --title="Add vulture for dead code detection — integrate into quality gates and remove all dead code" \
+  --title="Add vulture for dead code detection - integrate into quality gates and remove all dead code" \
   --type=task \
   --priority=2 \
-  --description="Add vulture to the project toolchain and iteratively remove ALL dead code from the codebase. Vulture statically analyzes Python to find unused functions, variables, imports, classes, and attributes. Integrate into pyproject.toml (dependency + config), scripts/quality-gates.sh (as a gate), GitHub Actions CI pipeline, and Makefile. Then run vulture iteratively — fix findings, re-run, repeat until clean." \
+  --description="Add vulture to the project toolchain and iteratively remove ALL dead code from the codebase. Vulture statically analyzes Python to find unused functions, variables, imports, classes, and attributes. Integrate into pyproject.toml (dependency + config), scripts/quality-gates.sh (as a gate), GitHub Actions CI pipeline, and Makefile. Then run vulture iteratively - fix findings, re-run, repeat until clean." \
   --design="1. Add vulture to dev dependencies in pyproject.toml. 2. Configure vulture in pyproject.toml ([tool.vulture] section) with min_confidence=80 and a whitelist file for false positives (e.g. Pydantic model_config, pytest fixtures, __all__ exports). 3. Add vulture gate to scripts/quality-gates.sh. 4. Add vulture step to GitHub Actions workflow. 5. Add vulture target to Makefile. 6. Run vulture iteratively: review each finding, remove genuine dead code, add confirmed false positives to whitelist. Repeat until zero findings." \
   --acceptance="1. vulture added to pyproject.toml dev dependencies. 2. vulture configured in pyproject.toml with whitelist for false positives. 3. vulture runs as a quality gate in scripts/quality-gates.sh. 4. vulture runs in GitHub Actions CI pipeline. 5. vulture target added to Makefile. 6. All dead code removed from codebase. 7. vulture passes with zero findings. 8. All 7 existing quality gates still pass." \
   --silent)
@@ -933,12 +933,12 @@ echo "    Vulture:            $VULTURE"
 
 # ─── CR-3.2: TWO-STAGE EXTRACTION ───────────────────────────────────────────
 TWO_STAGE=$(bd create \
-  --title="Two-stage extraction — split monolithic prompt into coarse extract then enrich" \
+  --title="Two-stage extraction - split monolithic prompt into coarse extract then enrich" \
   --type=feature \
   --priority=2 \
   --description="CR-3.2: The 88-line extraction prompt asks the LLM to do too much in one pass: extract events, classify type, assign confidence, identify participants, tag workstreams, determine urgency, assess phase relevance, and detect implicit decisions. This cognitive overload degrades quality on every dimension simultaneously. Split into a two-stage pipeline: Stage 1 (coarse extract) identifies events and produces minimal atoms. Stage 2 (enrich) takes each coarse atom and adds confidence, workstream tags, urgency, phase relevance, and implicit decision detection." \
-  --design="1. Research optimal task decomposition for LLM extraction. 2. Design Stage 1 prompt: focused on event identification — type, summary, detail, source, key_participants only. Simpler schema = higher recall. 3. Design Stage 2 prompt(s): enrichment passes adding confidence, workstreams, urgency, phase_relevance. Could be single enrich prompt or parallel micro-prompts per dimension. 4. Update ExtractionRunner to chain stages: extract → enrich → merge into final Atom. 5. Preserve async concurrency — Stage 2 enrichments can run in parallel. 6. Use instructor structured output for both stages. 7. Define intermediate Pydantic models for Stage 1 output (CoarseAtom) distinct from final Atom." \
-  --acceptance="1. Extraction split into two distinct LLM stages with separate prompts. 2. Stage 1 prompt focused on event identification only. 3. Stage 2 enriches with metadata (confidence, workstreams, urgency, phase). 4. Final Atom output matches existing schema — downstream pipeline unchanged. 5. Both stages use instructor structured output. 6. Async runner processes Stage 2 enrichments concurrently. 7. All existing tests updated or replaced. 8. All 7 quality gates pass." \
+  --design="1. Research optimal task decomposition for LLM extraction. 2. Design Stage 1 prompt: focused on event identification - type, summary, detail, source, key_participants only. Simpler schema = higher recall. 3. Design Stage 2 prompt(s): enrichment passes adding confidence, workstreams, urgency, phase_relevance. Could be single enrich prompt or parallel micro-prompts per dimension. 4. Update ExtractionRunner to chain stages: extract → enrich → merge into final Atom. 5. Preserve async concurrency - Stage 2 enrichments can run in parallel. 6. Use instructor structured output for both stages. 7. Define intermediate Pydantic models for Stage 1 output (CoarseAtom) distinct from final Atom." \
+  --acceptance="1. Extraction split into two distinct LLM stages with separate prompts. 2. Stage 1 prompt focused on event identification only. 3. Stage 2 enriches with metadata (confidence, workstreams, urgency, phase). 4. Final Atom output matches existing schema - downstream pipeline unchanged. 5. Both stages use instructor structured output. 6. Async runner processes Stage 2 enrichments concurrently. 7. All existing tests updated or replaced. 8. All 7 quality gates pass." \
   --silent)
 echo "    Two-Stage Extract:  $TWO_STAGE"
 
@@ -947,9 +947,9 @@ SLACK_FIXTURE=$(bd create \
   --title="Restructure dataset to load from Slack-API-shaped static JSON fixture" \
   --type=feature \
   --priority=2 \
-  --description="Deep research the Slack Python SDK (https://docs.slack.dev/messaging/retrieving-messages/) and restructure src/evercurrent/dataset/messages.py to load from a flat static .json file that EXACTLY matches the Slack API response shape as of March 2026. Current synthetic dataset uses an ad-hoc format. The fixture should mirror conversations.history and conversations.replies schemas — ts, thread_ts, user, text, reply_count, replies, reactions, blocks, etc. Next steps (NOT in scope): swap flat file for live slack_sdk.WebClient. Steps: 1) Add slack-sdk dep. 2) Create SlackIngestionClient. 3) Channel iteration + pagination. 4) OAuth token management. 5) Replace file loader with live client behind common interface." \
-  --design="1. Research Slack API response schemas: conversations.history, conversations.replies — document exact field names, types, nesting. 2. Create static JSON fixture file (data/slack_fixture.json) matching Slack API shape exactly. 3. Restructure messages.py to load from fixture. 4. Update ContextWindow builder and ingestion layer to consume Slack-shaped data. 5. Ensure downstream pipeline stages still work. 6. Document Slack API fields and next steps for live connection in docstrings." \
-  --acceptance="1. Static JSON fixture matches Slack conversations.history + conversations.replies response schema exactly. 2. messages.py loads from the fixture file. 3. All existing pipeline tests pass with restructured data. 4. Docstring documents Slack API fields and next steps for live connection. 5. No Slack SDK client code written — only fixture and loader. 6. All 7 quality gates pass." \
+  --description="Deep research the Slack Python SDK (https://docs.slack.dev/messaging/retrieving-messages/) and restructure src/evercurrent/dataset/messages.py to load from a flat static .json file that EXACTLY matches the Slack API response shape as of March 2026. Current synthetic dataset uses an ad-hoc format. The fixture should mirror conversations.history and conversations.replies schemas - ts, thread_ts, user, text, reply_count, replies, reactions, blocks, etc. Next steps (NOT in scope): swap flat file for live slack_sdk.WebClient. Steps: 1) Add slack-sdk dep. 2) Create SlackIngestionClient. 3) Channel iteration + pagination. 4) OAuth token management. 5) Replace file loader with live client behind common interface." \
+  --design="1. Research Slack API response schemas: conversations.history, conversations.replies - document exact field names, types, nesting. 2. Create static JSON fixture file (data/slack_fixture.json) matching Slack API shape exactly. 3. Restructure messages.py to load from fixture. 4. Update ContextWindow builder and ingestion layer to consume Slack-shaped data. 5. Ensure downstream pipeline stages still work. 6. Document Slack API fields and next steps for live connection in docstrings." \
+  --acceptance="1. Static JSON fixture matches Slack conversations.history + conversations.replies response schema exactly. 2. messages.py loads from the fixture file. 3. All existing pipeline tests pass with restructured data. 4. Docstring documents Slack API fields and next steps for live connection. 5. No Slack SDK client code written - only fixture and loader. 6. All 7 quality gates pass." \
   --silent)
 echo "    Slack Fixture:      $SLACK_FIXTURE"
 
@@ -958,7 +958,7 @@ DOCS_UPDATE=$(bd create \
   --title="Update README.md and docs/*.rst to reflect current repo state" \
   --type=task \
   --priority=3 \
-  --description="Deep-review the current state of the codebase — architecture, implemented layers, models, pipelines, quality gates, dependencies — and update README.md and all docs/*.rst files to accurately reflect what exists now. Documentation has drifted from implementation: features have been added (instructor structured output, async pipeline, Neo4j backbone, composite scoring) that aren't reflected in docs. The README should serve as an accurate entry point for evaluators and future contributors." \
+  --description="Deep-review the current state of the codebase - architecture, implemented layers, models, pipelines, quality gates, dependencies - and update README.md and all docs/*.rst files to accurately reflect what exists now. Documentation has drifted from implementation: features have been added (instructor structured output, async pipeline, Neo4j backbone, composite scoring) that aren't reflected in docs. The README should serve as an accurate entry point for evaluators and future contributors." \
   --design="1. Read every module under src/evercurrent/ to inventory implemented features. 2. Cross-reference against existing README.md and docs/*.rst for gaps/stale content. 3. Update README.md: project overview, architecture diagram (text), quickstart, environment setup, quality gates, layer-by-layer status. 4. Update docs/*.rst: ensure design-document.rst, any API docs, and architecture docs match reality. 5. Remove references to unimplemented features; add references to implemented ones (instructor, async, Neo4j, scoring calibration, etc.)." \
   --acceptance="1. README.md accurately describes current architecture and all implemented layers. 2. All docs/*.rst files reflect current implementation state. 3. No references to unimplemented features without clear 'planned' markers. 4. Setup/quickstart instructions actually work. 5. All 7 quality gates pass." \
   --silent)
@@ -974,3 +974,14 @@ SPHINX_THEME=$(bd create \
   --acceptance="1. sphinx-immaterial added to pyproject.toml dev dependencies. 2. docs/conf.py uses Material theme. 3. All existing .rst files render correctly. 4. Docs build without warnings. 5. All 7 quality gates pass." \
   --silent)
 echo "    Sphinx Theme:       $SPHINX_THEME"
+
+# ─── HYBRID SEMANTIC + KEYWORD CONTINUATION DETECTION ────────────────────────
+HYBRID_CONTINUATIONS=$(bd create \
+  --title="Implement hybrid semantic + keyword continuation detection" \
+  --type=feature \
+  --priority=1 \
+  --description="Replace regex-only continuation detection with hybrid semantic + keyword approach. Current continuations.py uses only regex patterns (@-mentions, quote blocks, back-references). Need to: (1) Add sentence-transformers embedding capability via Embedder protocol, (2) Implement hybrid scoring: regex as fast-path (confidence=1.0), embedding cosine similarity as fallback (threshold ~0.45), (3) Wire detect_continuations() into pipeline.py (currently not called at all), (4) Add ContinuationMatch.confidence field, (5) Pre-compute thread embeddings for efficiency, (6) Add config to pipeline.yml for similarity_threshold and embedding_model. Files to change: continuations.py, pipeline.py, pyproject.toml, pipeline.yml. New file: ingestion/embeddings.py." \
+  --design="1. Create Embedder protocol in ingestion/embeddings.py with embed(texts) -> ndarray. 2. Implement SentenceTransformerEmbedder wrapping all-MiniLM-L6-v2. 3. Refactor detect_continuations() to accept optional Embedder param. 4. Keep existing regex checks as fast-path (confidence=1.0). 5. Add semantic similarity fallback: pre-compute thread embeddings once, compute cosine similarity for unmatched standalones, link if above threshold. 6. Add confidence field to ContinuationMatch. 7. Wire into pipeline.py (extract standalones, call detect_continuations, merge results back into bundles). 8. Add continuation config to pipeline.yml. 9. Update tests with mock embedder." \
+  --acceptance="1. Existing regex tests still pass. 2. New semantic similarity tests pass with mock embedder. 3. detect_continuations() wired into pipeline.py. 4. Standalones extracted correctly from messages. 5. Continuations merged back into ThreadBundles before context windowing. 6. Config loads similarity_threshold from pipeline.yml. 7. All quality gates pass." \
+  --silent)
+echo "    Hybrid Continuations: $HYBRID_CONTINUATIONS"

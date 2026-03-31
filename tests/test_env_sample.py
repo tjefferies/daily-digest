@@ -1,7 +1,7 @@
 """Tests for .env.sample file completeness and correctness.
 
 Verifies that the .env.sample file at the repo root documents every
-environment variable referenced by the codebase — including those
+environment variable referenced by the codebase - including those
 read implicitly by third-party SDKs.
 """
 

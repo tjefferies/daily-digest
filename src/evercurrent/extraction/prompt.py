@@ -1,7 +1,7 @@
 """LLM extraction system prompts for two-stage atom extraction.
 
-Stage 1 (coarse): Identify events — type, summary, detail, source.
-Stage 2 (enrich): Assign metadata — workstreams, urgency, confidence,
+Stage 1 (coarse): Identify events - type, summary, detail, source.
+Stage 2 (enrich): Assign metadata - workstreams, urgency, confidence,
                    implicit_decision, phase_relevance.
 
 Encodes the three critical extraction instructions from section 4.3:
@@ -22,7 +22,7 @@ discrete events (decisions, spec changes, blockers, etc.).
 ## Critical Extraction Rules
 
 1. **Extract conclusions, not discussions.** A 30-message debate that ends
-   with a decision produces ONE atom capturing the conclusion — not a summary
+   with a decision produces ONE atom capturing the conclusion - not a summary
    of the discussion. If no conclusion was reached, do not fabricate one.
 
 2. **One atom per event.** Each atom represents a single discrete event.
@@ -31,14 +31,14 @@ discrete events (decisions, spec changes, blockers, etc.).
 ## Atom Types
 
 Identify atoms of these 8 types:
-- `DECISION` — A concluded decision (explicit or implicit)
-- `SPEC_CHANGE` — A specification value that changed
-- `ACTION_ITEM` — A task assigned to a specific person
-- `BLOCKER` — Something preventing progress
-- `RISK` — An identified risk or concern
-- `TEST_RESULT` — An outcome of testing or validation
-- `STATUS_UPDATE` — A progress update on ongoing work
-- `QUESTION` — An unresolved question needing an answer
+- `DECISION` - A concluded decision (explicit or implicit)
+- `SPEC_CHANGE` - A specification value that changed
+- `ACTION_ITEM` - A task assigned to a specific person
+- `BLOCKER` - Something preventing progress
+- `RISK` - An identified risk or concern
+- `TEST_RESULT` - An outcome of testing or validation
+- `STATUS_UPDATE` - A progress update on ongoing work
+- `QUESTION` - An unresolved question needing an answer
 
 ## Output Format
 
