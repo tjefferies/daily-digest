@@ -725,6 +725,38 @@ bd dep add "$SPHINX_DOCS" "$INTERROGATE"
 
 echo "    SPHINX_DOCS=$SPHINX_DOCS"
 
+# ─── STANDALONE: GitHub Actions CI/CD Pipeline ──────────────────────────────
+echo ""
+echo "==> Creating standalone task: GitHub Actions CI/CD Pipeline"
+
+GH_ACTIONS=$(bd create \
+  --title="Create GitHub Actions CI/CD pipeline with quality gates, security scanning, and SBOM" \
+  --type=task \
+  --priority=3 \
+  --description="Create .github/workflows/quality-gate.yml modeled off the local scripts/quality-gates.sh and the metalog_jax reference pipeline. Jobs: (1) quality-gates — ruff lint, ruff format, ty check, pytest with coverage >=90%, radon cc <=8, radon mi A rating, interrogate >=95%; (2) license-check — pip-licenses with allowed list (MIT, BSD, Apache, PSF, ISC, Unlicense, Public Domain, CC0, Zlib, Mozilla, 0BSD); (3) semgrep — scan with p/python, p/security-audit, p/owasp-top-ten, p/cwe-top-25, p/secrets configs, fail on ERROR severity; (4) bandit — scan src/ with medium severity/confidence, fail on high; (5) sbom — generate CycloneDX and SPDX SBOMs with syft, scan with grype, fail on critical vulnerabilities; (6) docs — build Sphinx documentation site and deploy as artifact. Trigger on push to main and pull_request. Use astral-sh/setup-uv@v4 for uv. Upload all scan results and SBOM reports as artifacts." \
+  --silent)
+
+# Must wait until Sphinx docs are done (all local tools configured)
+bd dep add "$GH_ACTIONS" "$SPHINX_DOCS"
+
+echo "    GH_ACTIONS=$GH_ACTIONS"
+
+# ─── STANDALONE: Makefile for local CI commands ─────────────────────────────
+echo ""
+echo "==> Creating standalone task: Makefile for local CI commands"
+
+MAKEFILE=$(bd create \
+  --title="Create Makefile that runs all local commands matching GitHub Actions jobs" \
+  --type=task \
+  --priority=3 \
+  --description="Create a Makefile at the project root that provides local equivalents of every GitHub Actions pipeline job. Targets: (1) make lint — ruff check src/ tests/; (2) make format — ruff format --check src/ tests/; (3) make typecheck — ty check src/; (4) make test — pytest with coverage >=90%; (5) make complexity — radon cc and mi checks; (6) make interrogate — interrogate src/ --fail-under 95; (7) make license-check — pip-licenses with allowed list; (8) make semgrep — semgrep scan with security configs; (9) make bandit — bandit scan src/; (10) make sbom — syft + grype scan; (11) make docs — sphinx-build docs; (12) make quality — runs all quality gates (lint, format, typecheck, test, complexity, interrogate); (13) make security — runs all security gates (license-check, semgrep, bandit, sbom); (14) make all — runs quality + security + docs; (15) make ci — mirrors the full GitHub Actions pipeline locally. Each target should use 'uv run' prefix for Python tools. Include .PHONY declarations. This MUST wait until the GitHub Actions pipeline issue is closed so the Makefile accurately mirrors the CI jobs." \
+  --silent)
+
+# Must wait until GitHub Actions pipeline is done
+bd dep add "$MAKEFILE" "$GH_ACTIONS"
+
+echo "    MAKEFILE=$MAKEFILE"
+
 # ─── SUMMARY ─────────────────────────────────────────────────────────────────
 echo ""
 echo "✓ Epic hierarchy created successfully."
@@ -751,3 +783,5 @@ echo "    README:              $README"
 echo "    Interrogate:         $INTERROGATE"
 echo "    Docker:              $DOCKER"
 echo "    Sphinx Docs:         $SPHINX_DOCS"
+echo "    GH Actions:          $GH_ACTIONS"
+echo "    Makefile:            $MAKEFILE"
