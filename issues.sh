@@ -757,6 +757,22 @@ bd dep add "$MAKEFILE" "$GH_ACTIONS"
 
 echo "    MAKEFILE=$MAKEFILE"
 
+# ─── STANDALONE: Next Steps document ────────────────────────────────────────
+echo ""
+echo "==> Creating standalone task: Write next-steps.rst"
+
+NEXT_STEPS=$(bd create \
+  --title="Write next-steps.rst covering follow-on work, stakeholder questions, and production path" \
+  --type=task \
+  --priority=3 \
+  --description="Write docs/next-steps.rst documenting recommended follow-on work after the prototype is delivered. Include in the Sphinx toctree. Sections: (1) Stakeholder Questions — expand section 11 of design-document.rst: IP classification for cloud vs on-prem LLM, PM tool integration for automated phase detection, multi-source ingestion beyond Slack, user interview findings, organizational structure clarity; (2) Live Data Integration — replacing static synthetic dataset with Slack OAuth bot, real-time message ingestion, webhook vs polling, message deduplication, handling edits/deletes; (3) Configuration Interface — web-based UI for editing YAML configs, real-time preview of scoring changes, admin panel for managing personas; (4) Adaptive Feedback Loop — implementing the stubbed feedback mechanism (section 5.4), user implicit signals, weight learning, A/B testing; (5) Production Hardening — persistent storage, auth, observability, error handling, rate limiting, caching; (6) Scaling Path — batch to stream (Kafka), parallelized extraction, searchable atom index; (7) Additional Integrations — PLM/ERP/PM tool connectors, email, CAD comments, ticket sync; (8) Phase Transition Detection — automated inference from language patterns; (9) Evaluation in Production — section 10.2 metrics; (10) Security and Compliance — on-prem inference, data retention, audit logging, SOC2." \
+  --silent)
+
+# Must wait until Makefile is done (all tooling finalized)
+bd dep add "$NEXT_STEPS" "$MAKEFILE"
+
+echo "    NEXT_STEPS=$NEXT_STEPS"
+
 # ─── SUMMARY ─────────────────────────────────────────────────────────────────
 echo ""
 echo "✓ Epic hierarchy created successfully."
@@ -785,3 +801,4 @@ echo "    Docker:              $DOCKER"
 echo "    Sphinx Docs:         $SPHINX_DOCS"
 echo "    GH Actions:          $GH_ACTIONS"
 echo "    Makefile:            $MAKEFILE"
+echo "    Next Steps:          $NEXT_STEPS"
