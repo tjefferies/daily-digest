@@ -19,6 +19,10 @@ _EXPECTED_VARS: list[tuple[str, bool]] = [
     ("ANTHROPIC_API_KEY", True),
     ("OPENAI_API_KEY", False),
     ("GOOGLE_API_KEY", False),
+    # Neo4j knowledge graph connection
+    ("NEO4J_URI", True),
+    ("NEO4J_USER", True),
+    ("NEO4J_PASSWORD", True),
 ]
 
 

@@ -875,3 +875,14 @@ ENV_AUDIT=$(bd create \
   --description="Deep-reason through the entire codebase to find every os.environ, os.getenv, and any config loader that reads environment variables. Catalog each var with its purpose, default value (if any), and which module references it. Then create a .env.sample file at repo root documenting all required and optional env vars with placeholder values and comments." \
   --silent)
 echo "    Env Var Audit:      $ENV_AUDIT"
+
+# ─── CR-2: PERSISTENT KNOWLEDGE GRAPH ──────────────────────────────────────
+KNOWLEDGE_GRAPH=$(bd create \
+  --title="Persistent knowledge graph — replace stateless batch architecture with graph-backed atom storage" \
+  --type=feature \
+  --priority=1 \
+  --description="CR-2: The system recomputes everything per request. Atoms, scores, digests are ephemeral. Cannot answer temporal queries ('what changed since yesterday?', 'is this blocker a pattern?'). Implement Neo4j Community Edition + APOC as a Docker Compose service with a Python graph client module. Persist atoms after pipeline extraction. Enable Cypher-based temporal queries. Trade study concluded: Neo4j CE scored 4.30/5.00, beating Memgraph (3.85), FalkorDB (3.75), and Apache AGE (2.35) on Cypher completeness, Python driver maturity, prototype fit, and developer familiarity." \
+  --design="Neo4j CE + APOC via Docker Compose. neo4j Python driver v6.x async API. Graph schema: Atom nodes with EXTRACTED_FROM->Channel, ORIGINATES_IN->Workstream, AFFECTS->Workstream, INVOLVES->Participant edges. All edges timestamped. MERGE for idempotent upserts. APOC temporal functions for date math." \
+  --acceptance="1. Neo4j service in docker-compose.yml with health check. 2. Python graph client at src/evercurrent/graph/client.py with async connect/persist/query. 3. Atoms persisted after pipeline extraction. 4. Temporal query: atoms_since(datetime). 5. Tests covering graph client CRUD and temporal queries." \
+  --silent)
+echo "    Knowledge Graph:    $KNOWLEDGE_GRAPH"

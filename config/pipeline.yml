@@ -20,6 +20,12 @@ context_window:
 # Extraction confidence filter threshold.
 confidence_threshold: 0.7
 
+# Neo4j knowledge graph connection.
+neo4j:
+  uri: bolt://localhost:7687
+  user: neo4j
+  password: evercurrent_dev
+
 # CORS allowed origins for the FastAPI app.
 cors_origins:
   - "http://localhost:5173"
