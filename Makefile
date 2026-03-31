@@ -2,8 +2,8 @@
 # Usage: make <target> or make all
 
 .PHONY: help lint format typecheck test complexity maintainability interrogate \
-        quality license-check semgrep bandit sbom security docs all ci \
-        dev serve clean
+        quality license-check semgrep bandit sbom security docs docs-serve all ci \
+        dev serve serve-frontend serve-all clean
 
 .DEFAULT_GOAL := help
 
@@ -89,6 +89,9 @@ security: license-check semgrep bandit ## Run all security gates (excluding sbom
 docs: ## Build Sphinx documentation
 	uv run sphinx-build -b html docs docs/_build/html
 
+docs-serve: docs ## Build and serve Sphinx docs with live reload
+	uv run sphinx-autobuild docs docs/_build/html --port 8080 --open-browser
+
 docs-clean: ## Clean documentation build
 	rm -rf docs/_build
 
@@ -107,8 +110,18 @@ ci: quality ## Mirror the full GitHub Actions quality pipeline locally
 dev: ## Install all dependencies
 	uv sync --all-groups
 
-serve: ## Start the development server
-	uv run uvicorn evercurrent.app:app --reload --port 8000
+serve: ## Start the FastAPI backend (port 8000)
+	PYTHONPATH=src uv run uvicorn evercurrent.app:app --reload --reload-dir src --port 8000
+
+serve-frontend: ## Start the React frontend dev server (port 5173)
+	cd frontend && npm run dev
+
+serve-all: ## Start FastAPI backend and React frontend together
+	@echo "Starting FastAPI backend (port 8000) and React frontend (port 5173)..."
+	@trap 'kill 0' EXIT; \
+	PYTHONPATH=src uv run uvicorn evercurrent.app:app --reload --reload-dir src --port 8000 & \
+	cd frontend && npm run dev & \
+	wait
 
 clean: ## Clean build artifacts
 	rm -rf docs/_build dist build .pytest_cache .coverage htmlcov .ruff_cache .ty
