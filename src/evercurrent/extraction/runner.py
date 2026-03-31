@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Any
 from anthropic.types import TextBlock
 from pydantic import ValidationError
 
+from evercurrent.config.loader import get_config
 from evercurrent.extraction.prompt import build_extraction_prompt
 from evercurrent.models.atom import Atom
 
@@ -23,7 +24,9 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-_MODEL = "claude-sonnet-4-20250514"
+_pipeline_cfg = get_config()["pipeline"]
+_MODEL = _pipeline_cfg["model"]
+_MAX_TOKENS = _pipeline_cfg["extraction_max_tokens"]
 
 
 class ExtractionRunner:
@@ -74,7 +77,7 @@ class ExtractionRunner:
         """
         response = self._client.messages.create(
             model=_MODEL,
-            max_tokens=4096,
+            max_tokens=_MAX_TOKENS,
             system=self._system_prompt,
             messages=[{"role": "user", "content": window.thread_text}],
         )

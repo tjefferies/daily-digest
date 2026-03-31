@@ -8,70 +8,23 @@ in extracted atoms.
 
 from __future__ import annotations
 
-# Channel → workstream mapping. #amr-general is cross-cutting
-# and intentionally excluded (returns None).
-_CHANNEL_TO_WORKSTREAM: dict[str, str] = {
-    "#chassis-design": "chassis",
-    "#drivetrain": "drivetrain",
-    "#thermal-management": "thermal",
-    "#power-systems": "power-systems",
-    "#sensors": "sensors",
-    "#firmware": "firmware",
-    "#supply-chain": "supply-chain",
-}
+from evercurrent.config.loader import get_config
 
-# Workstream → channels (reverse of above, plus end-effector
-# which has no dedicated channel yet).
-_WORKSTREAM_TO_CHANNELS: dict[str, list[str]] = {
-    "chassis": ["#chassis-design"],
-    "drivetrain": ["#drivetrain"],
-    "thermal": ["#thermal-management"],
-    "power-systems": ["#power-systems"],
-    "sensors": ["#sensors"],
-    "firmware": ["#firmware"],
-    "supply-chain": ["#supply-chain"],
-    "end-effector": ["#amr-general"],
-}
 
-# Component name (lowercase) → workstream.
-_COMPONENT_TO_WORKSTREAM: dict[str, str] = {
-    "chassis": "chassis",
-    "frame": "chassis",
-    "enclosure": "chassis",
-    "housing": "chassis",
-    "bracket": "chassis",
-    "motor": "drivetrain",
-    "motor controller": "drivetrain",
-    "gearbox": "drivetrain",
-    "drive shaft": "drivetrain",
-    "wheel hub": "drivetrain",
-    "heat sink": "thermal",
-    "thermal interface": "thermal",
-    "thermal pad": "thermal",
-    "cooling fan": "thermal",
-    "heat pipe": "thermal",
-    "battery": "power-systems",
-    "battery pack": "power-systems",
-    "power supply": "power-systems",
-    "voltage regulator": "power-systems",
-    "bms": "power-systems",
-    "lidar": "sensors",
-    "imu": "sensors",
-    "camera": "sensors",
-    "encoder": "sensors",
-    "proximity sensor": "sensors",
-    "fpga": "firmware",
-    "microcontroller": "firmware",
-    "mcu": "firmware",
-    "bootloader": "firmware",
-    "firmware image": "firmware",
-    "connector": "supply-chain",
-    "vendor": "supply-chain",
-    "lead time": "supply-chain",
-    "gripper": "end-effector",
-    "end effector": "end-effector",
-    "tool changer": "end-effector",
-}
+def _load_workstream_config() -> tuple[dict[str, str], dict[str, list[str]], dict[str, str]]:
+    """Load workstream mappings from YAML config."""
+    cfg = get_config()["workstreams"]
+    channel_to_ws: dict[str, str] = dict(cfg["channel_to_workstream"])
+    ws_to_channels: dict[str, list[str]] = {
+        k: list(v) for k, v in cfg["workstream_to_channels"].items()
+    }
+    component_to_ws: dict[str, str] = dict(cfg["component_to_workstream"])
+    return channel_to_ws, ws_to_channels, component_to_ws
+
+
+_CHANNEL_TO_WORKSTREAM, _WORKSTREAM_TO_CHANNELS, _COMPONENT_TO_WORKSTREAM = (
+    _load_workstream_config()
+)
 
 
 class WorkstreamRegistry:

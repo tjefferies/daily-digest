@@ -11,6 +11,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
+from evercurrent.config.loader import get_config
 from evercurrent.models.persona import RoleArchetype  # noqa: TC001 (runtime Pydantic validation)
 
 
@@ -122,13 +123,9 @@ class TeamRosterService:
         return list(self._members)
 
 
-_TITLE_TO_ARCHETYPE: dict[str, RoleArchetype] = {
-    "Engineering Manager": "Eng Manager",
-    "Program Manager": "Program Manager",
-    "Supply Chain Manager": "Supply Chain",
-    "Procurement Specialist": "Supply Chain",
-    "VP of Engineering": "Executive",
-}
+_scoring_cfg = get_config()["scoring"]
+_TITLE_TO_ARCHETYPE: dict[str, RoleArchetype] = _scoring_cfg["title_to_archetype"]
+_DEFAULT_ARCHETYPE: RoleArchetype = _scoring_cfg["default_archetype"]
 
 
 def _infer_archetype(title: str) -> RoleArchetype:
@@ -144,4 +141,4 @@ def _infer_archetype(title: str) -> RoleArchetype:
     Returns:
         The inferred RoleArchetype literal.
     """
-    return _TITLE_TO_ARCHETYPE.get(title, "IC Engineer")
+    return _TITLE_TO_ARCHETYPE.get(title, _DEFAULT_ARCHETYPE)

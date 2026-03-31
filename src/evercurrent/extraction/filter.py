@@ -13,9 +13,11 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from evercurrent.models.atom import Atom
 
+from evercurrent.config.loader import get_config
+
 logger = logging.getLogger(__name__)
 
-_DEFAULT_THRESHOLD = 0.7
+_DEFAULT_THRESHOLD: float = get_config()["pipeline"]["confidence_threshold"]
 
 
 @dataclass

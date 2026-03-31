@@ -12,6 +12,8 @@ from typing import TYPE_CHECKING
 
 from anthropic.types import TextBlock
 
+from evercurrent.config.loader import get_config
+
 if TYPE_CHECKING:
     from anthropic import Anthropic
 
@@ -21,7 +23,9 @@ logger = logging.getLogger(__name__)
 
 _VALIDATED_TYPES = frozenset({"DECISION", "SPEC_CHANGE"})
 
-_MODEL = "claude-sonnet-4-20250514"
+_pipeline_cfg = get_config()["pipeline"]
+_MODEL = _pipeline_cfg["model"]
+_VALIDATION_MAX_TOKENS = _pipeline_cfg["validation_max_tokens"]
 
 _VALIDATION_PROMPT = """\
 You are validating an information atom extracted from a Slack conversation.
@@ -88,7 +92,7 @@ def _validate_single(
 
     response = client.messages.create(
         model=_MODEL,
-        max_tokens=512,
+        max_tokens=_VALIDATION_MAX_TOKENS,
         messages=[{"role": "user", "content": prompt}],
     )
 

@@ -13,22 +13,13 @@ from __future__ import annotations
 
 from typing import get_args
 
+from evercurrent.config.loader import get_config
 from evercurrent.models.atom import Phase
 
 _VALID_PHASES: set[str] = set(get_args(Phase))
 
-# Default phase assignments from design document section 6.3.
-# "Late EVT" for thermal is modeled as "EVT" — the scoring matrix
-# treats it identically for atom-type relevance.
-_DEFAULT_PHASES: dict[str, Phase] = {
-    "chassis": "DVT",
-    "drivetrain": "DVT",
-    "thermal": "EVT",
-    "power-systems": "DVT",
-    "sensors": "EVT",
-    "firmware": "EVT",
-    "end-effector": "Concept",
-}
+# Default phase assignments loaded from config/phases.yml.
+_DEFAULT_PHASES: dict[str, Phase] = get_config()["phases"]["default_phases"]
 
 
 class PhaseVector:

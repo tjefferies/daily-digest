@@ -8,9 +8,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from evercurrent.config.loader import get_config
+
 if TYPE_CHECKING:
     from evercurrent.models.atom import Atom
     from evercurrent.models.persona import Persona
+
+_ss_cfg = get_config()["scoring"]["social_signal"]
+_NO_PARTICIPANTS: float = _ss_cfg["no_participants"]
+_PERSONA_IS_PARTICIPANT: float = _ss_cfg["persona_is_participant"]
+_COLLABORATOR_OVERLAP: float = _ss_cfg["collaborator_overlap"]
+_UNKNOWN_PARTICIPANTS: float = _ss_cfg["unknown_participants"]
 
 
 def score_social_signal(atom: Atom, persona: Persona) -> float:
@@ -25,16 +33,16 @@ def score_social_signal(atom: Atom, persona: Persona) -> float:
         0.3 baseline for unknown participants.
     """
     if not atom.source.key_participants:
-        return 0.3
+        return _NO_PARTICIPANTS
 
     collaborators = set(persona.collaborator_graph)
     participants = set(atom.source.key_participants)
 
     if persona.user_id in participants:
-        return 1.0
+        return _PERSONA_IS_PARTICIPANT
 
     overlap = collaborators & participants
     if overlap:
-        return 0.8
+        return _COLLABORATOR_OVERLAP
 
-    return 0.3
+    return _UNKNOWN_PARTICIPANTS

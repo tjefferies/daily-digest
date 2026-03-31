@@ -1,0 +1,67 @@
+# Workstream registry: channels, mappings, and components.
+# Used by Layer 3 Context Backbone to resolve workstream context.
+
+channel_to_workstream:
+  "#chassis-design": chassis
+  "#drivetrain": drivetrain
+  "#thermal-management": thermal
+  "#power-systems": power-systems
+  "#sensors": sensors
+  "#firmware": firmware
+  "#supply-chain": supply-chain
+
+workstream_to_channels:
+  chassis:
+    - "#chassis-design"
+  drivetrain:
+    - "#drivetrain"
+  thermal:
+    - "#thermal-management"
+  power-systems:
+    - "#power-systems"
+  sensors:
+    - "#sensors"
+  firmware:
+    - "#firmware"
+  supply-chain:
+    - "#supply-chain"
+  end-effector:
+    - "#amr-general"
+
+component_to_workstream:
+  chassis: chassis
+  frame: chassis
+  enclosure: chassis
+  housing: chassis
+  bracket: chassis
+  motor: drivetrain
+  motor controller: drivetrain
+  gearbox: drivetrain
+  drive shaft: drivetrain
+  wheel hub: drivetrain
+  heat sink: thermal
+  thermal interface: thermal
+  thermal pad: thermal
+  cooling fan: thermal
+  heat pipe: thermal
+  battery: power-systems
+  battery pack: power-systems
+  power supply: power-systems
+  voltage regulator: power-systems
+  bms: power-systems
+  lidar: sensors
+  imu: sensors
+  camera: sensors
+  encoder: sensors
+  proximity sensor: sensors
+  fpga: firmware
+  microcontroller: firmware
+  mcu: firmware
+  bootloader: firmware
+  firmware image: firmware
+  connector: supply-chain
+  vendor: supply-chain
+  lead time: supply-chain
+  gripper: end-effector
+  end effector: end-effector
+  tool changer: end-effector

@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Any
 
 from anthropic.types import TextBlock
 
+from evercurrent.config.loader import get_config
 from evercurrent.generation.prompt import build_generation_prompt
 from evercurrent.models.digest import DigestSection
 
@@ -24,7 +25,9 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-_MODEL = "claude-sonnet-4-20250514"
+_pipeline_cfg = get_config()["pipeline"]
+_MODEL = _pipeline_cfg["model"]
+_MAX_TOKENS = _pipeline_cfg["generation_max_tokens"]
 
 
 class DigestGenerator:
@@ -73,7 +76,7 @@ class DigestGenerator:
         user_message = self._build_user_message(scored_atoms, persona)
         response = self._client.messages.create(
             model=_MODEL,
-            max_tokens=4096,
+            max_tokens=_MAX_TOKENS,
             system=self._system_prompt,
             messages=[{"role": "user", "content": user_message}],
         )

@@ -9,9 +9,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from evercurrent.config.loader import get_config
+
 if TYPE_CHECKING:
     from evercurrent.models.atom import Atom
     from evercurrent.models.persona import Persona
+
+_pa_cfg = get_config()["scoring"]["phase_alignment"]
+_NO_PHASE_RELEVANCE: float = _pa_cfg["no_phase_relevance"]
+_NO_PERSONA_PHASES: float = _pa_cfg["no_persona_phases"]
+_OVERLAP: float = _pa_cfg["overlap"]
+_NO_OVERLAP: float = _pa_cfg["no_overlap"]
 
 
 def score_phase_alignment(atom: Atom, persona: Persona) -> float:
@@ -30,16 +38,16 @@ def score_phase_alignment(atom: Atom, persona: Persona) -> float:
         0.3 default for atoms with no phase_relevance (always somewhat relevant).
     """
     if not atom.phase_relevance:
-        return 0.3
+        return _NO_PHASE_RELEVANCE
 
     atom_phases = set(atom.phase_relevance)
     persona_phases = set(persona.phase_context.values())
 
     if not persona_phases:
-        return 0.5
+        return _NO_PERSONA_PHASES
 
     overlap = atom_phases & persona_phases
     if overlap:
-        return 1.0
+        return _OVERLAP
 
-    return 0.2
+    return _NO_OVERLAP

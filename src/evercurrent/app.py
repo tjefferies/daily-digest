@@ -10,6 +10,7 @@ from typing import Any
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
+from evercurrent.config.loader import get_config
 from evercurrent.context.personas import get_persona
 
 app = FastAPI(
@@ -20,10 +21,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:3000",
-    ],
+    allow_origins=get_config()["pipeline"]["cors_origins"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

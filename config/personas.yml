@@ -1,0 +1,76 @@
+# Three demo personas for the EverCurrent prototype.
+# Defines Maya Chen (IC ME), Elena Vasquez (Supply Chain Lead),
+# and Ryan Torres (Engineering Manager) per design document section 6.1.
+
+personas:
+  - user_id: U001
+    name: Maya Chen
+    role_archetype: IC Engineer
+    title: Senior Mechanical Engineer
+    workstream_affinities:
+      chassis: 1.0
+      thermal: 0.85
+      drivetrain: 0.4
+      supply-chain: 0.3
+      power-systems: 0.2
+      sensors: 0.15
+      firmware: 0.1
+      end-effector: 0.1
+    phase_context:
+      chassis: DVT
+      thermal: EVT
+      drivetrain: DVT
+    collaborator_graph:
+      - U003
+      - U008
+      - U013
+      - U020
+
+  - user_id: U007
+    name: Elena Vasquez
+    role_archetype: Supply Chain
+    title: Supply Chain Manager
+    workstream_affinities:
+      supply-chain: 1.0
+      chassis: 0.5
+      drivetrain: 0.5
+      thermal: 0.4
+      power-systems: 0.5
+      sensors: 0.4
+      firmware: 0.3
+      end-effector: 0.3
+    phase_context:
+      supply-chain: DVT
+      chassis: DVT
+      power-systems: DVT
+    collaborator_graph:
+      - U011
+      - U013
+      - U017
+      - U019
+
+  - user_id: U010
+    name: Ryan Torres
+    role_archetype: Eng Manager
+    title: Engineering Manager
+    workstream_affinities:
+      chassis: 0.8
+      drivetrain: 0.8
+      thermal: 0.7
+      power-systems: 0.7
+      sensors: 0.6
+      firmware: 0.6
+      supply-chain: 0.5
+      end-effector: 0.5
+    phase_context:
+      chassis: DVT
+      drivetrain: DVT
+      thermal: EVT
+      power-systems: DVT
+      sensors: EVT
+      firmware: EVT
+    collaborator_graph:
+      - U001
+      - U007
+      - U011
+      - U019

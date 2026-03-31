@@ -1,0 +1,23 @@
+# Pipeline configuration: model IDs, token limits, thresholds, CORS.
+
+# Anthropic model used for extraction and generation.
+model: claude-sonnet-4-20250514
+
+# Token limits.
+extraction_max_tokens: 4096
+generation_max_tokens: 4096
+validation_max_tokens: 512
+
+# Context window assembly.
+context_window:
+  max_tokens: 4000
+  tail_count: 5
+  chars_per_token: 4
+
+# Extraction confidence filter threshold.
+confidence_threshold: 0.7
+
+# CORS allowed origins for the FastAPI app.
+cors_origins:
+  - "http://localhost:5173"
+  - "http://localhost:3000"

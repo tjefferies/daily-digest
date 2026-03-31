@@ -1,0 +1,100 @@
+# Scoring configuration: weights, matrices, and thresholds.
+# Used by Layer 4 Relevance Scoring.
+
+# Default composite scoring weights (must sum to 1.0).
+default_weights:
+  workstream_proximity: 0.30
+  role_type_alignment: 0.20
+  phase_alignment: 0.20
+  urgency: 0.15
+  social_signal: 0.15
+
+# Default digest preferences.
+default_digest_preferences:
+  max_items: 25
+  critical_threshold: 0.85
+  include_broader_context: true
+
+# Urgency level → score mapping.
+urgency_scores:
+  critical: 1.0
+  high: 0.8
+  medium: 0.5
+  low: 0.2
+
+# Role-type alignment matrix (5 archetypes × 8 atom types).
+# Score = matrix[persona.role_archetype][atom.type]
+role_type_alignment:
+  IC Engineer:
+    DECISION: 0.8
+    SPEC_CHANGE: 1.0
+    ACTION_ITEM: 0.7
+    BLOCKER: 0.6
+    RISK: 0.5
+    TEST_RESULT: 1.0
+    STATUS_UPDATE: 0.3
+    QUESTION: 0.6
+  Eng Manager:
+    DECISION: 1.0
+    SPEC_CHANGE: 0.7
+    ACTION_ITEM: 0.8
+    BLOCKER: 1.0
+    RISK: 0.9
+    TEST_RESULT: 0.6
+    STATUS_UPDATE: 0.9
+    QUESTION: 0.5
+  Program Manager:
+    DECISION: 0.9
+    SPEC_CHANGE: 0.5
+    ACTION_ITEM: 0.9
+    BLOCKER: 1.0
+    RISK: 1.0
+    TEST_RESULT: 0.4
+    STATUS_UPDATE: 1.0
+    QUESTION: 0.3
+  Supply Chain:
+    DECISION: 0.7
+    SPEC_CHANGE: 0.9
+    ACTION_ITEM: 0.8
+    BLOCKER: 0.7
+    RISK: 1.0
+    TEST_RESULT: 0.3
+    STATUS_UPDATE: 0.5
+    QUESTION: 0.4
+  Executive:
+    DECISION: 1.0
+    SPEC_CHANGE: 0.4
+    ACTION_ITEM: 0.5
+    BLOCKER: 1.0
+    RISK: 1.0
+    TEST_RESULT: 0.3
+    STATUS_UPDATE: 0.8
+    QUESTION: 0.2
+
+# Default score for unknown role/type combinations.
+role_type_default: 0.5
+
+# Phase alignment scores.
+phase_alignment:
+  no_phase_relevance: 0.3
+  no_persona_phases: 0.5
+  overlap: 1.0
+  no_overlap: 0.2
+
+# Social signal scores.
+social_signal:
+  no_participants: 0.3
+  persona_is_participant: 1.0
+  collaborator_overlap: 0.8
+  unknown_participants: 0.3
+
+# Title → role archetype mapping for roster inference.
+title_to_archetype:
+  Engineering Manager: Eng Manager
+  Program Manager: Program Manager
+  Supply Chain Manager: Supply Chain
+  Procurement Specialist: Supply Chain
+  VP of Engineering: Executive
+
+# Default archetype when title not found.
+default_archetype: IC Engineer

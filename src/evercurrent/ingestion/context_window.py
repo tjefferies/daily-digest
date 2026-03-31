@@ -11,12 +11,15 @@ from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 
+from evercurrent.config.loader import get_config
+
 if TYPE_CHECKING:
     from evercurrent.ingestion.threads import ThreadBundle
 
-_DEFAULT_MAX_TOKENS = 4000
-_TAIL_COUNT = 5
-_CHARS_PER_TOKEN = 4
+_cw_cfg = get_config()["pipeline"]["context_window"]
+_DEFAULT_MAX_TOKENS = _cw_cfg["max_tokens"]
+_TAIL_COUNT = _cw_cfg["tail_count"]
+_CHARS_PER_TOKEN = _cw_cfg["chars_per_token"]
 
 
 class ContextWindow(BaseModel):

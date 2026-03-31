@@ -8,15 +8,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from evercurrent.config.loader import get_config
+
 if TYPE_CHECKING:
     from evercurrent.models.atom import Atom
 
-_URGENCY_SCORES: dict[str, float] = {
-    "critical": 1.0,
-    "high": 0.8,
-    "medium": 0.5,
-    "low": 0.2,
-}
+_URGENCY_SCORES: dict[str, float] = get_config()["scoring"]["urgency_scores"]
 
 
 def score_urgency(atom: Atom) -> float:
