@@ -23,7 +23,7 @@ AtomType = Literal[
 
 Urgency = Literal["low", "medium", "high", "critical"]
 
-Phase = Literal["Concept", "EVT", "DVT", "PVT", "Production"]
+Phase = Literal["Concept", "EVT", "DVT", "PVT", "MP"]
 
 
 class AtomSource(BaseModel):

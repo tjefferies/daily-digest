@@ -120,9 +120,9 @@ class TestPhaseVectorCustomInit:
         """Construct a phase vector with custom initial values."""
         custom: dict[str, Phase] = {
             "chassis": "PVT",
-            "drivetrain": "Production",
+            "drivetrain": "MP",
         }
         pv = PhaseVector(initial_phases=custom)
         assert pv.get_phase("chassis") == "PVT"
-        assert pv.get_phase("drivetrain") == "Production"
+        assert pv.get_phase("drivetrain") == "MP"
         assert len(pv.all_phases()) == 2
