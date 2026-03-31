@@ -67,6 +67,7 @@ max-complexity = 8
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+pythonpath = ["src"]
 testpaths = ["tests"]
 addopts = "-v --strict-markers"
 
