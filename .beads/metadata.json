@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "server",
+  "dolt_database": "evercurrent",
+  "project_id": "4d1968a2-61fa-42f0-ad38-d39648c818f9"
+}
