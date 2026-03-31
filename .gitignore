@@ -35,6 +35,7 @@ htmlcov/
 # Environment
 .env
 .env.*
+!.env.sample
 
 # Sphinx documentation build
 docs/_build/

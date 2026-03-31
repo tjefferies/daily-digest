@@ -866,3 +866,12 @@ WIRE_PIPELINE=$(bd create \
   --description="CR-1 from REVIEW.md. /pipeline/run returns stub. /digest/{persona_id} returns empty sections. DigestAssembler exists but is never called from any endpoint. The five layers are built and tested in isolation but never composed into a working flow. Without this, the system cannot demo its primary job. Wire DigestAssembler into /digest endpoint and implement /pipeline/run to trigger extraction." \
   --silent)
 echo "    Wire Pipeline:      $WIRE_PIPELINE"
+
+# ─── ENV VAR AUDIT & .env.sample ────────────────────────────────────────────
+ENV_AUDIT=$(bd create \
+  --title="Audit all OS env var references and create .env.sample at repo root" \
+  --type=task \
+  --priority=1 \
+  --description="Deep-reason through the entire codebase to find every os.environ, os.getenv, and any config loader that reads environment variables. Catalog each var with its purpose, default value (if any), and which module references it. Then create a .env.sample file at repo root documenting all required and optional env vars with placeholder values and comments." \
+  --silent)
+echo "    Env Var Audit:      $ENV_AUDIT"
