@@ -6,7 +6,7 @@ export type {
   Phase,
   Urgency,
 } from './atom'
-export type { Digest, DigestSection, SectionType } from './digest'
+export type { Digest, DigestItem, DigestSection, SectionType } from './digest'
 export type {
   DigestPreferences,
   Persona,

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { getDigest } from './api/client'
+import DigestDisplay from './components/DigestDisplay'
 import PersonaSelector, {
   DEMO_PERSONAS,
 } from './components/PersonaSelector'
@@ -30,9 +31,9 @@ function App() {
     fetchDigest(selectedPersona)
   }, [selectedPersona, fetchDigest])
 
-  const handlePersonaSelect = (personaId: string) => {
-    setSelectedPersona(personaId)
-  }
+  const currentPersona = DEMO_PERSONAS.find(
+    (p) => p.user_id === selectedPersona,
+  )
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -47,46 +48,16 @@ function App() {
 
       <PersonaSelector
         selectedId={selectedPersona}
-        onSelect={handlePersonaSelect}
+        onSelect={setSelectedPersona}
       />
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {loading && (
-          <p className="text-gray-500 animate-pulse">Loading digest...</p>
-        )}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-4 text-red-700 text-sm">
-            {error}
-          </div>
-        )}
-        {!loading && !error && digest && (
-          <div className="space-y-4">
-            <p className="text-sm text-gray-500">
-              Digest for{' '}
-              <span className="font-medium text-gray-700">
-                {DEMO_PERSONAS.find((p) => p.user_id === selectedPersona)
-                  ?.name ?? selectedPersona}
-              </span>
-            </p>
-            {digest.sections.length === 0 ? (
-              <p className="text-gray-400 italic">
-                No digest sections available. Run the pipeline to generate
-                content.
-              </p>
-            ) : (
-              digest.sections.map((section) => (
-                <div
-                  key={section.section_type}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
-                >
-                  <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
-                    {section.title}
-                  </h2>
-                </div>
-              ))
-            )}
-          </div>
-        )}
+        <DigestDisplay
+          digest={digest}
+          loading={loading}
+          error={error}
+          personaName={currentPersona?.name ?? selectedPersona}
+        />
       </main>
     </div>
   )
