@@ -4,6 +4,9 @@ Logs the full JSON request and response bodies for every LLM call
 (batch or individual async) to the batch_log table. Enables
 debugging, cost tracking, and replay. Graceful degradation —
 logging failures never crash the pipeline.
+
+Deduplication: a (batch_id, stage) pair is logged once. Duplicate
+submissions are silently ignored.
 """
 
 from __future__ import annotations
@@ -11,6 +14,8 @@ from __future__ import annotations
 import logging
 from datetime import UTC, datetime
 from typing import Any
+
+from sqlalchemy import select, update
 
 from evercurrent.db.models import BatchLog
 from evercurrent.db.session import get_session_factory
@@ -25,7 +30,9 @@ async def log_llm_request(
     request_count: int,
     request_body: dict[str, Any] | list[dict[str, Any]],
 ) -> None:
-    """Log the full LLM request body to Postgres.
+    """Log the full LLM request body to Postgres (idempotent).
+
+    If a row with this batch_id already exists, skip the insert.
 
     Args:
         batch_id: Anthropic batch ID or unique request ID.
@@ -35,16 +42,19 @@ async def log_llm_request(
     """
     try:
         factory = get_session_factory()
+        body = request_body if isinstance(request_body, dict) else {"requests": request_body}
         async with factory() as session:
-            await session.merge(BatchLog(
+            existing = await session.execute(
+                select(BatchLog.id).where(BatchLog.batch_id == batch_id),
+            )
+            if existing.scalar_one_or_none() is not None:
+                return  # Already logged — skip
+            session.add(BatchLog(
                 batch_id=batch_id,
                 stage=stage,
                 request_count=request_count,
                 status="submitted",
-                request_body=(
-                    request_body if isinstance(request_body, dict)
-                    else {"requests": request_body}
-                ),
+                request_body=body,
             ))
             await session.commit()
     except Exception:
@@ -69,8 +79,6 @@ async def log_llm_response(
     try:
         factory = get_session_factory()
         async with factory() as session:
-            from sqlalchemy import update
-
             await session.execute(
                 update(BatchLog)
                 .where(BatchLog.batch_id == batch_id)
