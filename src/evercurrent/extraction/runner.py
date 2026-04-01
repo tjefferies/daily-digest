@@ -149,7 +149,7 @@ class ExtractionRunner:
         return atoms
 
 
-_DEFAULT_CONCURRENCY = 2
+_DEFAULT_CONCURRENCY = get_config()["pipeline"].get("max_concurrency", 2)
 
 
 class AsyncExtractionRunner:

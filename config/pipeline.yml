@@ -29,6 +29,9 @@ vectorstore:
 # Maximum context windows to process per pipeline run (0 = all).
 max_windows: 10
 
+# Maximum concurrent LLM calls for non-batch extraction.
+max_concurrency: 2
+
 # Extraction confidence filter threshold.
 confidence_threshold: 0.7
 
