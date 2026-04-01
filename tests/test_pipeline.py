@@ -313,3 +313,74 @@ class TestNeo4jPersistence:
         # Pipeline still returns atoms even when Neo4j fails
         assert len(result.atoms) == 1
         assert result.atoms[0].summary == "Test decision"
+
+
+class TestNeo4jDedup:
+    """Tests for Neo4j deduplication: skip already-processed threads."""
+
+    @pytest.mark.asyncio
+    @patch("evercurrent.pipeline.GraphClient")
+    @patch("evercurrent.pipeline.AsyncExtractionRunner")
+    @patch("evercurrent.pipeline.async_validate_atoms")
+    @patch("evercurrent.pipeline.confidence_filter")
+    async def test_skips_already_processed_threads(
+        self,
+        mock_filter: MagicMock,
+        mock_validate: MagicMock,
+        mock_runner_cls: MagicMock,
+        mock_graph_cls: MagicMock,
+    ) -> None:
+        """Threads with atoms in Neo4j are skipped, reducing extraction calls."""
+        atom = _make_atom()
+        mock_runner = AsyncMock()
+        mock_runner.extract.return_value = [atom]
+        mock_runner_cls.return_value = mock_runner
+        mock_validate.return_value = [atom]
+
+        from evercurrent.extraction.filter import FilterResult
+
+        mock_filter.return_value = FilterResult(passed=[atom], filtered=[])
+
+        mock_graph = AsyncMock()
+        # Return some already-processed thread_ts values
+        mock_graph.processed_thread_ts.return_value = {"already.processed.001"}
+        mock_graph_cls.return_value = mock_graph
+
+        mock_client = AsyncMock()
+        result = await async_run_pipeline(mock_client)
+
+        # Stats should include threads_skipped
+        assert "threads_skipped" in result.stats
+
+    @pytest.mark.asyncio
+    @patch("evercurrent.pipeline.GraphClient")
+    @patch("evercurrent.pipeline.AsyncExtractionRunner")
+    @patch("evercurrent.pipeline.async_validate_atoms")
+    @patch("evercurrent.pipeline.confidence_filter")
+    async def test_dedup_failure_processes_all_threads(
+        self,
+        mock_filter: MagicMock,
+        mock_validate: MagicMock,
+        mock_runner_cls: MagicMock,
+        mock_graph_cls: MagicMock,
+    ) -> None:
+        """If Neo4j dedup query fails, all threads are processed."""
+        atom = _make_atom()
+        mock_runner = AsyncMock()
+        mock_runner.extract.return_value = [atom]
+        mock_runner_cls.return_value = mock_runner
+        mock_validate.return_value = [atom]
+
+        from evercurrent.extraction.filter import FilterResult
+
+        mock_filter.return_value = FilterResult(passed=[atom], filtered=[])
+
+        mock_graph = AsyncMock()
+        mock_graph.processed_thread_ts.side_effect = Exception("Connection refused")
+        mock_graph_cls.return_value = mock_graph
+
+        mock_client = AsyncMock()
+        result = await async_run_pipeline(mock_client)
+
+        # Pipeline should still work, processing all threads
+        assert result.stats["threads_skipped"] == 0

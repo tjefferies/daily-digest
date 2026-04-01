@@ -250,6 +250,47 @@ class TestTemporalQueries:
             assert "BLOCKER" in cypher
 
 
+class TestProcessedThreadTs:
+    """Verify querying for already-processed thread timestamps."""
+
+    async def test_processed_thread_ts_returns_set(self) -> None:
+        """processed_thread_ts() returns a set of thread_ts strings."""
+        with patch("evercurrent.graph.client.AsyncGraphDatabase") as mock_agd:
+            mock_driver, mock_session = _make_mock_driver_and_session()
+            mock_result = AsyncMock()
+            mock_result.data.return_value = [
+                {"thread_ts": "1711900000.000100"},
+                {"thread_ts": "1711900000.000200"},
+            ]
+            mock_session.run.return_value = mock_result
+            mock_agd.driver.return_value = mock_driver
+            from evercurrent.graph.client import GraphClient
+
+            client = GraphClient(
+                uri="bolt://localhost:7687", user="neo4j", password=_TEST_PASSWORD
+            )
+            result = await client.processed_thread_ts()
+
+            assert result == {"1711900000.000100", "1711900000.000200"}
+
+    async def test_processed_thread_ts_empty_graph(self) -> None:
+        """processed_thread_ts() returns empty set when no atoms exist."""
+        with patch("evercurrent.graph.client.AsyncGraphDatabase") as mock_agd:
+            mock_driver, mock_session = _make_mock_driver_and_session()
+            mock_result = AsyncMock()
+            mock_result.data.return_value = []
+            mock_session.run.return_value = mock_result
+            mock_agd.driver.return_value = mock_driver
+            from evercurrent.graph.client import GraphClient
+
+            client = GraphClient(
+                uri="bolt://localhost:7687", user="neo4j", password=_TEST_PASSWORD
+            )
+            result = await client.processed_thread_ts()
+
+            assert result == set()
+
+
 class TestAtomCount:
     """Verify atom count query method."""
 

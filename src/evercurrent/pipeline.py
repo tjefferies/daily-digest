@@ -148,25 +148,48 @@ def run_pipeline(
     )
 
 
-async def _persist_to_neo4j(atoms: list[Atom]) -> None:
-    """Persist atoms to Neo4j, logging errors without raising.
+def _create_graph_client() -> GraphClient:
+    """Create a GraphClient from pipeline config.
 
-    Args:
-        atoms: Validated atoms to persist.
+    Returns:
+        GraphClient configured from pipeline.yml neo4j settings.
     """
     neo4j_cfg = get_config()["pipeline"]["neo4j"]
-    graph = GraphClient(
+    return GraphClient(
         uri=neo4j_cfg["uri"],
         user=neo4j_cfg["user"],
         password=neo4j_cfg["password"],
     )
+
+
+async def _get_processed_threads(graph: GraphClient) -> set[str]:
+    """Query Neo4j for already-processed thread_ts values.
+
+    Args:
+        graph: Active GraphClient instance.
+
+    Returns:
+        Set of thread_ts strings, empty on failure.
+    """
+    try:
+        return await graph.processed_thread_ts()
+    except Exception:
+        logger.warning("Neo4j dedup query failed, processing all threads", exc_info=True)
+        return set()
+
+
+async def _persist_to_neo4j(graph: GraphClient, atoms: list[Atom]) -> None:
+    """Persist atoms to Neo4j, logging errors without raising.
+
+    Args:
+        graph: Active GraphClient instance.
+        atoms: Validated atoms to persist.
+    """
     try:
         await graph.ensure_schema()
         await graph.persist_atoms(atoms)
     except Exception:
         logger.warning("Neo4j persistence failed, atoms not stored", exc_info=True)
-    finally:
-        await graph.close()
 
 
 async def async_run_pipeline(
@@ -176,12 +199,34 @@ async def async_run_pipeline(
     """Run the full extraction pipeline asynchronously with concurrent LLM calls.
 
     Uses AsyncExtractionRunner for concurrent window processing and
-    async_validate_atoms for concurrent validation. Eliminates the
-    sync-to-async bridge in FastAPI endpoints.
+    async_validate_atoms for concurrent validation. Queries Neo4j to
+    skip already-processed threads and persists new atoms after filtering.
 
     Args:
         client: AsyncLLMClient-compatible adapter for async LLM API calls.
         embedder: Optional text embedder for semantic continuation detection.
+
+    Returns:
+        PipelineResult with validated, filtered atoms and processing stats.
+    """
+    graph = _create_graph_client()
+    try:
+        return await _async_run_pipeline_inner(client, embedder, graph)
+    finally:
+        await graph.close()
+
+
+async def _async_run_pipeline_inner(
+    client: AsyncLLMClient,
+    embedder: Embedder | None,
+    graph: GraphClient,
+) -> PipelineResult:
+    """Inner pipeline logic with a shared GraphClient.
+
+    Args:
+        client: AsyncLLMClient-compatible adapter for async LLM API calls.
+        embedder: Optional text embedder for semantic continuation detection.
+        graph: Active GraphClient for dedup queries and persistence.
 
     Returns:
         PipelineResult with validated, filtered atoms and processing stats.
@@ -195,11 +240,21 @@ async def async_run_pipeline(
     continuation_matches = detect_continuations(bundles, standalones, embedder=embedder)
     continuations_merged = _merge_continuations(bundles, continuation_matches)
 
+    # Dedup: skip threads already processed in Neo4j
+    processed = await _get_processed_threads(graph)
+    total_bundles = len(bundles)
+    if processed:
+        bundles = [b for b in bundles if b.root_message.message_ts not in processed]
+    threads_skipped = total_bundles - len(bundles)
+    if threads_skipped:
+        logger.info("Dedup: skipped %d already-processed threads", threads_skipped)
+
     windows = assemble_context_windows(bundles)
     logger.info(
-        "Ingestion: %d messages → %d threads (%d continuations) → %d windows",
+        "Ingestion: %d messages → %d threads (%d skipped, %d continuations) → %d windows",
         len(messages),
-        len(bundles),
+        total_bundles,
+        threads_skipped,
         continuations_merged,
         len(windows),
     )
@@ -224,13 +279,14 @@ async def async_run_pipeline(
     )
 
     # Persist to Neo4j (graceful degradation if unavailable)
-    await _persist_to_neo4j(atoms)
+    await _persist_to_neo4j(graph, atoms)
 
     return PipelineResult(
         atoms=atoms,
         stats={
             "messages_loaded": len(messages),
-            "threads_found": len(bundles),
+            "threads_found": total_bundles,
+            "threads_skipped": threads_skipped,
             "standalones_found": len(standalones),
             "continuations_merged": continuations_merged,
             "context_windows": len(windows),

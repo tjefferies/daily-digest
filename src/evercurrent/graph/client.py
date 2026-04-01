@@ -82,6 +82,12 @@ RETURN workstream, blocker_count, summaries, affected_teams
 ORDER BY blocker_count DESC
 """
 
+_PROCESSED_THREAD_TS_CYPHER = """\
+MATCH (a:Atom)
+WHERE a.thread_ts IS NOT NULL
+RETURN DISTINCT a.thread_ts AS thread_ts
+"""
+
 _ATOM_COUNT_CYPHER = "MATCH (a:Atom) RETURN count(a) AS count"
 
 
@@ -174,6 +180,20 @@ class GraphClient:
         async with self._driver.session() as session:
             result = await session.run(_BLOCKER_PATTERNS_CYPHER)
             return await result.data()
+
+    async def processed_thread_ts(self) -> set[str]:
+        """Return the set of thread_ts values that already have atoms.
+
+        Used for deduplication: threads with existing atoms can be
+        skipped on subsequent pipeline runs.
+
+        Returns:
+            Set of thread_ts strings already in the graph.
+        """
+        async with self._driver.session() as session:
+            result = await session.run(_PROCESSED_THREAD_TS_CYPHER)
+            records = await result.data()
+            return {r["thread_ts"] for r in records}
 
     async def atom_count(self) -> int:
         """Return the total number of atom nodes in the graph.
