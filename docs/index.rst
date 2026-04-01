@@ -11,8 +11,8 @@ personalized daily digests.
    :maxdepth: 2
    :caption: Contents
 
+   quickstart
    presentation
-   presentation-guide
    design-document
    next-steps
    api/modules
