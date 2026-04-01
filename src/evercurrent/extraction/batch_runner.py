@@ -474,7 +474,11 @@ class BatchExtractionRunner:
 
         for _attempt in range(_MAX_POLL_ATTEMPTS):
             await asyncio.sleep(_POLL_INTERVAL)
-            status = self._client.messages.batches.retrieve(batch_id)
+            try:
+                status = self._client.messages.batches.retrieve(batch_id)
+            except Exception:
+                logger.warning("Poll failed for %s, retrying", batch_id, exc_info=True)
+                continue
             counts = status.request_counts
             self.progress.update(
                 succeeded=counts.succeeded,

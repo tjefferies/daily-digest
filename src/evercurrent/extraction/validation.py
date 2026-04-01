@@ -175,7 +175,11 @@ async def _submit_validation_batch(
 
     for _attempt in range(_MAX_POLL_ATTEMPTS):
         await asyncio.sleep(_POLL_INTERVAL)
-        status = client.messages.batches.retrieve(batch_id)
+        try:
+            status = client.messages.batches.retrieve(batch_id)
+        except Exception:
+            logger.warning("Validation poll failed for %s, retrying", batch_id, exc_info=True)
+            continue
         counts = status.request_counts
         logger.info(
             "Validation %s: %d/%d succeeded, %d processing",
