@@ -30,7 +30,7 @@ vectorstore:
 extraction_mode: batch
 
 # Maximum context windows to process per pipeline run (0 = all).
-max_windows: 10
+max_windows: 0
 
 # Maximum concurrent LLM calls for non-batch extraction.
 max_concurrency: 2
