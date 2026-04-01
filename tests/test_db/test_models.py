@@ -6,6 +6,7 @@ from evercurrent.db.models import (
     Atom,
     AtomType,
     Base,
+    BatchLog,
     BundleMembership,
     BundleRole,
     Message,
@@ -75,9 +76,21 @@ class TestMetadata:
     """Verify SQLAlchemy metadata for migrations."""
 
     def test_base_has_all_tables(self) -> None:
-        """Base metadata includes all 4 tables."""
+        """Base metadata includes all 5 tables."""
         table_names = set(Base.metadata.tables.keys())
-        assert table_names == {"message", "thread_bundle", "bundle_membership", "atom"}
+        assert table_names == {
+            "message", "thread_bundle", "bundle_membership", "atom", "batch_log",
+        }
+
+    def test_batch_log_table(self) -> None:
+        """BatchLog model has correct table name and columns."""
+        assert BatchLog.__tablename__ == "batch_log"
+        cols = {c.name for c in BatchLog.__table__.columns}
+        expected = {
+            "id", "batch_id", "stage", "request_count", "status",
+            "request_summary", "response_summary", "created_at", "completed_at",
+        }
+        assert cols == expected
 
     def test_foreign_keys_exist(self) -> None:
         """Key foreign key relationships are defined."""

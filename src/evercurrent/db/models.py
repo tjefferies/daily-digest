@@ -233,3 +233,45 @@ class Atom(Base):
         Index("idx_atom_type", "type"),
         Index("idx_atom_created", "created_at"),
     )
+
+
+class BatchLog(Base):
+    """Audit log for LLM batch API requests and responses.
+
+    Stores the full request/response JSONB for debugging,
+    cost tracking, and replay.
+
+    Attributes:
+        id: Auto-increment primary key.
+        batch_id: Anthropic batch ID (e.g. msgbatch_...).
+        stage: Pipeline stage (extraction_stage1, extraction_stage2, etc.).
+        request_count: Number of requests in the batch.
+        status: Final batch status (ended, canceled, etc.).
+        request_summary: Summary of requests (custom_ids, token estimates).
+        response_summary: Summary of results (succeeded/failed counts).
+        created_at: When the batch was submitted.
+        completed_at: When the batch finished.
+    """
+
+    __tablename__ = "batch_log"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    batch_id: Mapped[str] = mapped_column(String, nullable=False)
+    stage: Mapped[str] = mapped_column(String, nullable=False)
+    request_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String, nullable=False, default="submitted")
+    request_summary: Mapped[dict] = mapped_column(JsonType, nullable=False)
+    response_summary: Mapped[dict | None] = mapped_column(JsonType, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(tz=UTC),
+    )
+    completed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
+    __table_args__ = (
+        Index("idx_batch_log_batch_id", "batch_id"),
+        Index("idx_batch_log_stage", "stage"),
+    )
