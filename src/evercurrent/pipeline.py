@@ -17,6 +17,8 @@ from anthropic import Anthropic
 
 from evercurrent.config.loader import get_config
 from evercurrent.dataset.messages import load_messages
+from evercurrent.db.repository import get_processed_bundle_ts, persist_atoms, persist_bundle
+from evercurrent.db.session import get_session_factory
 from evercurrent.extraction.batch_runner import BatchExtractionRunner
 from evercurrent.extraction.filter import confidence_filter
 from evercurrent.extraction.validation import async_validate_atoms
@@ -140,6 +142,53 @@ def _create_graph_client() -> GraphClient:
     )
 
 
+async def _postgres_dedup(bundles: list) -> tuple[list, int]:
+    """Filter out bundles already in Postgres.
+
+    Args:
+        bundles: All ThreadBundles from ingestion.
+
+    Returns:
+        Tuple of (filtered bundles, count skipped).
+    """
+    total = len(bundles)
+    try:
+        factory = get_session_factory()
+        async with factory() as session:
+            processed = await get_processed_bundle_ts(session)
+        if processed:
+            bundles = [b for b in bundles if b.root_message.message_ts not in processed]
+        skipped = total - len(bundles)
+        if skipped:
+            logger.info("Postgres dedup: skipped %d unchanged bundles", skipped)
+        return bundles, skipped
+    except Exception:
+        logger.warning("Postgres dedup failed, processing all bundles", exc_info=True)
+        return bundles, 0
+
+
+async def _postgres_persist(
+    bundles: list,
+    atoms: list[Atom],
+) -> None:
+    """Persist bundles and atoms to Postgres.
+
+    Args:
+        bundles: ThreadBundles to persist.
+        atoms: Atoms to persist.
+    """
+    try:
+        factory = get_session_factory()
+        async with factory() as session:
+            for bundle in bundles:
+                await persist_bundle(session, bundle)
+            await persist_atoms(session, atoms)
+            await session.commit()
+        logger.info("Persisted %d bundles, %d atoms to Postgres", len(bundles), len(atoms))
+    except Exception:
+        logger.warning("Postgres persistence failed", exc_info=True)
+
+
 async def _get_processed_threads(graph: GraphClient) -> set[str]:
     """Query Neo4j for already-processed thread_ts values.
 
@@ -232,14 +281,9 @@ async def _async_run_pipeline_inner(
     if isinstance(cached_embedder, CachedEmbedder):
         _save_vectorstore(cached_embedder)
 
-    # Dedup: skip threads already processed in Neo4j
-    processed = await _get_processed_threads(graph)
+    # Dedup: skip bundles already in Postgres (delta processing)
     total_bundles = len(bundles)
-    if processed:
-        bundles = [b for b in bundles if b.root_message.message_ts not in processed]
-    threads_skipped = total_bundles - len(bundles)
-    if threads_skipped:
-        logger.info("Dedup: skipped %d already-processed threads", threads_skipped)
+    bundles, threads_skipped = await _postgres_dedup(bundles)
 
     windows = assemble_context_windows(bundles)
     max_windows = get_config()["pipeline"].get("max_windows", 0)
@@ -274,6 +318,9 @@ async def _async_run_pipeline_inner(
         filter_result.passed_count,
         filter_result.filtered_count,
     )
+
+    # Persist bundles and atoms to Postgres (delta cache)
+    await _postgres_persist(bundles, atoms)
 
     # Persist to Neo4j (graceful degradation if unavailable)
     await _persist_to_neo4j(graph, atoms)
