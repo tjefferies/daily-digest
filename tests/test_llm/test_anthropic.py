@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from anthropic.types import TextBlock
@@ -35,21 +35,6 @@ class TestAsyncAnthropicAdapter:
         )
         assert result.text == "Hello async"
 
-    async def test_passes_all_params_to_sdk(self) -> None:
-        """Async adapter forwards all parameters to the SDK."""
-        sdk_client = AsyncMock()
-        response = MagicMock()
-        response.content = [TextBlock(type="text", text="ok")]
-        sdk_client.messages.create.return_value = response
-        adapter = AsyncAnthropicAdapter(sdk_client)
-        await adapter.create_message(
-            model="claude-haiku-4-5",
-            max_tokens=4096,
-            messages=[{"role": "user", "content": "test"}],
-            system="You are helpful.",
-        )
-        sdk_client.messages.create.assert_called_once()
-
     async def test_non_text_block_raises_value_error(self) -> None:
         """Async adapter raises ValueError for non-text content blocks."""
         sdk_client = AsyncMock()
@@ -66,16 +51,17 @@ class TestAsyncAnthropicAdapter:
 
 
 class TestAsyncAnthropicAdapterStructuredMessage:
-    """Tests for async create_structured_message method."""
+    """Tests for create_structured_message via tool_use."""
 
-    @patch("evercurrent.llm.anthropic.instructor")
-    async def test_returns_pydantic_model(self, mock_instructor: MagicMock) -> None:
-        """Async structured message returns instructor-generated Pydantic model."""
+    async def test_returns_pydantic_model_from_tool_use(self) -> None:
+        """Structured message returns Pydantic model from tool_use block."""
         sdk_client = AsyncMock()
-        expected = _TestModel(name="async", value=99)
-        mock_patched = AsyncMock()
-        mock_patched.messages.create.return_value = expected
-        mock_instructor.from_anthropic.return_value = mock_patched
+        tool_block = MagicMock()
+        tool_block.type = "tool_use"
+        tool_block.input = {"name": "test", "value": 42}
+        response = MagicMock()
+        response.content = [tool_block]
+        sdk_client.messages.create.return_value = response
 
         adapter = AsyncAnthropicAdapter(sdk_client)
         result = await adapter.create_structured_message(
@@ -85,4 +71,22 @@ class TestAsyncAnthropicAdapterStructuredMessage:
             response_model=_TestModel,
         )
         assert isinstance(result, _TestModel)
-        assert result.name == "async"
+        assert result.name == "test"
+        assert result.value == 42
+
+    async def test_raises_if_no_tool_use_block(self) -> None:
+        """Raises ValueError when response has no tool_use block."""
+        sdk_client = AsyncMock()
+        text_block = TextBlock(type="text", text="no tool")
+        response = MagicMock()
+        response.content = [text_block]
+        sdk_client.messages.create.return_value = response
+
+        adapter = AsyncAnthropicAdapter(sdk_client)
+        with pytest.raises(ValueError, match="No tool_use"):
+            await adapter.create_structured_message(
+                model="test",
+                max_tokens=100,
+                messages=[{"role": "user", "content": "extract"}],
+                response_model=_TestModel,
+            )

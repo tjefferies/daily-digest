@@ -2,7 +2,7 @@
 
 Defines the provider-agnostic interface that all LLM adapters must
 satisfy, plus the normalized response type. Includes structured output
-support via instructor for typed Pydantic model responses.
+support via tool_use for typed Pydantic model responses.
 """
 
 from __future__ import annotations
@@ -63,7 +63,7 @@ class AsyncLLMClient(Protocol):
         system: str = "",
         response_model: type[T],
     ) -> T:
-        """Send a message and return a typed Pydantic model via instructor.
+        """Send a message and return a typed Pydantic model via tool_use.
 
         Args:
             model: Model identifier string.
