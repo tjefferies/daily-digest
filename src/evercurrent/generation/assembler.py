@@ -75,7 +75,7 @@ class AsyncDigestAssembler:
         return {
             "persona_id": persona_id,
             "generated_at": datetime.now(tz=UTC).isoformat(),
-            "sections": [{"section_type": s.section_type, "title": s.title} for s in sections],
+            "sections": [s.model_dump() for s in sections],
         }
 
 

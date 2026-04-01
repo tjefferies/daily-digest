@@ -8,8 +8,6 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from evercurrent.models.atom import Atom
-
 SectionType = Literal[
     "requires_action",
     "decisions_changes",
@@ -18,18 +16,34 @@ SectionType = Literal[
 ]
 
 
+class DigestItem(BaseModel):
+    """A single item within a digest section.
+
+    Attributes:
+        headline: Bold one-line summary of what happened.
+        context: 1-2 sentence context for the reader.
+        source_channel: Slack channel reference.
+        atom_id: UUID of the source atom.
+    """
+
+    headline: str
+    context: str
+    source_channel: str = ""
+    atom_id: str = ""
+
+
 class DigestSection(BaseModel):
     """A single section within a persona's daily digest.
 
     Attributes:
         section_type: Which of the four digest sections this represents.
         title: Human-readable section heading.
-        atoms: Ordered list of atoms in this section, ranked by relevance.
+        items: Digest items (headline + context + source).
     """
 
     section_type: SectionType
     title: str
-    atoms: list[Atom] = Field(default_factory=list)
+    items: list[DigestItem] = Field(default_factory=list)
 
 
 class Digest(BaseModel):

@@ -63,6 +63,10 @@ class AsyncDigestGenerator:
         Returns:
             List of DigestSection objects from structured LLM response.
         """
+        # Cap at persona's max_items to keep LLM input reasonable
+        max_items = persona.digest_preferences.max_items
+        scored_atoms = scored_atoms[:max_items]
+
         if not scored_atoms:
             return []
 

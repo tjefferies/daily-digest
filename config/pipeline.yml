@@ -8,7 +8,7 @@ model: claude-haiku-4-5
 
 # Token limits.
 extraction_max_tokens: 4096
-generation_max_tokens: 4096
+generation_max_tokens: 8192
 validation_max_tokens: 512
 
 # Context window assembly.
