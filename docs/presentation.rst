@@ -59,46 +59,46 @@ The system is designed for a specific operational context:
      - Impact
    * - A1
      - Cloud LLM access available (Anthropic API).
-     - **High** — pipeline design, cost model
+     - **High** - pipeline design, cost model
    * - A2
      - 20–30 people, 300–500 messages/day across 8–15 channels. Nightly batch, not streaming.
-     - **High** — ingestion architecture
+     - **High** - ingestion architecture
    * - A3
      - Threads used inconsistently; some conversations span top-level messages implicitly.
-     - Medium — thread reconstruction logic
+     - Medium - thread reconstruction logic
    * - A4
      - People wear multiple hats. Relevance is weighted topic affinities per user, not rigid roles.
-     - **High** — persona model, scoring
+     - **High** - persona model, scoring
    * - A5
      - Different workstreams in different phases simultaneously (Concept, EVT, DVT, PVT, MP).
-     - **High** — phase representation
+     - **High** - phase representation
    * - A6
      - No PLM/ERP connectors. Phase status is manually configured.
-     - Medium — context backbone
+     - Medium - context backbone
    * - A7
      - Digest is read-only. Prototype processes all messages; production filters to prior 24h.
-     - Low — temporal scope
+     - Low - temporal scope
    * - A8
      - Channels organized by workstream (``#chassis-design``, ``#supply-chain``) plus cross-cutting channels.
-     - Medium — channel mapping
+     - Medium - channel mapping
    * - A9
      - All communication in English. Regex patterns, prompts, and taxonomy are English-only.
-     - Medium — multilingual path requires rewrite
+     - Medium - multilingual path requires rewrite
    * - A10
      - Actionable information is in message text only. Files, images, edits, deletions not processed.
-     - Medium — ingestion scope
+     - Medium - ingestion scope
    * - A11
      - Validation targets only ``DECISION`` and ``SPEC_CHANGE``. Other types pass through on confidence alone.
-     - Medium — validation cost model
+     - Medium - validation cost model
    * - A12
      - Phase progression is linear (Concept → EVT → DVT → PVT → MP). Rollbacks not modeled.
-     - Medium — phase scoring
+     - Medium - phase scoring
    * - A13
      - All timestamps UTC. No timezone configuration.
      - Low
    * - A14
      - Neo4j failures are non-critical (soft fail). Postgres failures abort the pipeline.
-     - Medium — fault tolerance hierarchy
+     - Medium - fault tolerance hierarchy
 
 ---------------------------------------------------------------------------
 Architecture

@@ -67,7 +67,7 @@ Three things make this hard:
 .. admonition:: Speaker Notes
 
    Briefly walk through the operating envelope. These assumptions define
-   what was built and — more importantly — what was deliberately scoped out.
+   what was built and - more importantly - what was deliberately scoped out.
 
 Key assumptions (full table in design doc Section 2):
 
@@ -75,7 +75,7 @@ Key assumptions (full table in design doc Section 2):
 - **A4:** People wear multiple hats. Weighted topic interests, not role buckets.
 - **A5:** Phase is per-workstream, not per-project. Linear progression.
 - **A9:** English-only text processing.
-- **A10:** Message text only — no files, images, or edits tracked.
+- **A10:** Message text only - no files, images, or edits tracked.
 - **A11:** Validation limited to DECISION and SPEC_CHANGE atoms.
 - **A14:** Neo4j failures are soft (digest still works); Postgres is critical.
 

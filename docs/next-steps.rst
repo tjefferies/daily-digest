@@ -66,7 +66,7 @@ This eliminates the biggest accuracy gap in the current scoring model.
 **Technical approach:**
 
 - Poll PLM phase-gate status (Arena, Teamcenter, Windchill) per
-  subsystem — auto-update phase vectors when gates pass, replacing
+  subsystem - auto-update phase vectors when gates pass, replacing
   the manual toggle and hardcoded ``config/phases.yml``
 - Import spec baselines from PLM BOM to distinguish new
   ``SPEC_CHANGE`` atoms from known revisions (reduces false positives)

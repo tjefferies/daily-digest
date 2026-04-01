@@ -624,7 +624,7 @@ Replace the fixture with real Slack API via OAuth bot token. Scopes:
 ``channels:history``, ``channels:read``, ``users:read``. Implement
 incremental ingestion with high-water mark per channel. Handle message edits
 and deletes. Live Slack integration also enables deep-linking digest items
-back to their source messages — each atom's ``source.channel`` and
+back to their source messages - each atom's ``source.channel`` and
 ``source.thread_ts`` become clickable Slack URLs rather than static
 references.
 
