@@ -45,6 +45,62 @@ Three things make this hard:
        invisible to channel-based consumption.
 
 ---------------------------------------------------------------------------
+Assumptions
+---------------------------------------------------------------------------
+
+The system is designed for a specific operational context:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 8 60 32
+
+   * - ID
+     - Assumption
+     - Impact
+   * - A1
+     - Cloud LLM access available (Anthropic API).
+     - **High** — pipeline design, cost model
+   * - A2
+     - 20–30 people, 300–500 messages/day across 8–15 channels. Nightly batch, not streaming.
+     - **High** — ingestion architecture
+   * - A3
+     - Threads used inconsistently; some conversations span top-level messages implicitly.
+     - Medium — thread reconstruction logic
+   * - A4
+     - People wear multiple hats. Relevance is weighted topic affinities per user, not rigid roles.
+     - **High** — persona model, scoring
+   * - A5
+     - Different workstreams in different phases simultaneously (Concept, EVT, DVT, PVT, MP).
+     - **High** — phase representation
+   * - A6
+     - No PLM/ERP connectors. Phase status is manually configured.
+     - Medium — context backbone
+   * - A7
+     - Digest is read-only. Prototype processes all messages; production filters to prior 24h.
+     - Low — temporal scope
+   * - A8
+     - Channels organized by workstream (``#chassis-design``, ``#supply-chain``) plus cross-cutting channels.
+     - Medium — channel mapping
+   * - A9
+     - All communication in English. Regex patterns, prompts, and taxonomy are English-only.
+     - Medium — multilingual path requires rewrite
+   * - A10
+     - Actionable information is in message text only. Files, images, edits, deletions not processed.
+     - Medium — ingestion scope
+   * - A11
+     - Validation targets only ``DECISION`` and ``SPEC_CHANGE``. Other types pass through on confidence alone.
+     - Medium — validation cost model
+   * - A12
+     - Phase progression is linear (Concept → EVT → DVT → PVT → MP). Rollbacks not modeled.
+     - Medium — phase scoring
+   * - A13
+     - All timestamps UTC. No timezone configuration.
+     - Low
+   * - A14
+     - Neo4j failures are non-critical (soft fail). Postgres failures abort the pipeline.
+     - Medium — fault tolerance hierarchy
+
+---------------------------------------------------------------------------
 Architecture
 ---------------------------------------------------------------------------
 
@@ -235,39 +291,6 @@ Live Demo
       RETURN a.summary, w.name LIMIT 10
 
 ---------------------------------------------------------------------------
-Engineering Maturity
----------------------------------------------------------------------------
-
-**Not just "what I built" - what I built, threw away, and rebuilt better.**
-
-.. list-table::
-   :header-rows: 1
-   :widths: 45 55
-
-   * - Built then Deleted
-     - Replaced With
-   * - OpenAI + Google adapters (420 LOC)
-     - Anthropic-only
-   * - ``instructor`` middleware
-     - Native ``tool_use``
-   * - Sync + async dual code paths
-     - Async-only
-   * - 574 mocked tests (90% coverage)
-     - 506 tests + real integration tests
-   * - In-memory only, kill-and-fill
-     - Postgres delta processing + Neo4j graph
-
-**The big lesson:** 90% coverage with mock-only tests caught zero
-production bugs. Every real bug was discovered at runtime: Neo4j
-hostname resolution in Docker, Cypher syntax on Neo4j 2025, malformed
-UUIDs from the LLM, markdown-fenced JSON. 80% coverage with real
-integration tests is worth more.
-
-**The pruning:** Deleted 1,179 lines of dead code in a single commit.
-Codebase went from 6,095 LOC to 4,916 LOC while *adding* Postgres,
-FAISS, batch API, and delta processing.
-
----------------------------------------------------------------------------
 Mapping to EverCurrent
 ---------------------------------------------------------------------------
 
@@ -296,30 +319,3 @@ people depending on their role, their workstreams, and where their project
 is in the development lifecycle. **That's the core of what EverCurrent
 does.**
 
----------------------------------------------------------------------------
-By the Numbers
----------------------------------------------------------------------------
-
-.. list-table::
-   :widths: 30 70
-
-   * - **Commits**
-     - 120+
-   * - **Issues tracked**
-     - 102 (bd/beads issue tracker)
-   * - **Source LOC**
-     - ~5,500
-   * - **Tests**
-     - 511 (490 unit + 21 integration)
-   * - **Quality gates**
-     - 7 (lint, format, coverage, complexity, maintainability, docstrings, dead code)
-   * - **Dataset**
-     - 307 messages + 18-message demo dataset
-   * - **Personas**
-     - 3 (Maya, Elena, Ryan)
-   * - **LLM**
-     - Anthropic Claude Haiku 4.5
-   * - **Persistence**
-     - Postgres + Neo4j + FAISS
-   * - **Infrastructure**
-     - Docker Compose (4 services)

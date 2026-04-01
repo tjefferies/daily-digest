@@ -596,7 +596,14 @@ false positive rate in "Requires Action" (target: <15%).
 11. Production Path
 ---------------------------------------------------------------------------
 
-11.1 Stakeholder Questions
+11.1 Multi-Provider LLM
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``AsyncLLMClient`` protocol supports additional adapters (OpenAI, Google,
+self-hosted via vLLM). Re-add when a second provider is needed. The protocol
+includes provider failover and model evaluation harness capabilities.
+
+11.2 Stakeholder Questions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 These questions should be answered before production scoping:
@@ -610,7 +617,7 @@ These questions should be answered before production scoping:
 - **User research:** Concrete "I missed X and it cost us Y" stories are the
   most valuable input for tuning extraction and scoring.
 
-11.2 Live Slack Integration
+11.3 Live Slack Integration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Replace the fixture with real Slack API via OAuth bot token. Scopes:
@@ -621,14 +628,14 @@ back to their source messages — each atom's ``source.channel`` and
 ``source.thread_ts`` become clickable Slack URLs rather than static
 references.
 
-11.3 Scheduled Pipeline
+11.4 Scheduled Pipeline
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Replace the manual "Run Pipeline" button with daily scheduled execution
 (cron or Slack webhook trigger). Pre-cook digests for all personas before
 the workday starts.
 
-11.4 Adaptive Feedback Loop
+11.5 Adaptive Feedback Loop
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Track implicit signals (dismissals, pins, click-throughs, dwell time) to
@@ -636,25 +643,18 @@ adjust per-user scoring weights over time. Exponential moving average with
 slow learning rate (α = 0.05). Guardrails: weights cannot deviate more than
 ±0.15 from defaults.
 
-11.5 Multi-Team Support
+11.6 Multi-Team Support
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Generalize from the 8-channel robotics team to arbitrary Slack workspaces.
 Requires dynamic channel discovery, workstream inference, and persona
 auto-detection from Slack metadata.
 
-11.6 Evaluation Framework
+11.7 Evaluation Framework
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Golden-set annotations with precision/recall metrics. Hallucination rate
 tracking. Graded scoring beyond binary valid/invalid.
-
-11.7 Multi-Provider LLM
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-The ``AsyncLLMClient`` protocol supports additional adapters (OpenAI, Google,
-self-hosted via vLLM). Re-add when a second provider is needed. The protocol
-includes provider failover and model evaluation harness capabilities.
 
 ---------------------------------------------------------------------------
 12. Architecture Decision Records

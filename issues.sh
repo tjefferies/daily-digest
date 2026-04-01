@@ -1340,3 +1340,19 @@ NEXT_STEPS_PLM=$(bd create \
   --description="In docs/next-steps.rst: 1) Move 'PLM / ERP Connectors' from the Deferred section up to Priority 2. 2) Expand the description to discuss how a different solution would need to be built to fill in phase context per system/sub-system directly from PLM/ERP, instead of the current approach of inferring from Slack with manual override." \
   --silent)
 echo "    Next Steps PLM/ERP:   $NEXT_STEPS_PLM"
+
+# ─── CONCISE PLM/ERP SECTION ─────────────────────────────────────────────────
+PLM_CONCISE=$(bd create \
+  --title="Make PLM/ERP Connectors section concise in next-steps.rst" \
+  --type=task --priority=2 \
+  --description="In docs/next-steps.rst: The Priority 2 PLM/ERP Connectors section is too verbose compared to other sections. Make it more concise and consistent in style/length with the other priority sections." \
+  --silent)
+echo "    PLM Concise:          $PLM_CONCISE"
+
+# ─── SCORING DIMENSIONS ARROWHEAD REMOVAL ─────────────────────────────────────
+SVG_NO_ARROWS=$(bd create \
+  --title="Remove arrowheads from scoring-dimensions.svg" \
+  --type=task --priority=2 \
+  --description="In docs/_static/scoring-dimensions.svg: Remove the arrowheads from the connector lines between input boxes and the score box. Keep the lines but without arrow markers." \
+  --silent)
+echo "    SVG No Arrows:        $SVG_NO_ARROWS"

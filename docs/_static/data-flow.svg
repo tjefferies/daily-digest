@@ -90,25 +90,25 @@
   <text x="735" y="138" text-anchor="middle" font-size="7" fill="#95a5a6">tool_use</text>
 
   <!-- Persistence layer -->
-  <text x="50" y="180" font-size="10" font-weight="bold" fill="#7f8c8d">PERSISTENCE</text>
+  <text x="475" y="180" text-anchor="middle" font-size="10" font-weight="bold" fill="#7f8c8d">PERSISTENCE</text>
 
-  <rect x="50" y="195" width="150" height="50" rx="6" fill="url(#blueGrad)" stroke="#2980b9" stroke-width="1" filter="url(#shadow)"/>
-  <text x="125" y="215" text-anchor="middle" font-size="10" font-weight="bold" fill="#1a4a6e">Postgres</text>
-  <text x="125" y="230" text-anchor="middle" font-size="8" fill="#2c6690">bundles, atoms, batch logs</text>
+  <rect x="220" y="195" width="150" height="50" rx="6" fill="url(#blueGrad)" stroke="#2980b9" stroke-width="1" filter="url(#shadow)"/>
+  <text x="295" y="215" text-anchor="middle" font-size="10" font-weight="bold" fill="#1a4a6e">Postgres</text>
+  <text x="295" y="230" text-anchor="middle" font-size="8" fill="#2c6690">bundles, atoms, batch logs</text>
 
-  <rect x="230" y="195" width="150" height="50" rx="6" fill="url(#greenGrad)" stroke="#27ae60" stroke-width="1" filter="url(#shadow)"/>
-  <text x="305" y="215" text-anchor="middle" font-size="10" font-weight="bold" fill="#1a5e2a">Neo4j</text>
-  <text x="305" y="230" text-anchor="middle" font-size="8" fill="#2d6a3f">atom graph, queries</text>
+  <rect x="400" y="195" width="150" height="50" rx="6" fill="url(#greenGrad)" stroke="#27ae60" stroke-width="1" filter="url(#shadow)"/>
+  <text x="475" y="215" text-anchor="middle" font-size="10" font-weight="bold" fill="#1a5e2a">Neo4j</text>
+  <text x="475" y="230" text-anchor="middle" font-size="8" fill="#2d6a3f">atom graph, queries</text>
 
-  <rect x="410" y="195" width="150" height="50" rx="6" fill="url(#purpleGrad)" stroke="#8e44ad" stroke-width="1" filter="url(#shadow)"/>
-  <text x="485" y="215" text-anchor="middle" font-size="10" font-weight="bold" fill="#512e5f">FAISS</text>
-  <text x="485" y="230" text-anchor="middle" font-size="8" fill="#6c3483">embedding cache, cosine sim</text>
+  <rect x="580" y="195" width="150" height="50" rx="6" fill="url(#purpleGrad)" stroke="#8e44ad" stroke-width="1" filter="url(#shadow)"/>
+  <text x="655" y="215" text-anchor="middle" font-size="10" font-weight="bold" fill="#512e5f">FAISS</text>
+  <text x="655" y="230" text-anchor="middle" font-size="8" fill="#6c3483">embedding cache, cosine sim</text>
 
   <!-- Dotted lines from persistence to steps -->
-  <line x1="125" y1="195" x2="218" y2="110" stroke="#2980b9" stroke-width="1" stroke-dasharray="4,3"/>
-  <line x1="125" y1="195" x2="514" y2="110" stroke="#2980b9" stroke-width="1" stroke-dasharray="4,3"/>
-  <line x1="305" y1="195" x2="514" y2="110" stroke="#27ae60" stroke-width="1" stroke-dasharray="4,3"/>
-  <line x1="485" y1="195" x2="218" y2="110" stroke="#8e44ad" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="295" y1="195" x2="218" y2="110" stroke="#2980b9" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="295" y1="195" x2="514" y2="110" stroke="#2980b9" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="475" y1="195" x2="514" y2="110" stroke="#27ae60" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="655" y1="195" x2="218" y2="110" stroke="#8e44ad" stroke-width="1" stroke-dasharray="4,3"/>
 
   <!-- Bottom summary -->
   <text x="475" y="270" text-anchor="middle" font-size="10" fill="#5d6d7e">Delta processing: Postgres stores bundles before extraction | Re-runs skip unchanged bundles (zero LLM calls)</text>

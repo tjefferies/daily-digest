@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 180" font-family="'Segoe UI', Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 280" font-family="'Segoe UI', Helvetica, Arial, sans-serif">
   <defs>
     <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#fff3cd"/><stop offset="100%" stop-color="#ffeeba"/>
@@ -21,60 +21,90 @@
   </defs>
 
   <!-- Title -->
-  <text x="460" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Two-Stage Extraction Pipeline</text>
+  <text x="460" y="22" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Two-Stage Extraction Pipeline</text>
 
-  <!-- Context Window -->
-  <rect x="10" y="40" width="110" height="70" rx="6" fill="url(#orangeGrad)" stroke="#e67e22" stroke-width="1" filter="url(#shadow)"/>
-  <text x="65" y="62" text-anchor="middle" font-size="11" font-weight="bold" fill="#7d4e00">Context Window</text>
-  <text x="65" y="78" text-anchor="middle" font-size="8" fill="#9a6b1e">Thread text</text>
-  <text x="65" y="90" text-anchor="middle" font-size="8" fill="#9a6b1e">+ metadata</text>
+  <!-- Box 1: Context Window (x=5, width=140, height=80, cy=80) -->
+  <rect x="5" y="40" width="140" height="80" rx="6" fill="url(#orangeGrad)" stroke="#e67e22" stroke-width="1" filter="url(#shadow)"/>
+  <text x="75" y="58" text-anchor="middle" font-size="11" font-weight="bold" fill="#7d4e00">Context Window</text>
+  <text x="75" y="74" text-anchor="middle" font-size="8" fill="#9a6b1e">Thread text</text>
+  <text x="75" y="86" text-anchor="middle" font-size="8" fill="#9a6b1e">+ metadata</text>
 
-  <line x1="120" y1="75" x2="145" y2="75" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <!-- Arrow 1→2 -->
+  <line x1="145" y1="80" x2="159" y2="80" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
 
-  <!-- Stage 1: Coarse -->
-  <rect x="148" y="35" width="140" height="80" rx="6" fill="url(#blueGrad)" stroke="#2980b9" stroke-width="1" filter="url(#shadow)"/>
-  <text x="218" y="55" text-anchor="middle" font-size="11" font-weight="bold" fill="#1a4a6e">Stage 1: Coarse</text>
-  <text x="218" y="70" text-anchor="middle" font-size="8" fill="#2c6690">Batch API + tool_use</text>
-  <text x="218" y="82" text-anchor="middle" font-size="8" fill="#2c6690">extract_atoms tool</text>
-  <text x="218" y="94" text-anchor="middle" font-size="8" fill="#2c6690">type, summary, detail, source</text>
-  <text x="218" y="125" text-anchor="middle" font-size="8" font-style="italic" fill="#5499c7">50% cost savings</text>
+  <!-- Box 2: Stage 1: Coarse (x=160, width=140, height=80) -->
+  <rect x="160" y="40" width="140" height="80" rx="6" fill="url(#blueGrad)" stroke="#2980b9" stroke-width="1" filter="url(#shadow)"/>
+  <text x="230" y="58" text-anchor="middle" font-size="11" font-weight="bold" fill="#1a4a6e">Stage 1: Coarse</text>
+  <text x="230" y="72" text-anchor="middle" font-size="8" fill="#2c6690">Batch API + tool_use</text>
+  <text x="230" y="84" text-anchor="middle" font-size="8" fill="#2c6690">extract_atoms tool</text>
+  <text x="230" y="96" text-anchor="middle" font-size="8" fill="#2c6690">type, summary, detail, source</text>
+  <text x="230" y="135" text-anchor="middle" font-size="8" font-style="italic" fill="#5499c7">50% cost savings</text>
 
-  <line x1="288" y1="75" x2="313" y2="75" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <!-- Arrow 2→3 -->
+  <line x1="300" y1="80" x2="314" y2="80" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
 
-  <!-- Stage 2: Enrich -->
-  <rect x="316" y="35" width="140" height="80" rx="6" fill="url(#blueGrad)" stroke="#2980b9" stroke-width="1" filter="url(#shadow)"/>
-  <text x="386" y="55" text-anchor="middle" font-size="11" font-weight="bold" fill="#1a4a6e">Stage 2: Enrich</text>
-  <text x="386" y="70" text-anchor="middle" font-size="8" fill="#2c6690">Batch API + tool_use</text>
-  <text x="386" y="82" text-anchor="middle" font-size="8" fill="#2c6690">enrich_atom tool</text>
-  <text x="386" y="94" text-anchor="middle" font-size="8" fill="#2c6690">workstreams, urgency, confidence</text>
-  <text x="386" y="125" text-anchor="middle" font-size="8" font-style="italic" fill="#5499c7">50% cost savings</text>
+  <!-- Box 3: Stage 2: Enrich (x=315, width=140, height=80) -->
+  <rect x="315" y="40" width="140" height="80" rx="6" fill="url(#blueGrad)" stroke="#2980b9" stroke-width="1" filter="url(#shadow)"/>
+  <text x="385" y="58" text-anchor="middle" font-size="11" font-weight="bold" fill="#1a4a6e">Stage 2: Enrich</text>
+  <text x="385" y="72" text-anchor="middle" font-size="8" fill="#2c6690">Batch API + tool_use</text>
+  <text x="385" y="84" text-anchor="middle" font-size="8" fill="#2c6690">enrich_atom tool</text>
+  <text x="385" y="96" text-anchor="middle" font-size="8" fill="#2c6690">workstreams, urgency, confidence</text>
+  <text x="385" y="135" text-anchor="middle" font-size="8" font-style="italic" fill="#5499c7">50% cost savings</text>
 
-  <line x1="456" y1="75" x2="481" y2="75" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <!-- Arrow 3→4 -->
+  <line x1="455" y1="80" x2="469" y2="80" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
 
-  <!-- Validate -->
-  <rect x="484" y="35" width="130" height="80" rx="6" fill="url(#redGrad)" stroke="#c0392b" stroke-width="1" filter="url(#shadow)"/>
-  <text x="549" y="55" text-anchor="middle" font-size="11" font-weight="bold" fill="#7b241c">Validate</text>
-  <text x="549" y="70" text-anchor="middle" font-size="8" fill="#943126">Single batch, all atoms</text>
-  <text x="549" y="82" text-anchor="middle" font-size="8" fill="#943126">DECISION + SPEC_CHANGE</text>
-  <text x="549" y="94" text-anchor="middle" font-size="8" fill="#943126">Per-source-window check</text>
+  <!-- Box 4: Validate (x=470, width=140, height=80) -->
+  <rect x="470" y="40" width="140" height="80" rx="6" fill="url(#redGrad)" stroke="#c0392b" stroke-width="1" filter="url(#shadow)"/>
+  <text x="540" y="58" text-anchor="middle" font-size="11" font-weight="bold" fill="#7b241c">Validate</text>
+  <text x="540" y="72" text-anchor="middle" font-size="8" fill="#943126">Single batch, all atoms</text>
+  <text x="540" y="84" text-anchor="middle" font-size="8" fill="#943126">DECISION + SPEC_CHANGE</text>
+  <text x="540" y="96" text-anchor="middle" font-size="8" fill="#943126">Per-source-window check</text>
 
-  <line x1="614" y1="75" x2="639" y2="75" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <!-- Arrow 4→5 -->
+  <line x1="610" y1="80" x2="624" y2="80" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
 
-  <!-- Confidence Filter -->
-  <rect x="642" y="40" width="110" height="70" rx="6" fill="url(#redGrad)" stroke="#c0392b" stroke-width="1" filter="url(#shadow)"/>
-  <text x="697" y="62" text-anchor="middle" font-size="11" font-weight="bold" fill="#7b241c">Filter</text>
-  <text x="697" y="78" text-anchor="middle" font-size="8" fill="#943126">confidence >= 0.7</text>
-  <text x="697" y="90" text-anchor="middle" font-size="8" fill="#943126">demoted atoms halved</text>
+  <!-- Box 5: Filter (x=625, width=140, height=80) -->
+  <rect x="625" y="40" width="140" height="80" rx="6" fill="url(#redGrad)" stroke="#c0392b" stroke-width="1" filter="url(#shadow)"/>
+  <text x="695" y="58" text-anchor="middle" font-size="11" font-weight="bold" fill="#7b241c">Filter</text>
+  <text x="695" y="74" text-anchor="middle" font-size="8" fill="#943126">confidence >= 0.7</text>
+  <text x="695" y="86" text-anchor="middle" font-size="8" fill="#943126">demoted atoms halved</text>
 
-  <line x1="752" y1="75" x2="777" y2="75" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <!-- Arrow 5→6 -->
+  <line x1="765" y1="80" x2="779" y2="80" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
 
-  <!-- Atom Output -->
-  <rect x="780" y="35" width="120" height="80" rx="6" fill="url(#greenGrad)" stroke="#27ae60" stroke-width="1" filter="url(#shadow)"/>
-  <text x="840" y="55" text-anchor="middle" font-size="11" font-weight="bold" fill="#1a5e2a">Validated Atoms</text>
-  <text x="840" y="70" text-anchor="middle" font-size="8" fill="#2d6a3f">Full Atom objects</text>
-  <text x="840" y="82" text-anchor="middle" font-size="8" fill="#2d6a3f">8 types, enriched</text>
-  <text x="840" y="94" text-anchor="middle" font-size="8" fill="#2d6a3f">source-linked</text>
+  <!-- Box 6: Validated Atoms (x=780, width=140, height=80) -->
+  <rect x="780" y="40" width="140" height="80" rx="6" fill="url(#greenGrad)" stroke="#27ae60" stroke-width="1" filter="url(#shadow)"/>
+  <text x="850" y="58" text-anchor="middle" font-size="11" font-weight="bold" fill="#1a5e2a">Validated Atoms</text>
+  <text x="850" y="72" text-anchor="middle" font-size="8" fill="#2d6a3f">Full Atom objects</text>
+  <text x="850" y="84" text-anchor="middle" font-size="8" fill="#2d6a3f">8 types, enriched</text>
+  <text x="850" y="96" text-anchor="middle" font-size="8" fill="#2d6a3f">source-linked</text>
 
-  <!-- Bottom label -->
-  <text x="460" y="165" text-anchor="middle" font-size="10" fill="#5d6d7e">All extraction and validation via Anthropic Message Batches API with tool_use structured output</text>
+  <!-- Bottom pipeline note -->
+  <text x="460" y="160" text-anchor="middle" font-size="9" fill="#5d6d7e">All extraction and validation via Anthropic Message Batches API with tool_use structured output</text>
+
+  <!-- Legend panel -->
+  <rect x="160" y="175" width="600" height="90" rx="6" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+  <text x="460" y="193" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">Color Legend</text>
+
+  <!-- Legend row -->
+  <!-- Orange swatch -->
+  <rect x="180" y="202" width="20" height="14" rx="3" fill="url(#orangeGrad)" stroke="#e67e22" stroke-width="1"/>
+  <text x="205" y="213" font-size="9" fill="#2c3e50" font-weight="bold">Input</text>
+  <text x="205" y="225" font-size="8" fill="#5d6d7e">Raw thread data and metadata fed into the pipeline</text>
+
+  <!-- Blue swatch -->
+  <rect x="180" y="234" width="20" height="14" rx="3" fill="url(#blueGrad)" stroke="#2980b9" stroke-width="1"/>
+  <text x="205" y="245" font-size="9" fill="#2c3e50" font-weight="bold">LLM Extraction Stage</text>
+  <text x="205" y="257" font-size="8" fill="#5d6d7e">Batch API calls using tool_use to extract or enrich atoms</text>
+
+  <!-- Red swatch -->
+  <rect x="480" y="202" width="20" height="14" rx="3" fill="url(#redGrad)" stroke="#c0392b" stroke-width="1"/>
+  <text x="505" y="213" font-size="9" fill="#2c3e50" font-weight="bold">Quality Gate</text>
+  <text x="505" y="225" font-size="8" fill="#5d6d7e">Validation and confidence-based filtering of atoms</text>
+
+  <!-- Green swatch -->
+  <rect x="480" y="234" width="20" height="14" rx="3" fill="url(#greenGrad)" stroke="#27ae60" stroke-width="1"/>
+  <text x="505" y="245" font-size="9" fill="#2c3e50" font-weight="bold">Output</text>
+  <text x="505" y="257" font-size="8" fill="#5d6d7e">Final validated, enriched, and source-linked atom objects</text>
 </svg>
