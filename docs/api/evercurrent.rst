@@ -10,6 +10,7 @@ Subpackages
    evercurrent.config
    evercurrent.context
    evercurrent.dataset
+   evercurrent.db
    evercurrent.extraction
    evercurrent.generation
    evercurrent.graph

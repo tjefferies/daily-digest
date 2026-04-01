@@ -20,22 +20,6 @@ evercurrent.llm.factory module
    :show-inheritance:
    :undoc-members:
 
-evercurrent.llm.google module
------------------------------
-
-.. automodule:: evercurrent.llm.google
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-evercurrent.llm.openai module
------------------------------
-
-.. automodule:: evercurrent.llm.openai
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 evercurrent.llm.types module
 ----------------------------
 

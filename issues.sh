@@ -1200,3 +1200,11 @@ V2_TESTS=$(bd create \
   --silent)
 echo "    Integration tests:    $V2_TESTS"
 bd dep add "$V2_TESTS" "$V2_DELTA"
+
+# ─── PRESENTATION GUIDE ───────────────────────────────────────────────────────
+PRESENTATION=$(bd create \
+  --title="Create 30-minute deep dive presentation guide (docs/presentation-guide.rst)" \
+  --type=task --priority=0 \
+  --description="Polished .rst guide for 30-min live deep dive with EverCurrent. Technically rigorous yet approachable. 7 sections: Problem, Architecture, Extraction Pipeline, Scoring Engine, Live Demo, Lessons Learned, Connection to EverCurrent." \
+  --silent)
+echo "    Presentation Guide:   $PRESENTATION"
