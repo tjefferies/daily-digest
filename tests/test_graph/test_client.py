@@ -250,6 +250,65 @@ class TestTemporalQueries:
             assert "BLOCKER" in cypher
 
 
+class TestLoadAllAtoms:
+    """Verify loading full Atom objects from the graph."""
+
+    async def test_load_all_atoms_returns_atom_list(self) -> None:
+        """load_all_atoms() reconstructs full Atom objects from graph data."""
+        with patch("evercurrent.graph.client.AsyncGraphDatabase") as mock_agd:
+            mock_driver, mock_session = _make_mock_driver_and_session()
+            mock_result = AsyncMock()
+            mock_result.data.return_value = [
+                {
+                    "atom_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                    "type": "DECISION",
+                    "summary": "Switch to titanium",
+                    "detail": "For thermal reasons",
+                    "urgency": "high",
+                    "confidence": 0.92,
+                    "implicit_decision": False,
+                    "phase_relevance": ["DVT"],
+                    "channel": "#chassis-design",
+                    "thread_ts": "1711900000.000100",
+                    "originating": "chassis",
+                    "affected": ["thermal", "supply-chain"],
+                    "participants": ["U001", "U003"],
+                },
+            ]
+            mock_session.run.return_value = mock_result
+            mock_agd.driver.return_value = mock_driver
+            from evercurrent.graph.client import GraphClient
+
+            client = GraphClient(
+                uri="bolt://localhost:7687", user="neo4j", password=_TEST_PASSWORD
+            )
+            atoms = await client.load_all_atoms()
+
+            assert len(atoms) == 1
+            assert atoms[0].type == "DECISION"
+            assert atoms[0].summary == "Switch to titanium"
+            assert atoms[0].source.channel == "#chassis-design"
+            assert atoms[0].workstreams.originating == "chassis"
+            assert "thermal" in atoms[0].workstreams.affected
+
+    async def test_load_all_atoms_empty_graph(self) -> None:
+        """load_all_atoms() returns empty list when no atoms exist."""
+        with patch("evercurrent.graph.client.AsyncGraphDatabase") as mock_agd:
+            mock_driver, mock_session = _make_mock_driver_and_session()
+            mock_result = AsyncMock()
+            mock_result.data.return_value = []
+            mock_session.run.return_value = mock_result
+            mock_agd.driver.return_value = mock_driver
+            from evercurrent.graph.client import GraphClient
+
+            client = GraphClient(
+                uri="bolt://localhost:7687", user="neo4j", password=_TEST_PASSWORD
+            )
+            atoms = await client.load_all_atoms()
+
+            assert atoms == []
+
+
 class TestProcessedThreadTs:
     """Verify querying for already-processed thread timestamps."""
 

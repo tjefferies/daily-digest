@@ -1063,3 +1063,14 @@ SMOKE_TEST=$(bd create \
   --acceptance="1. scripts/smoke-test.sh exits 0 on success. 2. Atoms in Neo4j after run. 3. FAISS vectorstore on disk. 4. Re-run uses cached embeddings. 5. Clear error if API key missing or Neo4j down." \
   --silent)
 echo "    Smoke Test:           $SMOKE_TEST"
+
+# ─── FRONTEND: DIGEST FROM NEO4J ──────────────────────────────────────────────
+DIGEST_NEO4J=$(bd create \
+  --title="Frontend: pull digest data from Neo4j via backend API instead of in-memory store" \
+  --type=feature \
+  --priority=1 \
+  --description="Update /digest/{persona_id} endpoint to query atoms from Neo4j first, falling back to in-memory store. Frontend already calls GET /digest/{persona_id} — only backend needs changes. Enables digest across server restarts without re-running pipeline." \
+  --design="1. In get_digest(), query Neo4j for atoms via GraphClient. 2. Use Neo4j atoms for scoring if available. 3. Fall back to _atom_store if Neo4j fails or empty. 4. May need new GraphClient method to return full Atom objects. 5. Frontend needs no changes." \
+  --acceptance="1. GET /digest returns Neo4j atoms when available. 2. Works without /pipeline/run if Neo4j has data. 3. Graceful fallback if Neo4j down. 4. Frontend displays correctly. 5. All tests pass." \
+  --silent)
+echo "    Digest from Neo4j:    $DIGEST_NEO4J"

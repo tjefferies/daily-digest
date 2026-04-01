@@ -209,11 +209,64 @@ class TestDigestEndpoint:
         assert len(call_args[0][1]) == 1
 
     @pytest.mark.asyncio
-    async def test_digest_without_pipeline_returns_empty_sections(self) -> None:
-        """Without running pipeline first, digest returns empty sections."""
+    @patch("evercurrent.app._load_atoms_from_neo4j")
+    @patch("evercurrent.app.AsyncDigestAssembler")
+    async def test_digest_pulls_from_neo4j_when_store_empty(
+        self,
+        mock_assembler_cls: MagicMock,
+        mock_load_neo4j: MagicMock,
+    ) -> None:
+        """Digest queries Neo4j when in-memory store is empty."""
+        atom = _make_atom()
+        mock_load_neo4j.return_value = [atom]
+
+        mock_assembler = AsyncMock()
+        mock_assembler.assemble.return_value = {
+            "persona_id": "U001",
+            "generated_at": "2026-03-31T00:00:00",
+            "sections": [{"section_type": "requires_action", "title": "Action Items"}],
+        }
+        mock_assembler_cls.return_value = mock_assembler
+
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:
             response = await client.get("/digest/U001")
 
+        assert response.status_code == 200
+        data = response.json()
+        assert data["persona_id"] == "U001"
+        assert len(data["sections"]) == 1
+        mock_load_neo4j.assert_called_once()
+
+    @pytest.mark.asyncio
+    @patch("evercurrent.app._load_atoms_from_neo4j")
+    async def test_digest_returns_empty_when_neo4j_also_empty(
+        self,
+        mock_load_neo4j: MagicMock,
+    ) -> None:
+        """Returns empty sections when both in-memory and Neo4j are empty."""
+        mock_load_neo4j.return_value = []
+
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            response = await client.get("/digest/U001")
+
+        data = response.json()
+        assert data["sections"] == []
+
+    @pytest.mark.asyncio
+    @patch("evercurrent.app._load_atoms_from_neo4j")
+    async def test_digest_graceful_neo4j_failure(
+        self,
+        mock_load_neo4j: MagicMock,
+    ) -> None:
+        """Returns empty sections when Neo4j query fails."""
+        mock_load_neo4j.side_effect = Exception("Connection refused")
+
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            response = await client.get("/digest/U001")
+
+        assert response.status_code == 200
         data = response.json()
         assert data["sections"] == []

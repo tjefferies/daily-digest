@@ -17,6 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from evercurrent.config.loader import get_config
 from evercurrent.context.personas import get_persona
 from evercurrent.generation.assembler import AsyncDigestAssembler
+from evercurrent.graph.client import GraphClient
 from evercurrent.llm.factory import create_async_llm_client
 from evercurrent.pipeline import async_run_pipeline
 
@@ -49,6 +50,30 @@ def clear_atom_store() -> None:
     Used by tests to reset state between test cases.
     """
     _atom_store.clear()
+
+
+async def _load_atoms_from_neo4j() -> list[Atom]:
+    """Load atoms from Neo4j, returning empty list on failure.
+
+    Returns:
+        List of Atom objects from the graph, or empty list.
+    """
+    neo4j_cfg = get_config()["pipeline"]["neo4j"]
+    graph = GraphClient(
+        uri=neo4j_cfg["uri"],
+        user=neo4j_cfg["user"],
+        password=neo4j_cfg["password"],
+    )
+    try:
+        atoms = await graph.load_all_atoms()
+        if atoms:
+            logger.info("Loaded %d atoms from Neo4j for digest", len(atoms))
+        return atoms
+    except Exception:
+        logger.warning("Failed to load atoms from Neo4j", exc_info=True)
+        return []
+    finally:
+        await graph.close()
 
 
 @app.get("/health")
@@ -91,9 +116,8 @@ async def get_digest(
 ) -> dict[str, Any]:
     """Retrieve the generated digest for a specific persona.
 
-    If the pipeline has been run (atoms in store), uses the DigestAssembler
-    to score and generate a personalized digest. Otherwise returns an empty
-    digest structure suitable for frontend development.
+    Tries atoms from: (1) in-memory store, (2) Neo4j graph.
+    If both are empty, returns an empty digest structure.
 
     Args:
         persona_id: Slack user ID of the persona.
@@ -117,8 +141,16 @@ async def get_digest(
                 detail=f"Invalid phase_override: {phase_override!r}. Expected 'workstream:phase'",
             )
 
-    # If no atoms have been extracted yet, return empty digest
-    if not _atom_store:
+    # Try in-memory store first, then Neo4j
+    atoms: list[Atom] = list(_atom_store)
+    if not atoms:
+        try:
+            atoms = await _load_atoms_from_neo4j()
+        except Exception:
+            logger.warning("Neo4j fallback failed in digest", exc_info=True)
+            atoms = []
+
+    if not atoms:
         return {
             "persona_id": persona_id,
             "generated_at": datetime.now(tz=UTC).isoformat(),
@@ -126,7 +158,7 @@ async def get_digest(
             "phase_override": phase_override,
         }
 
-    # Wire the assembler with stored atoms
+    # Wire the assembler with available atoms
     client = create_async_llm_client()
     assembler = AsyncDigestAssembler(client)
-    return await assembler.assemble(persona_id, list(_atom_store), phase_override)
+    return await assembler.assemble(persona_id, atoms, phase_override)

@@ -13,10 +13,10 @@ from typing import TYPE_CHECKING, Any, LiteralString
 
 from neo4j import AsyncGraphDatabase
 
+from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams  # noqa: TC001
+
 if TYPE_CHECKING:
     from neo4j import AsyncDriver
-
-    from evercurrent.models.atom import Atom
 
 logger = logging.getLogger(__name__)
 
@@ -80,6 +80,21 @@ WITH ws.name AS workstream,
      count(DISTINCT a) AS blocker_count
 RETURN workstream, blocker_count, summaries, affected_teams
 ORDER BY blocker_count DESC
+"""
+
+_LOAD_ALL_ATOMS_CYPHER = """\
+MATCH (a:Atom)
+OPTIONAL MATCH (a)-[:ORIGINATES_IN]->(ws_orig:Workstream)
+OPTIONAL MATCH (a)-[:AFFECTS]->(ws_aff:Workstream)
+OPTIONAL MATCH (a)-[:INVOLVES]->(p:Participant)
+RETURN a.atom_id AS atom_id, a.type AS type, a.summary AS summary,
+       a.detail AS detail, a.urgency AS urgency, a.confidence AS confidence,
+       a.implicit_decision AS implicit_decision, a.phase_relevance AS phase_relevance,
+       a.channel AS channel, a.thread_ts AS thread_ts,
+       ws_orig.name AS originating,
+       collect(DISTINCT ws_aff.name) AS affected,
+       collect(DISTINCT p.handle) AS participants
+ORDER BY a.created_at DESC
 """
 
 _PROCESSED_THREAD_TS_CYPHER = """\
@@ -180,6 +195,46 @@ class GraphClient:
         async with self._driver.session() as session:
             result = await session.run(_BLOCKER_PATTERNS_CYPHER)
             return await result.data()
+
+    async def load_all_atoms(self) -> list[Atom]:
+        """Load all atoms from Neo4j as full Atom objects.
+
+        Reconstructs Atom objects with source, workstreams, and
+        participant data from graph relationships.
+
+        Returns:
+            List of Atom objects from the graph.
+        """
+        async with self._driver.session() as session:
+            result = await session.run(_LOAD_ALL_ATOMS_CYPHER)
+            records = await result.data()
+
+        atoms: list[Atom] = []
+        for r in records:
+            atoms.append(
+                Atom(
+                    atom_id=r["atom_id"],
+                    type=r["type"],
+                    summary=r["summary"],
+                    detail=r["detail"] or "",
+                    source=AtomSource(
+                        channel=r["channel"] or "",
+                        thread_ts=r["thread_ts"] or "",
+                        message_range=[0, 0],
+                        key_participants=r["participants"],
+                    ),
+                    workstreams=AtomWorkstreams(
+                        originating=r["originating"] or "",
+                        affected=[a for a in r["affected"] if a],
+                    ),
+                    urgency=r["urgency"],
+                    confidence=r["confidence"],
+                    implicit_decision=r.get("implicit_decision", False),
+                    phase_relevance=r.get("phase_relevance", []),
+                ),
+            )
+        logger.info("Loaded %d atoms from graph", len(atoms))
+        return atoms
 
     async def processed_thread_ts(self) -> set[str]:
         """Return the set of thread_ts values that already have atoms.
