@@ -55,7 +55,7 @@ services:
   postgres:
     image: postgres:16-alpine
     ports:
-      - "5432:5432"
+      - "5433:5432"
     environment:
       - POSTGRES_USER=evercurrent
       - POSTGRES_PASSWORD=evercurrent_dev
