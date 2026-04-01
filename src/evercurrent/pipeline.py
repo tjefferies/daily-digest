@@ -168,26 +168,37 @@ async def _postgres_dedup(bundles: list) -> tuple[list, int]:
         return bundles, 0
 
 
-async def _postgres_persist(
-    bundles: list,
-    atoms: list[Atom],
-) -> None:
-    """Persist bundles and atoms to Postgres.
+async def _postgres_persist_bundles(bundles: list) -> None:
+    """Persist bundles to Postgres before extraction.
 
     Args:
         bundles: ThreadBundles to persist.
-        atoms: Atoms to persist.
     """
     try:
         factory = get_session_factory()
         async with factory() as session:
             for bundle in bundles:
                 await persist_bundle(session, bundle)
+            await session.commit()
+        logger.info("Postgres: persisted %d bundles", len(bundles))
+    except Exception:
+        logger.warning("Postgres bundle persistence failed", exc_info=True)
+
+
+async def _postgres_persist_atoms(atoms: list[Atom]) -> None:
+    """Persist atoms to Postgres after filtering.
+
+    Args:
+        atoms: Filtered atoms to persist.
+    """
+    try:
+        factory = get_session_factory()
+        async with factory() as session:
             await persist_atoms(session, atoms)
             await session.commit()
-        logger.info("Persisted %d bundles, %d atoms to Postgres", len(bundles), len(atoms))
+        logger.info("Postgres: persisted %d atoms", len(atoms))
     except Exception:
-        logger.warning("Postgres persistence failed", exc_info=True)
+        logger.warning("Postgres atom persistence failed", exc_info=True)
 
 
 def _dump_intermediate(filename: str, data: list) -> None:
@@ -348,6 +359,10 @@ async def _async_run_pipeline_inner(
     total_bundles = len(bundles)
     bundles, threads_skipped = await _postgres_dedup(bundles)
 
+    # Persist new bundles to Postgres BEFORE extraction
+    # so delta dedup works even if extraction fails partway through
+    await _postgres_persist_bundles(bundles)
+
     windows = assemble_context_windows(bundles)
     max_windows = get_config()["pipeline"].get("max_windows", 0)
     if max_windows > 0 and len(windows) > max_windows:
@@ -387,8 +402,8 @@ async def _async_run_pipeline_inner(
     )
     _dump_intermediate("step4_filtered_atoms.json", atoms)
 
-    # Persist
-    await _postgres_persist(bundles, atoms)
+    # Persist atoms to Postgres (bundles already persisted above)
+    await _postgres_persist_atoms(atoms)
     await _persist_to_neo4j(graph, atoms)
     logger.info(
         "═══ PIPELINE COMPLETE: %d windows → %d extracted → %d passed ═══",
