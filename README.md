@@ -121,7 +121,7 @@ Seven gates enforced via `scripts/quality-gates.sh`:
 | Docstring coverage            | interrogate       | >= 95%              |
 | Dead code detection           | vulture           | min-confidence 80   |
 
-Current stats: **494 tests (490 unit + 4 integration), all gates passing.**
+Current stats: **511 tests (490 unit + 21 integration), all gates passing.**
 
 ## Project Structure
 
@@ -206,7 +206,7 @@ evercurrent/
 │   ├── quality-gates.sh           #   7 quality gates
 │   ├── smoke-test.sh              #   E2E 3-window smoke test
 │   └── smoke_test_runner.py       #   Smoke test Python runner
-├── tests/                         # 494 tests
+├── tests/                         # 511 tests
 │   ├── test_integration/          #   FAISS + Postgres roundtrip tests
 │   ├── test_db/                   #   SQLAlchemy model + repository tests
 │   ├── test_extraction/           #   Batch runner, rate limits, validation

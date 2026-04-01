@@ -168,12 +168,16 @@ Use the implicit signals to adjust per-user scoring weights over time:
 The prototype prioritizes correctness and demo-ability over production
 resilience. For deployment:
 
-**5.1 Persistent Storage**
+**5.1 Persistent Storage (Implemented)**
 
-- Replace in-memory state with PostgreSQL
-- Store: extracted atoms (with embeddings for future semantic search),
-  generated digests (for audit trail), user feedback events, phase
-  history timeline
+The prototype already includes Postgres (bundles, atoms, context windows,
+batch logs), Neo4j (atom graph), and FAISS (embedding cache). Follow-on
+work:
+
+- Add digest persistence (store generated digests for audit trail)
+- Add user feedback event storage
+- Add phase history timeline for trend analysis
+- Add semantic search over atoms via FAISS embedding index
 
 **5.2 Authentication and Authorization**
 
@@ -190,9 +194,12 @@ resilience. For deployment:
 - Alerting on: extraction failure rate > 5%, generation timeout,
   coverage drop below 90%
 
-**5.4 Error Handling and Retry**
+**5.4 Error Handling and Retry (Partially Implemented)**
 
-- Exponential backoff for Anthropic API rate limits
+The prototype already includes exponential backoff for Anthropic Batch API
+polling (5s → 10s → 20s → 40s → 80s → 160s capped) and retry on 429 rate
+limits. Follow-on work:
+
 - Dead letter queue for failed extractions
 - Circuit breaker for upstream service failures
 - Graceful degradation: serve stale digest if generation fails
@@ -316,54 +323,42 @@ Measure via user dismissal rate of action items. High false positive
 rate erodes trust faster than missing items.
 
 
-10. Model-Agnostic Client Harness
------------------------------------
+10. Multi-Provider LLM Support
+-------------------------------
 
-The pipeline now uses a model-agnostic ``LLMClient`` protocol
-(``src/evercurrent/llm/``) with adapters for Anthropic, OpenAI, and
-Google Gemini. Provider selection is driven by ``config/pipeline.yml``.
-This abstraction enables several follow-on capabilities:
+V2 is Anthropic-only with the ``AsyncLLMClient`` protocol. The
+``AsyncAnthropicAdapter`` uses native ``tool_use`` for structured output
+and the Message Batches API for 50% cost savings. Re-adding multi-provider
+support when needed:
 
 **10.1 On-Premises / Self-Hosted Models**
 
 For teams where data sensitivity prohibits sending Slack content to
-cloud LLM providers (ITAR, trade secrets, export controls), the client
-harness can be extended with adapters for self-hosted inference:
+cloud LLM providers (ITAR, trade secrets, export controls):
 
 - **vLLM**: High-throughput serving of open-weight models (Llama 3,
-  Mistral, Qwen). Exposes an OpenAI-compatible API, so the existing
-  ``OpenAIAdapter`` works with a custom ``base_url`` pointed at the
-  local vLLM endpoint.
+  Mistral, Qwen). Exposes an OpenAI-compatible API.
 - **Ollama**: Single-binary local inference for development and small
-  deployments. Useful for engineers who want to run the full pipeline
-  on a laptop without network egress.
+  deployments.
 - **Text Generation Inference (TGI)**: Hugging Face's production
-  serving stack with continuous batching and quantization support.
-  Requires a dedicated adapter due to its unique streaming API.
+  serving stack with continuous batching.
 
-**10.2 Provider Failover and Load Balancing**
+Each would need its own adapter implementing the ``AsyncLLMClient``
+protocol, with ``tool_use``-equivalent structured output handling.
 
-The adapter pattern enables transparent failover between providers:
-
-- Primary: Anthropic Claude (highest extraction quality)
-- Fallback: OpenAI GPT-4o (if Anthropic rate-limited or down)
-- Cost tier: Google Gemini Flash (for low-priority batch processing)
+**10.2 Provider Failover**
 
 A ``FallbackAdapter`` could wrap multiple adapters and try each in
-order, with circuit breaker logic to avoid hammering a failing provider.
+order, with circuit breaker logic. Primary: Anthropic Claude (highest
+extraction quality). Fallback: OpenAI or self-hosted.
 
 **10.3 Model Evaluation Harness**
 
-With a common interface, the same evaluation suite can compare
-extraction quality across providers:
+Run the same test corpus through each provider and compare:
 
-- Run the same test corpus through each provider
-- Compare atom extraction precision/recall
-- Measure cost per 1000 atoms extracted
-- Track latency percentiles (p50, p95, p99)
-
-This data directly informs provider selection decisions and contract
-negotiations.
+- Atom extraction precision/recall
+- Cost per 1000 atoms extracted
+- Latency percentiles (p50, p95, p99)
 
 
 11. Security and Compliance
