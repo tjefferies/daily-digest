@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from evercurrent.config.loader import get_config
@@ -18,9 +19,11 @@ from evercurrent.extraction.filter import confidence_filter
 from evercurrent.extraction.runner import AsyncExtractionRunner, ExtractionRunner
 from evercurrent.extraction.validation import async_validate_atoms, validate_atoms
 from evercurrent.graph.client import GraphClient
+from evercurrent.ingestion.cached_embedder import CachedEmbedder
 from evercurrent.ingestion.context_window import assemble_context_windows
 from evercurrent.ingestion.continuations import detect_continuations
 from evercurrent.ingestion.threads import group_by_thread
+from evercurrent.ingestion.vectorstore import VectorStore
 
 if TYPE_CHECKING:
     from evercurrent.ingestion.embeddings import Embedder
@@ -148,6 +151,43 @@ def run_pipeline(
     )
 
 
+def _get_vectorstore_path() -> Path:
+    """Get the vectorstore file path from pipeline config.
+
+    Returns:
+        Path to the FAISS index file.
+    """
+    cfg = get_config()["pipeline"]
+    return Path(cfg.get("vectorstore", {}).get("path", "data/vectorstore.index"))
+
+
+def _wrap_with_cache(embedder: Embedder | None) -> Embedder | None:
+    """Wrap an embedder with FAISS caching if provided.
+
+    Args:
+        embedder: Optional inner embedder to wrap.
+
+    Returns:
+        CachedEmbedder wrapping the inner embedder, or None.
+    """
+    if embedder is None:
+        return None
+    store = VectorStore.load(_get_vectorstore_path())
+    return CachedEmbedder(embedder, store)
+
+
+def _save_vectorstore(cached: CachedEmbedder) -> None:
+    """Save the vectorstore to disk after use.
+
+    Args:
+        cached: CachedEmbedder whose store should be persisted.
+    """
+    try:
+        cached._store.save(_get_vectorstore_path())  # noqa: SLF001
+    except Exception:
+        logger.warning("Failed to save vectorstore", exc_info=True)
+
+
 def _create_graph_client() -> GraphClient:
     """Create a GraphClient from pipeline config.
 
@@ -236,9 +276,18 @@ async def _async_run_pipeline_inner(
     bundles = group_by_thread(messages)
 
     # Pass 2: Continuation detection (hybrid keyword + semantic)
+    # Wrap embedder with FAISS cache if provided
+    cached_embedder = _wrap_with_cache(embedder)
     standalones = _extract_standalones(messages, bundles)
-    continuation_matches = detect_continuations(bundles, standalones, embedder=embedder)
+    continuation_matches = detect_continuations(
+        bundles,
+        standalones,
+        embedder=cached_embedder,
+    )
     continuations_merged = _merge_continuations(bundles, continuation_matches)
+    # Save vectorstore after continuation detection
+    if isinstance(cached_embedder, CachedEmbedder):
+        _save_vectorstore(cached_embedder)
 
     # Dedup: skip threads already processed in Neo4j
     processed = await _get_processed_threads(graph)
