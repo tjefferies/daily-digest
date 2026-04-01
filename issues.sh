@@ -1215,3 +1215,14 @@ VISUAL_PRES=$(bd create \
   --description="The 'deck' shown during the call. Sphinx-rendered with architecture SVG, real data examples, tool_use schemas, persona comparisons, V1→V2 story, EverCurrent mapping. Complements the speaker notes in presentation-guide.rst." \
   --silent)
 echo "    Visual Presentation:  $VISUAL_PRES"
+
+# ─── DEMO DATASET ──────────────────────────────────────────────────────────────
+DEMO_DATASET=$(bd create \
+  --title="Create small demo dataset: 1 day of info-dense messages for live demo" \
+  --type=task --priority=0 \
+  --description="~15-20 messages across 3-4 threads targeting Maya/Elena/Ryan. Async extraction <30s. Pipeline config to switch demo/full dataset." \
+  --silent)
+echo "    Demo Dataset:         $DEMO_DATASET"
+bd dep add "$DEMO_DATASET" "$V2_DOCS"
+bd dep add "$VISUAL_PRES" "$DEMO_DATASET"
+bd dep add "$PRESENTATION" "$DEMO_DATASET"
