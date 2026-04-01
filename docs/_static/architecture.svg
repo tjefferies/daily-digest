@@ -36,6 +36,12 @@
     <marker id="arrowOrange" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
       <polygon points="0 0, 8 3, 0 6" fill="#e67e22"/>
     </marker>
+    <marker id="arrowGreen" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#27ae60"/>
+    </marker>
+    <marker id="arrowPurple" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#8e44ad"/>
+    </marker>
   </defs>
 
   <!-- Title -->
@@ -168,8 +174,8 @@
 
   <!-- Arrows: Pipeline -> Storage -->
   <line x1="170" y1="500" x2="170" y2="530" stroke="#2980b9" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
-  <line x1="450" y1="500" x2="450" y2="530" stroke="#27ae60" stroke-width="1.5"/>
-  <line x1="730" y1="500" x2="730" y2="530" stroke="#8e44ad" stroke-width="1.5"/>
+  <line x1="450" y1="500" x2="450" y2="530" stroke="#27ae60" stroke-width="1.5" marker-end="url(#arrowGreen)"/>
+  <line x1="730" y1="500" x2="730" y2="530" stroke="#8e44ad" stroke-width="1.5" marker-end="url(#arrowPurple)"/>
 
   <!-- ============ EXTERNAL ============ -->
   <text x="50" y="640" font-size="10" font-weight="bold" fill="#7f8c8d">EXTERNAL SERVICES</text>
