@@ -26,6 +26,9 @@ continuations:
 vectorstore:
   path: data/vectorstore.index
 
+# Dataset: 'full' (307 messages) or 'demo' (18 messages, fast extraction).
+dataset: full
+
 # Extraction mode: 'batch' (50% cost savings, slower) or 'async' (faster, higher cost).
 extraction_mode: batch
 

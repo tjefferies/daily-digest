@@ -26,11 +26,15 @@ import json
 from pathlib import Path
 from typing import Any
 
+from evercurrent.config.loader import get_config
 from evercurrent.dataset.schema import SlackMessage, SlackReaction
 
-_FIXTURE_PATH = Path(__file__).resolve().parents[3] / "data" / "slack_messages.json"
+_DATA_DIR = Path(__file__).resolve().parents[3] / "data"
+_FIXTURE_PATH = _DATA_DIR / "slack_messages.json"
+_DEMO_PATH = _DATA_DIR / "demo_messages.json"
 
 _CACHED_MESSAGES: list[SlackMessage] | None = None
+_CACHED_DATASET: str | None = None
 
 
 def _transform_message(raw: dict[str, Any], channel_name: str) -> SlackMessage:
@@ -71,12 +75,15 @@ def _transform_message(raw: dict[str, Any], channel_name: str) -> SlackMessage:
     )
 
 
-def _load_from_fixture() -> list[SlackMessage]:
-    """Load all messages from the Slack-API-shaped JSON fixture.
+def _load_from_fixture(fixture_path: Path | None = None) -> list[SlackMessage]:
+    """Load all messages from a Slack-API-shaped JSON fixture.
 
-    Reads data/slack_messages.json, iterates channels, transforms
+    Reads the given fixture file, iterates channels, transforms
     each message from Slack API fields to SlackMessage objects,
     and returns them sorted by message_ts.
+
+    Args:
+        fixture_path: Path to the JSON fixture. Defaults to _FIXTURE_PATH.
 
     Returns:
         List of SlackMessage objects sorted by timestamp ascending.
@@ -84,11 +91,13 @@ def _load_from_fixture() -> list[SlackMessage]:
     Raises:
         FileNotFoundError: If the fixture file is missing.
     """
-    if not _FIXTURE_PATH.exists():
-        msg = f"Slack fixture not found: {_FIXTURE_PATH}"
+    if fixture_path is None:
+        fixture_path = _FIXTURE_PATH
+    if not fixture_path.exists():
+        msg = f"Slack fixture not found: {fixture_path}"
         raise FileNotFoundError(msg)
 
-    data = json.loads(_FIXTURE_PATH.read_text())
+    data = json.loads(fixture_path.read_text())
     messages: list[SlackMessage] = []
 
     for channel in data["channels"]:
@@ -100,15 +109,20 @@ def _load_from_fixture() -> list[SlackMessage]:
 
 
 def load_messages() -> list[SlackMessage]:
-    """Load the Slack message dataset from the static JSON fixture.
+    """Load the Slack message dataset from the configured fixture.
 
-    Returns a cached copy of all messages, sorted by timestamp.
-    Thread-safe for read-only access.
+    Respects ``pipeline.dataset`` config: ``'full'`` loads the 307-message
+    dataset, ``'demo'`` loads the 18-message demo dataset for fast live demos.
+    Returns a cached copy; cache is invalidated if dataset config changes.
 
     Returns:
-        List of SlackMessage objects.
+        List of SlackMessage objects sorted by timestamp.
     """
-    global _CACHED_MESSAGES  # noqa: PLW0603
-    if _CACHED_MESSAGES is None:
-        _CACHED_MESSAGES = _load_from_fixture()
+    global _CACHED_MESSAGES, _CACHED_DATASET  # noqa: PLW0603
+    dataset = get_config()["pipeline"].get("dataset", "full")
+    if _CACHED_MESSAGES is None or dataset != _CACHED_DATASET:
+        _CACHED_DATASET = dataset
+        _CACHED_MESSAGES = _load_from_fixture(
+            _DEMO_PATH if dataset == "demo" else _FIXTURE_PATH,
+        )
     return list(_CACHED_MESSAGES)

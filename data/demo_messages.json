@@ -1,0 +1,164 @@
+{
+  "channels": [
+    {
+      "name": "chassis-design",
+      "messages": [
+        {
+          "type": "message",
+          "ts": "1711990000.000100",
+          "user": "U001",
+          "text": "Team, we need to make a call on the housing material for the motor controller enclosure. We're at DVT and the current aluminum design is 340g over our weight target.",
+          "thread_ts": "1711990000.000100",
+          "reply_count": 5,
+          "reply_users_count": 4,
+          "reply_users": ["U001", "U003", "U007", "U010"],
+          "latest_reply": "1711990500.000105",
+          "reactions": [{"name": "eyes", "users": ["U003", "U007", "U010"], "count": 3}]
+        },
+        {
+          "type": "message",
+          "ts": "1711990100.000101",
+          "user": "U003",
+          "text": "I ran the FEA on magnesium AZ91D. It meets structural requirements at 0.6mm wall thickness. Weight savings: 290g. That puts us 50g under target.",
+          "thread_ts": "1711990000.000100"
+        },
+        {
+          "type": "message",
+          "ts": "1711990200.000102",
+          "user": "U007",
+          "text": "Heads up \u2014 switching to magnesium means we need a different die caster. Our current vendor (Proto Labs) doesn't do mag. I have quotes from Dynacast but lead time is 8 weeks vs 4 for aluminum.",
+          "thread_ts": "1711990000.000100",
+          "reactions": [{"name": "warning", "users": ["U001", "U010"], "count": 2}]
+        },
+        {
+          "type": "message",
+          "ts": "1711990300.000103",
+          "user": "U010",
+          "text": "8 weeks puts us right at the DVT build deadline. Can we get Dynacast to expedite? What's the cost delta?",
+          "thread_ts": "1711990000.000100"
+        },
+        {
+          "type": "message",
+          "ts": "1711990400.000104",
+          "user": "U007",
+          "text": "Expedite is possible at +15% tooling cost ($4,200 premium). I can get us 6 weeks. Still tight but doable if we lock the CAD by Friday.",
+          "thread_ts": "1711990000.000100"
+        },
+        {
+          "type": "message",
+          "ts": "1711990500.000105",
+          "user": "U001",
+          "text": "Decision: we're going with magnesium AZ91D for the motor controller housing. @elena please lock in Dynacast with expedite. I'll have final STEP files by Thursday EOD.",
+          "thread_ts": "1711990000.000100",
+          "reactions": [{"name": "white_check_mark", "users": ["U003", "U007", "U010"], "count": 3}]
+        }
+      ]
+    },
+    {
+      "name": "thermal-management",
+      "messages": [
+        {
+          "type": "message",
+          "ts": "1711991000.000200",
+          "user": "U003",
+          "text": "Thermal sim results for motor controller rev D are in. Bad news: junction temp hits 142\u00b0C at sustained load. Target is 125\u00b0C. The passive heat sink is not cutting it.",
+          "thread_ts": "1711991000.000200",
+          "reply_count": 5,
+          "reply_users_count": 4,
+          "reply_users": ["U001", "U003", "U004", "U010"],
+          "latest_reply": "1711991500.000205",
+          "reactions": [{"name": "rotating_light", "users": ["U001", "U010"], "count": 2}]
+        },
+        {
+          "type": "message",
+          "ts": "1711991100.000201",
+          "user": "U001",
+          "text": "142\u00b0C is a hard fail for the MOSFET ratings. We can't ship DVT units with that margin. What are our options?",
+          "thread_ts": "1711991000.000200"
+        },
+        {
+          "type": "message",
+          "ts": "1711991200.000202",
+          "user": "U003",
+          "text": "Option A: Redesign heat sink with fins (adds 45g, 2 weeks). Option B: Add a 25mm fan (adds 15g, $2.30 BOM, 1 week). Option C: Reduce max continuous power by 20% (software limit, 0 weeks but degrades performance).",
+          "thread_ts": "1711991000.000200"
+        },
+        {
+          "type": "message",
+          "ts": "1711991300.000203",
+          "user": "U004",
+          "text": "From the drivetrain side: Option C is a non-starter. We sized the motor for the current power spec. 20% reduction means we can't hold payload at max speed on inclines.",
+          "thread_ts": "1711991000.000200"
+        },
+        {
+          "type": "message",
+          "ts": "1711991400.000204",
+          "user": "U010",
+          "text": "Schedule can't absorb 2 weeks for Option A. Let's go with Option B \u2014 the fan. @maya can you update the thermal spec from passive to active cooling and revise the enclosure CAD to accommodate the fan mount?",
+          "thread_ts": "1711991000.000200"
+        },
+        {
+          "type": "message",
+          "ts": "1711991500.000205",
+          "user": "U001",
+          "text": "Spec change logged: motor controller thermal management changed from passive heat sink to active cooling (25mm fan). Updated thermal target: junction temp < 105\u00b0C at sustained load with fan at 5000 RPM. I'll update the enclosure CAD by Wednesday.",
+          "thread_ts": "1711991000.000200",
+          "reactions": [{"name": "white_check_mark", "users": ["U003", "U004", "U010"], "count": 3}]
+        }
+      ]
+    },
+    {
+      "name": "amr-general",
+      "messages": [
+        {
+          "type": "message",
+          "ts": "1711992000.000300",
+          "user": "U005",
+          "text": "DVT integration status: the LIDAR driver firmware is blocked. We found a timing issue in the SPI bus initialization that causes intermittent data corruption at > 40\u00b0C ambient. No workaround yet.",
+          "thread_ts": "1711992000.000300",
+          "reply_count": 5,
+          "reply_users_count": 4,
+          "reply_users": ["U001", "U005", "U006", "U010"],
+          "latest_reply": "1711992500.000305",
+          "reactions": [{"name": "rotating_light", "users": ["U001", "U006", "U010"], "count": 3}]
+        },
+        {
+          "type": "message",
+          "ts": "1711992100.000301",
+          "user": "U010",
+          "text": "This blocks the DVT integration test suite. @james what's the timeline to root cause?",
+          "thread_ts": "1711992000.000300"
+        },
+        {
+          "type": "message",
+          "ts": "1711992200.000302",
+          "user": "U005",
+          "text": "We've isolated it to a clock domain crossing issue. Fix is straightforward but needs validation across temperature range. Best case: 3 business days. Worst case: 1 week if we find additional edge cases.",
+          "thread_ts": "1711992000.000300"
+        },
+        {
+          "type": "message",
+          "ts": "1711992300.000303",
+          "user": "U001",
+          "text": "Does this affect the chassis sensor mounting? The LIDAR bracket was designed for the current board outline. If the fix requires a board respin that changes dimensions, I need to know ASAP.",
+          "thread_ts": "1711992000.000300"
+        },
+        {
+          "type": "message",
+          "ts": "1711992400.000304",
+          "user": "U005",
+          "text": "No board respin needed \u2014 this is a pure firmware fix. Board outline and mounting holes stay the same. The bracket design is safe.",
+          "thread_ts": "1711992000.000300"
+        },
+        {
+          "type": "message",
+          "ts": "1711992500.000305",
+          "user": "U010",
+          "text": "OK. Action items: (1) @james prioritize the SPI fix, target Wednesday delivery. (2) I'm pushing the DVT integration test suite to next Monday. (3) All workstream leads: flag any downstream dependencies on sensor data by EOD today.",
+          "thread_ts": "1711992000.000300",
+          "reactions": [{"name": "thumbsup", "users": ["U001", "U005", "U006"], "count": 3}]
+        }
+      ]
+    }
+  ]
+}
