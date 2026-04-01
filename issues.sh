@@ -1258,3 +1258,85 @@ RENAME_VERIFY=$(bd create \
   --acceptance="1. All imports updated. 2. pyproject.toml updated. 3. All config/script/doc refs updated. 4. Sphinx docs regenerated. 5. Tests pass. 6. Quality gates pass. 7. Docker builds." \
   --silent)
 echo "    Rename Verify:        $RENAME_VERIFY"
+
+# ─── SVG LAYOUT FIX ───────────────────────────────────────────────────────────
+SVG_CENTER=$(bd create \
+  --title="Center Persistence layer boxes in data-flow.svg" \
+  --type=task --priority=2 \
+  --description="The boxes under the Persistence layer in docs/_static/data-flow.svg are not centered in the middle of the image. Update the SVG to center them horizontally." \
+  --silent)
+echo "    SVG Center Fix:       $SVG_CENTER"
+
+# ─── EXTRACTION PIPELINE SVG CLEANUP ──────────────────────────────────────────
+SVG_EXTRACTION=$(bd create \
+  --title="Uniform box sizes + color legend in extraction-pipeline.svg" \
+  --type=task --priority=2 \
+  --description="In docs/_static/extraction-pipeline.svg: 1) Make all boxes the same size for visual consistency. 2) Add a color legend explaining what each box color represents." \
+  --silent)
+echo "    SVG Extraction Fix:   $SVG_EXTRACTION"
+
+# ─── SCORING DIMENSIONS SVG CLEANUP ──────────────────────────────────────────
+SVG_SCORING=$(bd create \
+  --title="Align input boxes + fix arrowheads in scoring-dimensions.svg" \
+  --type=task --priority=2 \
+  --description="In docs/_static/scoring-dimensions.svg: 1) Align all input boxes (inputs into the score) in the same row. 2) Ensure every input box is connected to the score box with a visible arrowhead." \
+  --silent)
+echo "    SVG Scoring Fix:      $SVG_SCORING"
+
+# ─── PERSONA MODEL SVG REDESIGN ──────────────────────────────────────────────
+SVG_PERSONA=$(bd create \
+  --title="Redesign persona-model.svg as snowflake with Maya Chen centered" \
+  --type=task --priority=2 \
+  --description="In docs/_static/persona-model.svg: Redesign the diagram as a proper snowflake layout with the 'Maya Chen' box in the center and all related attributes radiating outward from it." \
+  --silent)
+echo "    SVG Persona Fix:      $SVG_PERSONA"
+
+# ─── SVG COLOR STANDARDIZATION ───────────────────────────────────────────────
+SVG_COLORS=$(bd create \
+  --title="Standardize SVG box colors: single color or add legend" \
+  --type=task --priority=2 \
+  --description="Audit all SVGs in docs/_static/*.svg. For diagrams where box color has no semantic meaning, use a single consistent color. For diagrams where color conveys meaning, add a color legend explaining what each color represents." \
+  --silent)
+echo "    SVG Colors Fix:       $SVG_COLORS"
+
+# ─── PRESENTATION RST UPDATES ────────────────────────────────────────────────
+PRES_UPDATE=$(bd create \
+  --title="Update presentation.rst: add Assumptions, remove Engineering Maturity & By the Numbers" \
+  --type=task --priority=2 \
+  --description="In docs/presentation.rst: 1) Add the Assumptions section (from the design doc) after The Problem statement. 2) Delete the 'Engineering Maturity' section. 3) Delete the 'By the Numbers' section." \
+  --silent)
+echo "    Presentation Update:  $PRES_UPDATE"
+
+# ─── PRESENTATION GUIDE RST UPDATES ──────────────────────────────────────────
+PRES_GUIDE_UPDATE=$(bd create \
+  --title="Update presentation-guide.rst: add Assumptions, remove sections, align with presentation.rst" \
+  --type=task --priority=2 \
+  --description="In docs/presentation-guide.rst: 1) Add the Assumptions section after The Problem statement. 2) Delete the 'Engineering Maturity' section. 3) Delete the 'By the Numbers' section. 4) Align the flow with the updated presentation.rst (from evercurrent-u3k). Depends on evercurrent-u3k being completed first." \
+  --silent)
+echo "    Pres Guide Update:    $PRES_GUIDE_UPDATE"
+bd dep add "$PRES_GUIDE_UPDATE" "$PRES_UPDATE"
+
+# ─── DESIGN DOCUMENT UPDATES ─────────────────────────────────────────────────
+DESIGN_DOC_UPDATE=$(bd create \
+  --title="Design doc updates: reorder 11.7, fix scaling, Slack linking, remove note" \
+  --type=task --priority=2 \
+  --description="In docs/design-document.rst: 1) Move section 11.7 to the top of section 11. 2) Update Section 8.1 Scaling Characteristics to reflect what was actually built for this prototype. 3) Update the Live Slack Integration section to include a sentence about linking digest items back to source messages (requires live Slack for this). 4) Delete the Design Team note at the top of the document." \
+  --silent)
+echo "    Design Doc Update:    $DESIGN_DOC_UPDATE"
+
+# ─── OPERATING ASSUMPTIONS AUDIT ─────────────────────────────────────────────
+ASSUMPTIONS_AUDIT=$(bd create \
+  --title="Audit Operating Assumptions in design doc against codebase reality" \
+  --type=task --priority=2 \
+  --description="Deep-reason about the entire codebase and verify that the Operating Assumptions section in docs/design-document.rst is entirely reflective of ALL assumptions made for this prototype. Identify any implicit assumptions in the code that are missing from the doc, and flag any documented assumptions that don't match what was actually built." \
+  --silent)
+echo "    Assumptions Audit:    $ASSUMPTIONS_AUDIT"
+bd dep add "$PRES_UPDATE" "$ASSUMPTIONS_AUDIT"
+
+# ─── NEXT-STEPS PLM/ERP ELEVATION ────────────────────────────────────────────
+NEXT_STEPS_PLM=$(bd create \
+  --title="Elevate PLM/ERP Connectors to Priority 2 in next-steps.rst" \
+  --type=task --priority=2 \
+  --description="In docs/next-steps.rst: 1) Move 'PLM / ERP Connectors' from the Deferred section up to Priority 2. 2) Expand the description to discuss how a different solution would need to be built to fill in phase context per system/sub-system directly from PLM/ERP, instead of the current approach of inferring from Slack with manual override." \
+  --silent)
+echo "    Next Steps PLM/ERP:   $NEXT_STEPS_PLM"
