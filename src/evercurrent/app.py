@@ -183,7 +183,8 @@ async def _run_pipeline_background() -> None:
 
         logger.info(
             "Pipeline complete: %d new atoms, %d total for digest",
-            len(result.atoms), len(atoms_for_digest),
+            len(result.atoms),
+            len(atoms_for_digest),
         )
 
         _pipeline_status.update(

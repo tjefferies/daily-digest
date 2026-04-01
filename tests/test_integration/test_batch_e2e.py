@@ -58,8 +58,14 @@ class TestBatchE2ERealAPI:
         for atom in atoms:
             assert atom.summary, f"Atom has empty summary: {atom}"
             assert atom.type in {
-                "DECISION", "SPEC_CHANGE", "ACTION_ITEM", "BLOCKER",
-                "RISK", "TEST_RESULT", "STATUS_UPDATE", "QUESTION",
+                "DECISION",
+                "SPEC_CHANGE",
+                "ACTION_ITEM",
+                "BLOCKER",
+                "RISK",
+                "TEST_RESULT",
+                "STATUS_UPDATE",
+                "QUESTION",
             }, f"Invalid atom type: {atom.type}"
             assert atom.source.channel.startswith("#"), (
                 f"Channel should start with #: {atom.source.channel}"

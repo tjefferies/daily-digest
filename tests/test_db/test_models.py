@@ -80,8 +80,12 @@ class TestMetadata:
         """Base metadata includes all 6 tables."""
         table_names = set(Base.metadata.tables.keys())
         assert table_names == {
-            "message", "thread_bundle", "bundle_membership",
-            "context_window", "atom", "batch_log",
+            "message",
+            "thread_bundle",
+            "bundle_membership",
+            "context_window",
+            "atom",
+            "batch_log",
         }
 
     def test_context_window_table(self) -> None:
@@ -100,8 +104,15 @@ class TestMetadata:
         assert BatchLog.__tablename__ == "batch_log"
         cols = {c.name for c in BatchLog.__table__.columns}
         expected = {
-            "id", "batch_id", "stage", "request_count", "status",
-            "request_body", "response_body", "created_at", "completed_at",
+            "id",
+            "batch_id",
+            "stage",
+            "request_count",
+            "status",
+            "request_body",
+            "response_body",
+            "created_at",
+            "completed_at",
         }
         assert cols == expected
 

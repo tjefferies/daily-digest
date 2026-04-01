@@ -233,10 +233,7 @@ def _dump_intermediate(filename: str, data: list) -> None:
 
     outpath = Path("/tmp") / "evercurrent" / filename  # noqa: S108
     outpath.parent.mkdir(parents=True, exist_ok=True)
-    serialized = [
-        d.model_dump(mode="json") if hasattr(d, "model_dump") else d
-        for d in data
-    ]
+    serialized = [d.model_dump(mode="json") if hasattr(d, "model_dump") else d for d in data]
     outpath.write_text(json.dumps(serialized, indent=2, default=str))
     logger.info("Wrote %d items → %s", len(serialized), outpath)
 
@@ -268,7 +265,8 @@ async def _validate_atoms_by_source(
 
     logger.info(
         "Validation: %d atoms total, %d DECISION/SPEC_CHANGE → 1 batch",
-        len(raw_atoms), len(atoms_with_context),
+        len(raw_atoms),
+        len(atoms_with_context),
     )
 
     if not atoms_with_context:
@@ -420,7 +418,8 @@ async def _async_run_pipeline_inner(
     atoms = filter_result.passed
     logger.info(
         "Filter: %d passed, %d filtered",
-        filter_result.passed_count, filter_result.filtered_count,
+        filter_result.passed_count,
+        filter_result.filtered_count,
     )
     _dump_intermediate("step4_filtered_atoms.json", atoms)
 
@@ -429,7 +428,9 @@ async def _async_run_pipeline_inner(
     await _persist_to_neo4j(graph, atoms)
     logger.info(
         "═══ PIPELINE COMPLETE: %d windows → %d extracted → %d passed ═══",
-        len(windows), len(raw_atoms), len(atoms),
+        len(windows),
+        len(raw_atoms),
+        len(atoms),
     )
 
     return PipelineResult(

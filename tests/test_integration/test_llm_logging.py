@@ -170,11 +170,14 @@ class TestLLMRequestResponseLogging:
         resp = {"succeeded": 1, "results": {"id-0": {"summary": "test"}}}
 
         await log_llm_request(
-            batch_id=batch_id, stage="validation",
-            request_count=1, request_body=req,
+            batch_id=batch_id,
+            stage="validation",
+            request_count=1,
+            request_body=req,
         )
         await log_llm_response(
-            batch_id=batch_id, status="completed",
+            batch_id=batch_id,
+            status="completed",
             response_body=resp,
         )
 
