@@ -15,7 +15,8 @@ COPY pyproject.toml uv.lock ./
 # Install dependencies into the virtual environment
 RUN uv sync --frozen --no-dev --no-install-project
 
-# Copy source code and config
+# Copy source code, config, and readme (required by hatchling build)
+COPY README.md ./
 COPY src/ src/
 COPY config/ config/
 COPY data/ data/
