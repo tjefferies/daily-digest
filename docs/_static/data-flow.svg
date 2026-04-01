@@ -1,22 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 950 340" font-family="'Segoe UI', Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 950 280" font-family="'Segoe UI', Helvetica, Arial, sans-serif">
   <defs>
-    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#fff3cd"/><stop offset="100%" stop-color="#ffeeba"/>
+    <linearGradient id="slateGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#eaecee"/><stop offset="100%" stop-color="#d5d8dc"/>
     </linearGradient>
     <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#e8f4fd"/><stop offset="100%" stop-color="#d1ecf9"/>
     </linearGradient>
-    <linearGradient id="redGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#f8d7da"/><stop offset="100%" stop-color="#f5c6cb"/>
-    </linearGradient>
-    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#e8daef"/><stop offset="100%" stop-color="#d7bde2"/>
-    </linearGradient>
     <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#d4edda"/><stop offset="100%" stop-color="#c3e6cb"/>
     </linearGradient>
-    <linearGradient id="tealGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#d1f2eb"/><stop offset="100%" stop-color="#a3e4d7"/>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#e8daef"/><stop offset="100%" stop-color="#d7bde2"/>
     </linearGradient>
     <filter id="shadow" x="-2%" y="-2%" width="104%" height="108%">
       <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.12"/>
@@ -30,52 +24,50 @@
   <text x="475" y="22" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Data Transformation Pipeline</text>
 
   <!-- Step 1: Slack Messages -->
-  <rect x="10" y="40" width="120" height="70" rx="6" fill="url(#orangeGrad)" stroke="#e67e22" stroke-width="1" filter="url(#shadow)"/>
-  <text x="70" y="60" text-anchor="middle" font-size="11" font-weight="bold" fill="#7d4e00">Messages</text>
-  <text x="70" y="75" text-anchor="middle" font-size="9" fill="#9a6b1e">307 Slack msgs</text>
-  <text x="70" y="88" text-anchor="middle" font-size="8" fill="#9a6b1e">8 channels</text>
+  <rect x="10" y="40" width="120" height="70" rx="6" fill="url(#slateGrad)" stroke="#7f8c8d" stroke-width="1" filter="url(#shadow)"/>
+  <text x="70" y="60" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Messages</text>
+  <text x="70" y="75" text-anchor="middle" font-size="9" fill="#5d6d7e">307 Slack msgs</text>
+  <text x="70" y="88" text-anchor="middle" font-size="8" fill="#5d6d7e">8 channels</text>
 
-  <!-- Arrow + label -->
   <line x1="130" y1="75" x2="155" y2="75" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <text x="143" y="67" text-anchor="middle" font-size="7" fill="#95a5a6" transform="rotate(-90 143,67)"> </text>
 
   <!-- Step 2: Thread Bundles -->
-  <rect x="158" y="40" width="120" height="70" rx="6" fill="url(#orangeGrad)" stroke="#e67e22" stroke-width="1" filter="url(#shadow)"/>
-  <text x="218" y="60" text-anchor="middle" font-size="11" font-weight="bold" fill="#7d4e00">Bundles</text>
-  <text x="218" y="75" text-anchor="middle" font-size="9" fill="#9a6b1e">116 thread bundles</text>
-  <text x="218" y="88" text-anchor="middle" font-size="8" fill="#9a6b1e">+ continuations</text>
+  <rect x="158" y="40" width="120" height="70" rx="6" fill="url(#slateGrad)" stroke="#7f8c8d" stroke-width="1" filter="url(#shadow)"/>
+  <text x="218" y="60" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Bundles</text>
+  <text x="218" y="75" text-anchor="middle" font-size="9" fill="#5d6d7e">116 thread bundles</text>
+  <text x="218" y="88" text-anchor="middle" font-size="8" fill="#5d6d7e">+ continuations</text>
 
   <line x1="278" y1="75" x2="303" y2="75" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
 
   <!-- Step 3: Context Windows -->
-  <rect x="306" y="40" width="120" height="70" rx="6" fill="url(#tealGrad)" stroke="#1abc9c" stroke-width="1" filter="url(#shadow)"/>
-  <text x="366" y="60" text-anchor="middle" font-size="11" font-weight="bold" fill="#0e6655">Windows</text>
-  <text x="366" y="75" text-anchor="middle" font-size="9" fill="#148f77">116 context windows</text>
-  <text x="366" y="88" text-anchor="middle" font-size="8" fill="#148f77">compressed, tokenized</text>
+  <rect x="306" y="40" width="120" height="70" rx="6" fill="url(#slateGrad)" stroke="#7f8c8d" stroke-width="1" filter="url(#shadow)"/>
+  <text x="366" y="60" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Windows</text>
+  <text x="366" y="75" text-anchor="middle" font-size="9" fill="#5d6d7e">116 context windows</text>
+  <text x="366" y="88" text-anchor="middle" font-size="8" fill="#5d6d7e">compressed, tokenized</text>
 
   <line x1="426" y1="75" x2="451" y2="75" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
 
   <!-- Step 4: Atoms -->
-  <rect x="454" y="40" width="120" height="70" rx="6" fill="url(#blueGrad)" stroke="#2980b9" stroke-width="1" filter="url(#shadow)"/>
-  <text x="514" y="60" text-anchor="middle" font-size="11" font-weight="bold" fill="#1a4a6e">Atoms</text>
-  <text x="514" y="75" text-anchor="middle" font-size="9" fill="#2c6690">308 validated atoms</text>
-  <text x="514" y="88" text-anchor="middle" font-size="8" fill="#2c6690">8 types, enriched</text>
+  <rect x="454" y="40" width="120" height="70" rx="6" fill="url(#slateGrad)" stroke="#7f8c8d" stroke-width="1" filter="url(#shadow)"/>
+  <text x="514" y="60" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Atoms</text>
+  <text x="514" y="75" text-anchor="middle" font-size="9" fill="#5d6d7e">308 validated atoms</text>
+  <text x="514" y="88" text-anchor="middle" font-size="8" fill="#5d6d7e">8 types, enriched</text>
 
   <line x1="574" y1="75" x2="599" y2="75" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
 
   <!-- Step 5: Scored Atoms -->
-  <rect x="602" y="40" width="120" height="70" rx="6" fill="url(#purpleGrad)" stroke="#8e44ad" stroke-width="1" filter="url(#shadow)"/>
-  <text x="662" y="60" text-anchor="middle" font-size="11" font-weight="bold" fill="#512e5f">Scored</text>
-  <text x="662" y="75" text-anchor="middle" font-size="9" fill="#6c3483">per-persona ranked</text>
-  <text x="662" y="88" text-anchor="middle" font-size="8" fill="#6c3483">5-dim composite</text>
+  <rect x="602" y="40" width="120" height="70" rx="6" fill="url(#slateGrad)" stroke="#7f8c8d" stroke-width="1" filter="url(#shadow)"/>
+  <text x="662" y="60" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Scored</text>
+  <text x="662" y="75" text-anchor="middle" font-size="9" fill="#5d6d7e">per-persona ranked</text>
+  <text x="662" y="88" text-anchor="middle" font-size="8" fill="#5d6d7e">5-dim composite</text>
 
   <line x1="722" y1="75" x2="747" y2="75" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
 
   <!-- Step 6: Digest -->
-  <rect x="750" y="40" width="120" height="70" rx="6" fill="url(#greenGrad)" stroke="#27ae60" stroke-width="1" filter="url(#shadow)"/>
-  <text x="810" y="60" text-anchor="middle" font-size="11" font-weight="bold" fill="#1a5e2a">Digest</text>
-  <text x="810" y="75" text-anchor="middle" font-size="9" fill="#2d6a3f">4 sections/persona</text>
-  <text x="810" y="88" text-anchor="middle" font-size="8" fill="#2d6a3f">headline + context</text>
+  <rect x="750" y="40" width="120" height="70" rx="6" fill="url(#slateGrad)" stroke="#7f8c8d" stroke-width="1" filter="url(#shadow)"/>
+  <text x="810" y="60" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Digest</text>
+  <text x="810" y="75" text-anchor="middle" font-size="9" fill="#5d6d7e">4 sections/persona</text>
+  <text x="810" y="88" text-anchor="middle" font-size="8" fill="#5d6d7e">headline + context</text>
 
   <!-- Transformation labels between steps -->
   <text x="143" y="128" text-anchor="middle" font-size="7" fill="#95a5a6">group_by_thread</text>
@@ -89,45 +81,27 @@
   <text x="735" y="128" text-anchor="middle" font-size="7" fill="#95a5a6">LLM generation</text>
   <text x="735" y="138" text-anchor="middle" font-size="7" fill="#95a5a6">tool_use</text>
 
-  <!-- Persistence layer -->
-  <text x="475" y="180" text-anchor="middle" font-size="10" font-weight="bold" fill="#7f8c8d">PERSISTENCE</text>
+  <!-- Persistence layer (centered: top row center ~440, bottom row 510px wide, start at 185) -->
+  <text x="440" y="170" text-anchor="middle" font-size="10" font-weight="bold" fill="#7f8c8d">PERSISTENCE</text>
 
-  <rect x="220" y="195" width="150" height="50" rx="6" fill="url(#blueGrad)" stroke="#2980b9" stroke-width="1" filter="url(#shadow)"/>
-  <text x="295" y="215" text-anchor="middle" font-size="10" font-weight="bold" fill="#1a4a6e">Postgres</text>
-  <text x="295" y="230" text-anchor="middle" font-size="8" fill="#2c6690">bundles, atoms, batch logs</text>
+  <rect x="185" y="185" width="150" height="50" rx="6" fill="url(#blueGrad)" stroke="#2980b9" stroke-width="1" filter="url(#shadow)"/>
+  <text x="260" y="205" text-anchor="middle" font-size="10" font-weight="bold" fill="#1a4a6e">Postgres</text>
+  <text x="260" y="220" text-anchor="middle" font-size="8" fill="#2c6690">bundles, atoms, batch logs</text>
 
-  <rect x="400" y="195" width="150" height="50" rx="6" fill="url(#greenGrad)" stroke="#27ae60" stroke-width="1" filter="url(#shadow)"/>
-  <text x="475" y="215" text-anchor="middle" font-size="10" font-weight="bold" fill="#1a5e2a">Neo4j</text>
-  <text x="475" y="230" text-anchor="middle" font-size="8" fill="#2d6a3f">atom graph, queries</text>
+  <rect x="365" y="185" width="150" height="50" rx="6" fill="url(#greenGrad)" stroke="#27ae60" stroke-width="1" filter="url(#shadow)"/>
+  <text x="440" y="205" text-anchor="middle" font-size="10" font-weight="bold" fill="#1a5e2a">Neo4j</text>
+  <text x="440" y="220" text-anchor="middle" font-size="8" fill="#2d6a3f">atom graph, queries</text>
 
-  <rect x="580" y="195" width="150" height="50" rx="6" fill="url(#purpleGrad)" stroke="#8e44ad" stroke-width="1" filter="url(#shadow)"/>
-  <text x="655" y="215" text-anchor="middle" font-size="10" font-weight="bold" fill="#512e5f">FAISS</text>
-  <text x="655" y="230" text-anchor="middle" font-size="8" fill="#6c3483">embedding cache, cosine sim</text>
+  <rect x="545" y="185" width="150" height="50" rx="6" fill="url(#purpleGrad)" stroke="#8e44ad" stroke-width="1" filter="url(#shadow)"/>
+  <text x="620" y="205" text-anchor="middle" font-size="10" font-weight="bold" fill="#512e5f">FAISS</text>
+  <text x="620" y="220" text-anchor="middle" font-size="8" fill="#6c3483">embedding cache, cosine sim</text>
 
-  <!-- Dotted lines from persistence to steps -->
-  <line x1="295" y1="195" x2="218" y2="110" stroke="#2980b9" stroke-width="1" stroke-dasharray="4,3"/>
-  <line x1="295" y1="195" x2="514" y2="110" stroke="#2980b9" stroke-width="1" stroke-dasharray="4,3"/>
-  <line x1="475" y1="195" x2="514" y2="110" stroke="#27ae60" stroke-width="1" stroke-dasharray="4,3"/>
-  <line x1="655" y1="195" x2="218" y2="110" stroke="#8e44ad" stroke-width="1" stroke-dasharray="4,3"/>
+  <!-- Dotted lines from persistence to pipeline steps -->
+  <line x1="260" y1="185" x2="218" y2="110" stroke="#2980b9" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="260" y1="185" x2="514" y2="110" stroke="#2980b9" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="440" y1="185" x2="514" y2="110" stroke="#27ae60" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="620" y1="185" x2="218" y2="110" stroke="#8e44ad" stroke-width="1" stroke-dasharray="4,3"/>
 
   <!-- Bottom summary -->
-  <text x="475" y="270" text-anchor="middle" font-size="10" fill="#5d6d7e">Delta processing: Postgres stores bundles before extraction | Re-runs skip unchanged bundles (zero LLM calls)</text>
-  <!-- Color Legend -->
-  <rect x="160" y="285" width="630" height="45" rx="6" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
-  <text x="475" y="300" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">Color Legend</text>
-
-  <rect x="180" y="310" width="14" height="10" rx="2" fill="url(#orangeGrad)" stroke="#e67e22" stroke-width="1"/>
-  <text x="199" y="319" font-size="8" fill="#2c3e50">Raw Data</text>
-
-  <rect x="270" y="310" width="14" height="10" rx="2" fill="url(#tealGrad)" stroke="#1abc9c" stroke-width="1"/>
-  <text x="289" y="319" font-size="8" fill="#2c3e50">Context Assembly</text>
-
-  <rect x="400" y="310" width="14" height="10" rx="2" fill="url(#blueGrad)" stroke="#2980b9" stroke-width="1"/>
-  <text x="419" y="319" font-size="8" fill="#2c3e50">Extracted Atoms</text>
-
-  <rect x="520" y="310" width="14" height="10" rx="2" fill="url(#purpleGrad)" stroke="#8e44ad" stroke-width="1"/>
-  <text x="539" y="319" font-size="8" fill="#2c3e50">Scored (per persona)</text>
-
-  <rect x="660" y="310" width="14" height="10" rx="2" fill="url(#greenGrad)" stroke="#27ae60" stroke-width="1"/>
-  <text x="679" y="319" font-size="8" fill="#2c3e50">Digest Output</text>
+  <text x="440" y="260" text-anchor="middle" font-size="10" fill="#5d6d7e">Delta processing: Postgres stores bundles before extraction | Re-runs skip unchanged bundles (zero LLM calls)</text>
 </svg>

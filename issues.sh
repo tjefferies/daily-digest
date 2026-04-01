@@ -1356,3 +1356,19 @@ SVG_NO_ARROWS=$(bd create \
   --description="In docs/_static/scoring-dimensions.svg: Remove the arrowheads from the connector lines between input boxes and the score box. Keep the lines but without arrow markers." \
   --silent)
 echo "    SVG No Arrows:        $SVG_NO_ARROWS"
+
+# ─── ARCHITECTURE SVG LEGEND + BOXES ────────────────────────────────────────
+ARCH_SVG_FIX=$(bd create \
+  --title="Architecture SVG: remove color legend, add FastAPI + React boxes" \
+  --type=task --priority=1 \
+  --description="In docs/_static/architecture.svg: 1) Remove the color legend panel at the bottom. 2) Add FastAPI backend and React frontend as distinct labeled boxes." \
+  --silent)
+echo "    Arch SVG Fix:         $ARCH_SVG_FIX"
+
+# ─── DATA-FLOW SVG CLEANUP ──────────────────────────────────────────────────
+DATAFLOW_SVG_FIX=$(bd create \
+  --title="Data-flow SVG: remove legend, slate top row, center bottom row" \
+  --type=task --priority=1 \
+  --description="In docs/_static/data-flow.svg: 1) Remove color legend. 2) Slate color for all top-row pipeline boxes. 3) Keep bottom persistence row colors. 4) Center bottom row under top row." \
+  --silent)
+echo "    Dataflow SVG Fix:     $DATAFLOW_SVG_FIX"
