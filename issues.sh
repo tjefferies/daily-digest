@@ -1226,3 +1226,14 @@ echo "    Demo Dataset:         $DEMO_DATASET"
 bd dep add "$DEMO_DATASET" "$V2_DOCS"
 bd dep add "$VISUAL_PRES" "$DEMO_DATASET"
 bd dep add "$PRESENTATION" "$DEMO_DATASET"
+
+# ─── NEXT STEPS ROADMAP ───────────────────────────────────────────────────────
+NEXT_STEPS=$(bd create \
+  --title="Update next-steps.rst: prototype → production roadmap prioritized by user value" \
+  --type=task --priority=1 \
+  --description="Rewrite next-steps.rst for V2. Prioritize by user value: live Slack, feedback loop, scheduled runs, multi-team, evaluation. Each item: value + approach + effort." \
+  --silent)
+echo "    Next Steps:           $NEXT_STEPS"
+bd dep add "$NEXT_STEPS" "$V2_DOCS"
+bd dep add "$VISUAL_PRES" "$NEXT_STEPS"
+bd dep add "$PRESENTATION" "$NEXT_STEPS"
