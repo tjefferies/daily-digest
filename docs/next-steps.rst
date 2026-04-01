@@ -113,7 +113,7 @@ Priority 5: Multi-Team Support
 -------------------------------
 
 **User value:** Generalize from one robotics team to any Slack workspace.
-EverCurrent becomes a product, not a bespoke tool.
+Daily Digest Tool becomes a product, not a bespoke tool.
 
 **Technical approach:**
 

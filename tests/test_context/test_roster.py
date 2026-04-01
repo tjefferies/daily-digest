@@ -8,8 +8,8 @@ the role-type alignment dimension.
 import pytest
 from pydantic import ValidationError
 
-from evercurrent.context.roster import RosterEntry, TeamRosterService
-from evercurrent.models.persona import RoleArchetype  # noqa: TC001 (used in type annotation)
+from digest.context.roster import RosterEntry, TeamRosterService
+from digest.models.persona import RoleArchetype  # noqa: TC001 (used in type annotation)
 
 
 class TestRosterEntry:

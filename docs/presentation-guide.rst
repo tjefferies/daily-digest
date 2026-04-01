@@ -1,7 +1,7 @@
 .. _presentation-guide:
 
 =====================================================================
-EverCurrent Deep Dive: 30-Minute Presentation Guide
+Daily Digest Tool Deep Dive: 30-Minute Presentation Guide
 =====================================================================
 
 .. note::
@@ -99,7 +99,7 @@ Three things make this hard:
 
 .. admonition:: Code path
 
-   ``src/evercurrent/pipeline.py`` → ``_async_run_pipeline_inner()``
+   ``src/digest/pipeline.py`` → ``_async_run_pipeline_inner()``
    orchestrates the full flow. The pipeline config lives in
    ``config/pipeline.yml`` - all constants (model, thresholds, concurrency)
    are YAML, not hardcoded.
@@ -130,7 +130,7 @@ team (20 engineers, EVT/DVT phases, cross-discipline threads).
 
 .. admonition:: Code path
 
-   ``src/evercurrent/ingestion/continuations.py`` → ``detect_continuations()``
+   ``src/digest/ingestion/continuations.py`` → ``detect_continuations()``
 
 3.2 Extraction: Two-Stage Coarse → Enrich
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -166,7 +166,7 @@ structured output. The tool schemas enforce the exact JSON structure:
 
 .. admonition:: Code path
 
-   ``src/evercurrent/extraction/batch_runner.py`` → ``BatchExtractionRunner``
+   ``src/digest/extraction/batch_runner.py`` → ``BatchExtractionRunner``
 
 3.3 Validation: Why Hardware Needs a Second Pass
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -184,7 +184,7 @@ This costs ~30% more in LLM calls for high-risk atoms. Worth it.
 
 .. admonition:: Code path
 
-   ``src/evercurrent/extraction/validation.py`` → ``async_validate_atoms()``
+   ``src/digest/extraction/validation.py`` → ``async_validate_atoms()``
    Rate-limited with configurable semaphore + chunk delay.
 
 3.4 Delta Processing: Don't Re-Extract What Hasn't Changed
@@ -243,7 +243,7 @@ visibly - at least 2 items change position. This is testable and tested.
 
 .. admonition:: Code path
 
-   ``src/evercurrent/scoring/composite.py`` → ``score_atoms()``
+   ``src/digest/scoring/composite.py`` → ``score_atoms()``
 
 ---------------------------------------------------------------------------
 5. Live Demo (5 min)
@@ -331,7 +331,7 @@ This take-home is a focused instance of what EverCurrent builds:
    :widths: 40 60
 
    * - This Solution
-     - EverCurrent Product
+     - Daily Digest Tool Product
    * - Thread bundles + semantic continuations
      - Knowledge graph connectivity
    * - Delta processing (skip unchanged bundles)

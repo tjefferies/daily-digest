@@ -10,8 +10,8 @@ from uuid import uuid4
 
 import pytest
 
-from evercurrent.extraction.validation import async_validate_atoms_batch
-from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
+from digest.extraction.validation import async_validate_atoms_batch
+from digest.models.atom import Atom, AtomSource, AtomWorkstreams
 
 
 def _make_atom(
@@ -80,7 +80,7 @@ class TestBatchValidation:
 
         with pytest.MonkeyPatch.context() as mp:
             mp.setattr(
-                "evercurrent.extraction.validation.Anthropic",
+                "digest.extraction.validation.Anthropic",
                 lambda: _mock_batch_results({"val-0": {"valid": True, "reason": ""}}),
             )
             result = await async_validate_atoms_batch(pairs, all_atoms)
@@ -96,7 +96,7 @@ class TestBatchValidation:
 
         with pytest.MonkeyPatch.context() as mp:
             mp.setattr(
-                "evercurrent.extraction.validation.Anthropic",
+                "digest.extraction.validation.Anthropic",
                 lambda: _mock_batch_results(
                     {"val-0": {"valid": False, "reason": "Fabricated details"}},
                 ),
@@ -127,7 +127,7 @@ class TestBatchValidation:
 
         with pytest.MonkeyPatch.context() as mp:
             mp.setattr(
-                "evercurrent.extraction.validation.Anthropic",
+                "digest.extraction.validation.Anthropic",
                 lambda: mock_client,
             )
             result = await async_validate_atoms_batch(pairs, all_atoms)

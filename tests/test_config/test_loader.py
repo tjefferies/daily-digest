@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from evercurrent.config.loader import (
+from digest.config.loader import (
     get_config,
     load_config,
 )

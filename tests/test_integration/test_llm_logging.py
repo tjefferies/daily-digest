@@ -12,7 +12,7 @@ from unittest.mock import patch
 
 import pytest
 
-from evercurrent.db.models import Base, BatchLog
+from digest.db.models import Base, BatchLog
 
 
 @pytest.mark.integration
@@ -31,7 +31,7 @@ class TestLLMRequestResponseLogging:
         factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
         # Patch get_session_factory to return our test factory
-        with patch("evercurrent.db.llm_logger.get_session_factory", return_value=factory):
+        with patch("digest.db.llm_logger.get_session_factory", return_value=factory):
             self._factory = factory
             yield factory
 
@@ -41,7 +41,7 @@ class TestLLMRequestResponseLogging:
         """log_llm_request writes a row with the complete request JSONB."""
         from sqlalchemy import select
 
-        from evercurrent.db.llm_logger import log_llm_request
+        from digest.db.llm_logger import log_llm_request
 
         request_body = {
             "requests": [
@@ -91,7 +91,7 @@ class TestLLMRequestResponseLogging:
         """log_llm_response updates the row with the complete response JSONB."""
         from sqlalchemy import select
 
-        from evercurrent.db.llm_logger import log_llm_request, log_llm_response
+        from digest.db.llm_logger import log_llm_request, log_llm_response
 
         await log_llm_request(
             batch_id="msgbatch_test_002",
@@ -130,7 +130,7 @@ class TestLLMRequestResponseLogging:
         """Logging the same batch_id twice does NOT create duplicate rows."""
         from sqlalchemy import select
 
-        from evercurrent.db.llm_logger import log_llm_request
+        from digest.db.llm_logger import log_llm_request
 
         # Log the same batch_id twice
         await log_llm_request(
@@ -163,7 +163,7 @@ class TestLLMRequestResponseLogging:
         """Request body and response body end up on the same row."""
         from sqlalchemy import select
 
-        from evercurrent.db.llm_logger import log_llm_request, log_llm_response
+        from digest.db.llm_logger import log_llm_request, log_llm_response
 
         batch_id = "msgbatch_test_004"
         req = {"messages": [{"content": "hello"}]}

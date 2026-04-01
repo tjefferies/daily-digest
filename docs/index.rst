@@ -1,9 +1,9 @@
-EverCurrent Documentation
+Daily Digest Tool Documentation
 =========================
 
 Context-aware daily digest tool for robotics hardware teams.
 
-EverCurrent ingests team communication, extracts structured atoms of
+Daily Digest Tool ingests team communication, extracts structured atoms of
 information, scores them against each engineer's context, and generates
 personalized daily digests.
 

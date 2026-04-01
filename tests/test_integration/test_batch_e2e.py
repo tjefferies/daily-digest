@@ -12,10 +12,10 @@ import os
 import pytest
 from anthropic import Anthropic
 
-from evercurrent.dataset.messages import load_messages
-from evercurrent.extraction.batch_runner import BatchExtractionRunner
-from evercurrent.ingestion.context_window import assemble_context_windows
-from evercurrent.ingestion.threads import group_by_thread
+from digest.dataset.messages import load_messages
+from digest.extraction.batch_runner import BatchExtractionRunner
+from digest.ingestion.context_window import assemble_context_windows
+from digest.ingestion.threads import group_by_thread
 
 
 @pytest.mark.integration

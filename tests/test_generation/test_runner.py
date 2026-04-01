@@ -5,12 +5,12 @@ from __future__ import annotations
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
-from evercurrent.generation.runner import AsyncDigestGenerator
-from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
-from evercurrent.models.digest import DigestSection
-from evercurrent.models.persona import DigestPreferences, Persona, ScoringWeights
-from evercurrent.models.responses import DigestResponse
-from evercurrent.scoring.composite import ScoreBreakdown, ScoredAtom
+from digest.generation.runner import AsyncDigestGenerator
+from digest.models.atom import Atom, AtomSource, AtomWorkstreams
+from digest.models.digest import DigestSection
+from digest.models.persona import DigestPreferences, Persona, ScoringWeights
+from digest.models.responses import DigestResponse
+from digest.scoring.composite import ScoreBreakdown, ScoredAtom
 
 
 def _make_atom(

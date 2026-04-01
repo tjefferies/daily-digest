@@ -5,8 +5,8 @@ planted signals that test the extraction pipeline's ability to surface
 cross-workstream impact from buried thread context.
 """
 
-from evercurrent.dataset.messages import load_messages
-from evercurrent.dataset.schema import SlackMessage
+from digest.dataset.messages import load_messages
+from digest.dataset.schema import SlackMessage
 
 
 def _get_thread(

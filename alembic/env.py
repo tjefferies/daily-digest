@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 # Add src/ to path so models can be imported
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from evercurrent.db.models import Base  # noqa: E402
+from digest.db.models import Base  # noqa: E402
 
 config = context.config
 

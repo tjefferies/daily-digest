@@ -2,7 +2,7 @@
 
 import pytest
 
-from evercurrent.ingestion.embeddings import cosine_similarity
+from digest.ingestion.embeddings import cosine_similarity
 
 
 class TestCosineSimilarity:

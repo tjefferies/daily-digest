@@ -6,7 +6,7 @@ use design-decision/early-test vocabulary, and end-effector references
 use concept-stage vocabulary.
 """
 
-from evercurrent.dataset.messages import load_messages
+from digest.dataset.messages import load_messages
 
 # ---------- vocabulary helpers ----------
 

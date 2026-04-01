@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from evercurrent.db.models import (
+from digest.db.models import (
     Atom,
     AtomType,
     Base,

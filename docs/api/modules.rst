@@ -1,7 +1,7 @@
-evercurrent
-===========
+digest
+======
 
 .. toctree::
    :maxdepth: 4
 
-   evercurrent
+   digest

@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
-from evercurrent.models.persona import Persona, ScoringWeights
-from evercurrent.scoring.phase_alignment import score_phase_alignment
+from digest.models.atom import Atom, AtomSource, AtomWorkstreams
+from digest.models.persona import Persona, ScoringWeights
+from digest.scoring.phase_alignment import score_phase_alignment
 
 
 def _make_atom(phases: list[str] | None = None) -> Atom:

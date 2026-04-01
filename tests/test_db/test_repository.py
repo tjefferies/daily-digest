@@ -7,9 +7,9 @@ from uuid import uuid4
 
 import pytest
 
-from evercurrent.dataset.schema import SlackMessage
-from evercurrent.ingestion.threads import ThreadBundle
-from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
+from digest.dataset.schema import SlackMessage
+from digest.ingestion.threads import ThreadBundle
+from digest.models.atom import Atom, AtomSource, AtomWorkstreams
 
 
 def _msg(ts: str, text: str = "hello", thread_ts: str | None = None) -> SlackMessage:
@@ -55,7 +55,7 @@ class TestPersistBundle:
     @pytest.mark.asyncio
     async def test_persist_bundle_creates_records(self) -> None:
         """persist_bundle writes message, bundle, and membership rows."""
-        from evercurrent.db.repository import persist_bundle
+        from digest.db.repository import persist_bundle
 
         mock_session = AsyncMock()
         bundle = _bundle()
@@ -68,7 +68,7 @@ class TestPersistBundle:
     @pytest.mark.asyncio
     async def test_persist_bundle_empty_replies(self) -> None:
         """Bundle with no replies still persists root + bundle + 1 membership."""
-        from evercurrent.db.repository import persist_bundle
+        from digest.db.repository import persist_bundle
 
         mock_session = AsyncMock()
         root = _msg("1000.001", "root only")
@@ -86,7 +86,7 @@ class TestPersistAtoms:
     @pytest.mark.asyncio
     async def test_persist_atoms_creates_rows(self) -> None:
         """persist_atoms writes atom rows."""
-        from evercurrent.db.repository import persist_atoms
+        from digest.db.repository import persist_atoms
 
         mock_session = AsyncMock()
         atoms = [_atom(), _atom()]
@@ -102,7 +102,7 @@ class TestGetProcessedBundles:
     @pytest.mark.asyncio
     async def test_returns_set_of_timestamps(self) -> None:
         """get_processed_bundle_ts returns set of root_message_ts strings."""
-        from evercurrent.db.repository import get_processed_bundle_ts
+        from digest.db.repository import get_processed_bundle_ts
 
         mock_session = AsyncMock()
         mock_result = MagicMock()
@@ -116,7 +116,7 @@ class TestGetProcessedBundles:
     @pytest.mark.asyncio
     async def test_returns_empty_set_when_no_bundles(self) -> None:
         """get_processed_bundle_ts returns empty set for empty table."""
-        from evercurrent.db.repository import get_processed_bundle_ts
+        from digest.db.repository import get_processed_bundle_ts
 
         mock_session = AsyncMock()
         mock_result = MagicMock()

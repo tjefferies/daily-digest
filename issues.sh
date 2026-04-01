@@ -1249,3 +1249,12 @@ echo "    Design Consolidate:   $DESIGN_CONSOLIDATE"
 bd dep add "$DESIGN_CONSOLIDATE" "$V2_DOCS"
 bd dep add "$VISUAL_PRES" "$DESIGN_CONSOLIDATE"
 bd dep add "$PRESENTATION" "$DESIGN_CONSOLIDATE"
+
+# ─── RENAME VERIFICATION ────────────────────────────────────────────────────
+RENAME_VERIFY=$(bd create \
+  --title="Verify and complete rename: src/evercurrent → src/digest" \
+  --type=task --priority=0 \
+  --description="User renamed src/evercurrent to src/digest. Verify refactor: update ALL references (imports, pyproject.toml, Makefile, Dockerfile, docker-compose, tests, docs, scripts, conf.py, alembic, README), regenerate API docs, run tests + quality gates." \
+  --acceptance="1. All imports updated. 2. pyproject.toml updated. 3. All config/script/doc refs updated. 4. Sphinx docs regenerated. 5. Tests pass. 6. Quality gates pass. 7. Docker builds." \
+  --silent)
+echo "    Rename Verify:        $RENAME_VERIFY"

@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
-from evercurrent.models.persona import Persona, ScoringWeights
-from evercurrent.scoring.workstream_proximity import score_workstream_proximity
+from digest.models.atom import Atom, AtomSource, AtomWorkstreams
+from digest.models.persona import Persona, ScoringWeights
+from digest.scoring.workstream_proximity import score_workstream_proximity
 
 
 def _make_atom(originating: str, affected: list[str] | None = None) -> Atom:

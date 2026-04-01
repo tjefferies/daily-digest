@@ -9,9 +9,9 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from evercurrent.context.personas import DEMO_PERSONAS
-from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
-from evercurrent.scoring.composite import score_atoms
+from digest.context.personas import DEMO_PERSONAS
+from digest.models.atom import Atom, AtomSource, AtomWorkstreams
+from digest.scoring.composite import score_atoms
 
 
 def _make_atom(

@@ -12,15 +12,15 @@ import random
 
 import pytest
 
-from evercurrent.config.loader import get_config
-from evercurrent.dataset.messages import load_messages
-from evercurrent.extraction.filter import confidence_filter
-from evercurrent.extraction.runner import AsyncExtractionRunner
-from evercurrent.extraction.validation import async_validate_atoms_batch
-from evercurrent.graph.client import GraphClient
-from evercurrent.ingestion.context_window import assemble_context_windows
-from evercurrent.ingestion.threads import group_by_thread
-from evercurrent.llm.factory import create_async_llm_client
+from digest.config.loader import get_config
+from digest.dataset.messages import load_messages
+from digest.extraction.filter import confidence_filter
+from digest.extraction.runner import AsyncExtractionRunner
+from digest.extraction.validation import async_validate_atoms_batch
+from digest.graph.client import GraphClient
+from digest.ingestion.context_window import assemble_context_windows
+from digest.ingestion.threads import group_by_thread
+from digest.llm.factory import create_async_llm_client
 
 
 @pytest.mark.integration

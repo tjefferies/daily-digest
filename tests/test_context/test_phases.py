@@ -9,10 +9,10 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from evercurrent.context.phases import PhaseVector
+from digest.context.phases import PhaseVector
 
 if TYPE_CHECKING:
-    from evercurrent.models.atom import Phase
+    from digest.models.atom import Phase
 
 
 class TestPhaseVectorDefaults:

@@ -8,12 +8,12 @@ from uuid import uuid4
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from evercurrent.app import app
-from evercurrent.generation.assembler import AsyncDigestAssembler
-from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
-from evercurrent.models.digest import DigestSection
-from evercurrent.models.responses import DigestResponse
-from evercurrent.scoring.composite import ScoreBreakdown, ScoredAtom
+from digest.app import app
+from digest.generation.assembler import AsyncDigestAssembler
+from digest.models.atom import Atom, AtomSource, AtomWorkstreams
+from digest.models.digest import DigestSection
+from digest.models.responses import DigestResponse
+from digest.scoring.composite import ScoreBreakdown, ScoredAtom
 
 
 def _make_atom(

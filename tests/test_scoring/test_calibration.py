@@ -9,12 +9,12 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
-from evercurrent.models.persona import DigestPreferences, Persona, ScoringWeights
-from evercurrent.scoring.composite import score_atoms
-from evercurrent.scoring.phase_alignment import score_phase_alignment
-from evercurrent.scoring.social_signal import score_social_signal
-from evercurrent.scoring.urgency import score_urgency
+from digest.models.atom import Atom, AtomSource, AtomWorkstreams
+from digest.models.persona import DigestPreferences, Persona, ScoringWeights
+from digest.scoring.composite import score_atoms
+from digest.scoring.phase_alignment import score_phase_alignment
+from digest.scoring.social_signal import score_social_signal
+from digest.scoring.urgency import score_urgency
 
 
 def _make_atom(

@@ -4,9 +4,9 @@ Validates that ThreadBundles are assembled into ContextWindow objects,
 with compression applied when threads exceed the token limit.
 """
 
-from evercurrent.dataset.schema import SlackMessage, SlackReaction
-from evercurrent.ingestion.context_window import ContextWindow, assemble_context_windows
-from evercurrent.ingestion.threads import ThreadBundle
+from digest.dataset.schema import SlackMessage, SlackReaction
+from digest.ingestion.context_window import ContextWindow, assemble_context_windows
+from digest.ingestion.threads import ThreadBundle
 
 
 def _msg(

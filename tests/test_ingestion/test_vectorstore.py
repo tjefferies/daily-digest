@@ -9,7 +9,7 @@ import pytest
 if TYPE_CHECKING:
     from pathlib import Path
 
-from evercurrent.ingestion.vectorstore import VectorStore
+from digest.ingestion.vectorstore import VectorStore
 
 
 class TestVectorStore:

@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from evercurrent.models.persona import (
+from digest.models.persona import (
     DigestPreferences,
     Persona,
     RoleArchetype,

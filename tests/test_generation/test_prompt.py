@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from evercurrent.generation.prompt import build_generation_prompt
+from digest.generation.prompt import build_generation_prompt
 
 
 class TestGenerationPromptTone:

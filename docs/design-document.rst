@@ -1,7 +1,7 @@
 .. _design-document:
 
 =====================================================================
-EverCurrent Daily Digest Tool: Technical Design Document
+Daily Digest Tool: Technical Design Document
 =====================================================================
 
 .. note::
@@ -105,7 +105,7 @@ persona-specific daily digests. It consists of five layers with defined
 responsibility and interface contracts.
 
 .. image:: _static/architecture.svg
-   :alt: EverCurrent five-layer pipeline architecture
+   :alt: Daily Digest Toolfive-layer pipeline architecture
    :width: 100%
 
 3.1 Data Flow

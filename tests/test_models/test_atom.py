@@ -5,7 +5,7 @@ from uuid import UUID
 import pytest
 from pydantic import ValidationError
 
-from evercurrent.models.atom import Atom, AtomSource, AtomType, AtomWorkstreams
+from digest.models.atom import Atom, AtomSource, AtomType, AtomWorkstreams
 
 
 class TestAtomType:

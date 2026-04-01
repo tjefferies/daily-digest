@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from evercurrent.extraction.batch_runner import _estimate_tokens, _split_into_sub_batches
+from digest.extraction.batch_runner import _estimate_tokens, _split_into_sub_batches
 
 
 class TestTokenEstimation:

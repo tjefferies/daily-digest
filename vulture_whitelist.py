@@ -5,6 +5,6 @@ Pydantic model_config, pytest fixtures, or __all__ exports.
 Each entry explains why it is a false positive.
 """
 
-# Used in cast("list[MessageParam]", ...) in src/evercurrent/llm/anthropic.py
+# Used in cast("list[MessageParam]", ...) in src/digest/llm/anthropic.py
 # Vulture misses string-based type references in cast() calls.
 MessageParam  # noqa: F821

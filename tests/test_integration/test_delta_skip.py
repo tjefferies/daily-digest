@@ -11,12 +11,12 @@ from uuid import uuid4
 
 import pytest
 
-from evercurrent.dataset.schema import SlackMessage
-from evercurrent.db.models import Base
-from evercurrent.db.repository import get_processed_bundle_ts, persist_atoms, persist_bundle
-from evercurrent.ingestion.context_window import assemble_context_windows
-from evercurrent.ingestion.threads import ThreadBundle
-from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
+from digest.dataset.schema import SlackMessage
+from digest.db.models import Base
+from digest.db.repository import get_processed_bundle_ts, persist_atoms, persist_bundle
+from digest.ingestion.context_window import assemble_context_windows
+from digest.ingestion.threads import ThreadBundle
+from digest.models.atom import Atom, AtomSource, AtomWorkstreams
 
 
 def _msg(

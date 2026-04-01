@@ -7,8 +7,8 @@ from uuid import uuid4
 
 import pytest
 
-from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
-from evercurrent.pipeline import PipelineResult, async_run_pipeline
+from digest.models.atom import Atom, AtomSource, AtomWorkstreams
+from digest.pipeline import PipelineResult, async_run_pipeline
 
 
 def _make_atom(
@@ -38,9 +38,9 @@ def _make_atom(
 class TestAsyncRunPipeline:
     """Tests for the async_run_pipeline orchestrator."""
 
-    @patch("evercurrent.pipeline.BatchExtractionRunner")
-    @patch("evercurrent.pipeline._validate_atoms_by_source")
-    @patch("evercurrent.pipeline.confidence_filter")
+    @patch("digest.pipeline.BatchExtractionRunner")
+    @patch("digest.pipeline._validate_atoms_by_source")
+    @patch("digest.pipeline.confidence_filter")
     async def test_returns_pipeline_result(
         self,
         mock_filter: MagicMock,
@@ -54,7 +54,7 @@ class TestAsyncRunPipeline:
         mock_runner_cls.return_value = mock_runner
         mock_validate.return_value = [atom]
 
-        from evercurrent.extraction.filter import FilterResult
+        from digest.extraction.filter import FilterResult
 
         mock_filter.return_value = FilterResult(passed=[atom], filtered=[])
 
@@ -65,9 +65,9 @@ class TestAsyncRunPipeline:
         assert len(result.atoms) == 1
         assert result.atoms[0].summary == "Test decision"
 
-    @patch("evercurrent.pipeline.BatchExtractionRunner")
-    @patch("evercurrent.pipeline._validate_atoms_by_source")
-    @patch("evercurrent.pipeline.confidence_filter")
+    @patch("digest.pipeline.BatchExtractionRunner")
+    @patch("digest.pipeline._validate_atoms_by_source")
+    @patch("digest.pipeline.confidence_filter")
     async def test_tracks_stats(
         self,
         mock_filter: MagicMock,
@@ -81,7 +81,7 @@ class TestAsyncRunPipeline:
         mock_runner_cls.return_value = mock_runner
         mock_validate.return_value = [atom]
 
-        from evercurrent.extraction.filter import FilterResult
+        from digest.extraction.filter import FilterResult
 
         mock_filter.return_value = FilterResult(passed=[atom], filtered=[])
 
@@ -91,9 +91,9 @@ class TestAsyncRunPipeline:
         assert result.stats["atoms_extracted"] == 1
         assert result.stats["atoms_after_filter"] == 1
 
-    @patch("evercurrent.pipeline.BatchExtractionRunner")
-    @patch("evercurrent.pipeline._validate_atoms_by_source")
-    @patch("evercurrent.pipeline.confidence_filter")
+    @patch("digest.pipeline.BatchExtractionRunner")
+    @patch("digest.pipeline._validate_atoms_by_source")
+    @patch("digest.pipeline.confidence_filter")
     async def test_empty_extraction_returns_empty(
         self,
         mock_filter: MagicMock,
@@ -106,7 +106,7 @@ class TestAsyncRunPipeline:
         mock_runner_cls.return_value = mock_runner
         mock_validate.return_value = []
 
-        from evercurrent.extraction.filter import FilterResult
+        from digest.extraction.filter import FilterResult
 
         mock_filter.return_value = FilterResult(passed=[], filtered=[])
 
@@ -121,10 +121,10 @@ class TestNeo4jPersistence:
     """Tests for Neo4j atom persistence in async pipeline."""
 
     @pytest.mark.asyncio
-    @patch("evercurrent.pipeline.GraphClient")
-    @patch("evercurrent.pipeline.BatchExtractionRunner")
-    @patch("evercurrent.pipeline._validate_atoms_by_source")
-    @patch("evercurrent.pipeline.confidence_filter")
+    @patch("digest.pipeline.GraphClient")
+    @patch("digest.pipeline.BatchExtractionRunner")
+    @patch("digest.pipeline._validate_atoms_by_source")
+    @patch("digest.pipeline.confidence_filter")
     async def test_async_pipeline_persists_atoms_to_neo4j(
         self,
         mock_filter: MagicMock,
@@ -139,7 +139,7 @@ class TestNeo4jPersistence:
         mock_runner_cls.return_value = mock_runner
         mock_validate.return_value = [atom]
 
-        from evercurrent.extraction.filter import FilterResult
+        from digest.extraction.filter import FilterResult
 
         mock_filter.return_value = FilterResult(passed=[atom], filtered=[])
 
@@ -158,10 +158,10 @@ class TestNeo4jPersistence:
         mock_graph.close.assert_called_once()
 
     @pytest.mark.asyncio
-    @patch("evercurrent.pipeline.GraphClient")
-    @patch("evercurrent.pipeline.BatchExtractionRunner")
-    @patch("evercurrent.pipeline._validate_atoms_by_source")
-    @patch("evercurrent.pipeline.confidence_filter")
+    @patch("digest.pipeline.GraphClient")
+    @patch("digest.pipeline.BatchExtractionRunner")
+    @patch("digest.pipeline._validate_atoms_by_source")
+    @patch("digest.pipeline.confidence_filter")
     async def test_async_pipeline_graceful_neo4j_failure(
         self,
         mock_filter: MagicMock,
@@ -176,7 +176,7 @@ class TestNeo4jPersistence:
         mock_runner_cls.return_value = mock_runner
         mock_validate.return_value = [atom]
 
-        from evercurrent.extraction.filter import FilterResult
+        from digest.extraction.filter import FilterResult
 
         mock_filter.return_value = FilterResult(passed=[atom], filtered=[])
 
@@ -196,10 +196,10 @@ class TestNeo4jDedup:
     """Tests for Neo4j deduplication: skip already-processed threads."""
 
     @pytest.mark.asyncio
-    @patch("evercurrent.pipeline.GraphClient")
-    @patch("evercurrent.pipeline.BatchExtractionRunner")
-    @patch("evercurrent.pipeline._validate_atoms_by_source")
-    @patch("evercurrent.pipeline.confidence_filter")
+    @patch("digest.pipeline.GraphClient")
+    @patch("digest.pipeline.BatchExtractionRunner")
+    @patch("digest.pipeline._validate_atoms_by_source")
+    @patch("digest.pipeline.confidence_filter")
     async def test_skips_already_processed_threads(
         self,
         mock_filter: MagicMock,
@@ -214,7 +214,7 @@ class TestNeo4jDedup:
         mock_runner_cls.return_value = mock_runner
         mock_validate.return_value = [atom]
 
-        from evercurrent.extraction.filter import FilterResult
+        from digest.extraction.filter import FilterResult
 
         mock_filter.return_value = FilterResult(passed=[atom], filtered=[])
 
@@ -230,10 +230,10 @@ class TestNeo4jDedup:
         assert "threads_skipped" in result.stats
 
     @pytest.mark.asyncio
-    @patch("evercurrent.pipeline.GraphClient")
-    @patch("evercurrent.pipeline.BatchExtractionRunner")
-    @patch("evercurrent.pipeline._validate_atoms_by_source")
-    @patch("evercurrent.pipeline.confidence_filter")
+    @patch("digest.pipeline.GraphClient")
+    @patch("digest.pipeline.BatchExtractionRunner")
+    @patch("digest.pipeline._validate_atoms_by_source")
+    @patch("digest.pipeline.confidence_filter")
     async def test_dedup_failure_processes_all_threads(
         self,
         mock_filter: MagicMock,
@@ -248,7 +248,7 @@ class TestNeo4jDedup:
         mock_runner_cls.return_value = mock_runner
         mock_validate.return_value = [atom]
 
-        from evercurrent.extraction.filter import FilterResult
+        from digest.extraction.filter import FilterResult
 
         mock_filter.return_value = FilterResult(passed=[atom], filtered=[])
 

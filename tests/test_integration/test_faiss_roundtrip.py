@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from evercurrent.ingestion.embeddings import cosine_similarity
-from evercurrent.ingestion.vectorstore import VectorStore
+from digest.ingestion.embeddings import cosine_similarity
+from digest.ingestion.vectorstore import VectorStore
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -48,7 +48,7 @@ class TestFAISSRoundTrip:
 
     def test_cached_embedder_roundtrip(self, tmp_path: Path) -> None:
         """CachedEmbedder stores new embeddings that survive reload."""
-        from evercurrent.ingestion.cached_embedder import CachedEmbedder
+        from digest.ingestion.cached_embedder import CachedEmbedder
 
         class SimpleEmbedder:
             """Test embedder returning incrementing vectors."""

@@ -4,7 +4,7 @@ Validates that the coarse and enrichment prompts contain the
 critical instructions and schema fields.
 """
 
-from evercurrent.extraction.prompt import build_coarse_prompt, build_enrichment_prompt
+from digest.extraction.prompt import build_coarse_prompt, build_enrichment_prompt
 
 
 class TestCoarsePromptContainsCriticalInstructions:

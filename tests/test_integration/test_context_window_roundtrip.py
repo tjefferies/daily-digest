@@ -10,17 +10,17 @@ from uuid import uuid4
 
 import pytest
 
-from evercurrent.dataset.schema import SlackMessage
-from evercurrent.db.models import Atom as AtomRow
-from evercurrent.db.models import Base
-from evercurrent.db.repository import (
+from digest.dataset.schema import SlackMessage
+from digest.db.models import Atom as AtomRow
+from digest.db.models import Base
+from digest.db.repository import (
     persist_atoms,
     persist_bundle,
     persist_context_windows,
 )
-from evercurrent.ingestion.context_window import assemble_context_windows
-from evercurrent.ingestion.threads import ThreadBundle
-from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
+from digest.ingestion.context_window import assemble_context_windows
+from digest.ingestion.threads import ThreadBundle
+from digest.models.atom import Atom, AtomSource, AtomWorkstreams
 
 
 def _msg(ts: str, text: str, thread_ts: str | None = None) -> SlackMessage:
@@ -70,7 +70,7 @@ class TestContextWindowRoundTrip:
         # Query back
         from sqlalchemy import select
 
-        from evercurrent.db.models import ContextWindow as CWRow
+        from digest.db.models import ContextWindow as CWRow
 
         result = await session.execute(select(CWRow))
         row = result.scalar_one()
@@ -111,7 +111,7 @@ class TestContextWindowRoundTrip:
         # Query: atom → context_window → verify thread_text
         from sqlalchemy import select
 
-        from evercurrent.db.models import ContextWindow as CWRow
+        from digest.db.models import ContextWindow as CWRow
 
         result = await session.execute(
             select(CWRow).where(CWRow.bundle_ts == "6000.001"),
@@ -131,8 +131,8 @@ class TestContextWindowRoundTrip:
         """Full chain: message → bundle_membership → bundle → context_window → atom."""
         from sqlalchemy import select
 
-        from evercurrent.db.models import BundleMembership
-        from evercurrent.db.models import ContextWindow as CWRow
+        from digest.db.models import BundleMembership
+        from digest.db.models import ContextWindow as CWRow
 
         root = _msg("7000.001", "Thermal pad spec")
         reply = _msg("7000.002", "Updated to Fujipoly", thread_ts="7000.001")

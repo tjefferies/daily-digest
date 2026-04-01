@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
-from evercurrent.models.persona import DigestPreferences, Persona, ScoringWeights
-from evercurrent.scoring.composite import ScoreBreakdown, ScoredAtom, score_atoms
+from digest.models.atom import Atom, AtomSource, AtomWorkstreams
+from digest.models.persona import DigestPreferences, Persona, ScoringWeights
+from digest.scoring.composite import ScoreBreakdown, ScoredAtom, score_atoms
 
 
 def _make_atom(
@@ -292,11 +292,11 @@ class TestScoreBreakdown:
 
     def test_breakdown_matches_individual_scorers(self) -> None:
         """Breakdown values match individual dimension scorers."""
-        from evercurrent.scoring.phase_alignment import score_phase_alignment
-        from evercurrent.scoring.role_alignment import score_role_alignment
-        from evercurrent.scoring.social_signal import score_social_signal
-        from evercurrent.scoring.urgency import score_urgency
-        from evercurrent.scoring.workstream_proximity import (
+        from digest.scoring.phase_alignment import score_phase_alignment
+        from digest.scoring.role_alignment import score_role_alignment
+        from digest.scoring.social_signal import score_social_signal
+        from digest.scoring.urgency import score_urgency
+        from digest.scoring.workstream_proximity import (
             score_workstream_proximity,
         )
 

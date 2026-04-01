@@ -5,8 +5,8 @@ Validates persona fixtures for Maya Chen (IC ME), Elena Vasquez
 design doc section 6.1.
 """
 
-from evercurrent.context.personas import DEMO_PERSONAS, get_persona
-from evercurrent.models.persona import Persona
+from digest.context.personas import DEMO_PERSONAS, get_persona
+from digest.models.persona import Persona
 
 
 class TestDemoPersonaCount:

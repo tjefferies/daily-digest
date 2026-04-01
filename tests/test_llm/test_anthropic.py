@@ -8,7 +8,7 @@ import pytest
 from anthropic.types import TextBlock
 from pydantic import BaseModel
 
-from evercurrent.llm.anthropic import AsyncAnthropicAdapter
+from digest.llm.anthropic import AsyncAnthropicAdapter
 
 
 class _TestModel(BaseModel):

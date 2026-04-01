@@ -9,12 +9,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from evercurrent.dataset.schema import SlackMessage
-from evercurrent.ingestion.continuations import detect_continuations
-from evercurrent.ingestion.threads import ThreadBundle
+from digest.dataset.schema import SlackMessage
+from digest.ingestion.continuations import detect_continuations
+from digest.ingestion.threads import ThreadBundle
 
 if TYPE_CHECKING:
-    from evercurrent.ingestion.embeddings import Embedder
+    from digest.ingestion.embeddings import Embedder
 
 
 class MockEmbedder:

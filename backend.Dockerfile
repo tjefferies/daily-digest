@@ -1,5 +1,5 @@
 # backend.Dockerfile - Multistage build for FastAPI backend
-# Build: docker build -f backend.Dockerfile -t evercurrent-backend .
+# Build: docker build -f backend.Dockerfile -t digest-backend .
 
 # ─── Stage 1: Builder ────────────────────────────────────────────────────────
 FROM python:3.13-slim AS builder
@@ -52,4 +52,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD python -c "import httpx; httpx.get('http://localhost:8000/health').raise_for_status()"
 
-CMD ["uvicorn", "evercurrent.app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "digest.app:app", "--host", "0.0.0.0", "--port", "8000"]

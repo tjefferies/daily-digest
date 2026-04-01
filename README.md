@@ -63,7 +63,7 @@ cp .env.sample .env
 bash scripts/quality-gates.sh
 
 # Start the API server
-PYTHONPATH=src uv run uvicorn evercurrent.app:app --reload --port 8000
+PYTHONPATH=src uv run uvicorn digest.app:app --reload --port 8000
 
 # Start the frontend
 cd frontend && npm run dev
@@ -127,7 +127,7 @@ Current stats: **511 tests (490 unit + 21 integration), all gates passing.**
 
 ```
 evercurrent/
-├── src/evercurrent/
+├── src/digest/
 │   ├── app.py                     # FastAPI app (async, precook digests)
 │   ├── pipeline.py                # Pipeline orchestrator (async-only)
 │   ├── models/                    # Pydantic models

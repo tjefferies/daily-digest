@@ -3,7 +3,7 @@
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from evercurrent.app import app
+from digest.app import app
 
 
 class TestAppSetup:

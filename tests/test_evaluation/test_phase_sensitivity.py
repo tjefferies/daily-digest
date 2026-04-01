@@ -9,12 +9,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
-from evercurrent.context.personas import DEMO_PERSONAS
-from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
-from evercurrent.scoring.composite import score_atoms
+from digest.context.personas import DEMO_PERSONAS
+from digest.models.atom import Atom, AtomSource, AtomWorkstreams
+from digest.scoring.composite import score_atoms
 
 if TYPE_CHECKING:
-    from evercurrent.models.persona import Persona
+    from digest.models.persona import Persona
 
 
 def _get_persona(user_id: str) -> Persona:

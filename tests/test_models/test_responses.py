@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
-from evercurrent.models.digest import DigestSection
-from evercurrent.models.responses import (
+from digest.models.atom import Atom, AtomSource, AtomWorkstreams
+from digest.models.digest import DigestSection
+from digest.models.responses import (
     DigestResponse,
     ValidationResponse,
 )

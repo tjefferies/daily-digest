@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from evercurrent.ingestion.vectorstore import VectorStore
+from digest.ingestion.vectorstore import VectorStore
 
 if TYPE_CHECKING:
-    from evercurrent.ingestion.embeddings import Embedder
+    from digest.ingestion.embeddings import Embedder
 
 
 class CountingEmbedder:
@@ -49,7 +49,7 @@ class TestCachedEmbedder:
 
     def test_cache_miss_delegates_to_inner(self) -> None:
         """Uncached texts are passed to the inner embedder."""
-        from evercurrent.ingestion.cached_embedder import CachedEmbedder
+        from digest.ingestion.cached_embedder import CachedEmbedder
 
         store = VectorStore(dim=3)
         inner = CountingEmbedder(dim=3)
@@ -63,7 +63,7 @@ class TestCachedEmbedder:
 
     def test_cache_hit_skips_inner(self) -> None:
         """Cached texts are returned from store without calling inner."""
-        from evercurrent.ingestion.cached_embedder import CachedEmbedder
+        from digest.ingestion.cached_embedder import CachedEmbedder
 
         store = VectorStore(dim=3)
         store.add("hello", [1.0, 0.0, 0.0])
@@ -80,7 +80,7 @@ class TestCachedEmbedder:
 
     def test_mixed_hit_and_miss(self) -> None:
         """Only uncached texts are sent to the inner embedder."""
-        from evercurrent.ingestion.cached_embedder import CachedEmbedder
+        from digest.ingestion.cached_embedder import CachedEmbedder
 
         store = VectorStore(dim=3)
         store.add("cached", [9.0, 0.0, 0.0])
@@ -96,7 +96,7 @@ class TestCachedEmbedder:
 
     def test_new_embeddings_stored_in_cache(self) -> None:
         """After embedding, new vectors are stored in the VectorStore."""
-        from evercurrent.ingestion.cached_embedder import CachedEmbedder
+        from digest.ingestion.cached_embedder import CachedEmbedder
 
         store = VectorStore(dim=3)
         inner = CountingEmbedder(dim=3)
@@ -109,7 +109,7 @@ class TestCachedEmbedder:
 
     def test_second_call_uses_cache(self) -> None:
         """Embedding the same text twice only calls inner once."""
-        from evercurrent.ingestion.cached_embedder import CachedEmbedder
+        from digest.ingestion.cached_embedder import CachedEmbedder
 
         store = VectorStore(dim=3)
         inner = CountingEmbedder(dim=3)
@@ -122,7 +122,7 @@ class TestCachedEmbedder:
 
     def test_stats_track_hits_and_misses(self) -> None:
         """CachedEmbedder tracks cache hit/miss counts."""
-        from evercurrent.ingestion.cached_embedder import CachedEmbedder
+        from digest.ingestion.cached_embedder import CachedEmbedder
 
         store = VectorStore(dim=3)
         store.add("cached", [1.0, 0.0, 0.0])
@@ -136,7 +136,7 @@ class TestCachedEmbedder:
 
     def test_empty_input(self) -> None:
         """Empty input returns empty output without calling inner."""
-        from evercurrent.ingestion.cached_embedder import CachedEmbedder
+        from digest.ingestion.cached_embedder import CachedEmbedder
 
         store = VectorStore(dim=3)
         inner = CountingEmbedder(dim=3)

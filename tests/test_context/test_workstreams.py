@@ -5,7 +5,7 @@ workstreams to channels, and components to workstreams for the
 Context Backbone layer.
 """
 
-from evercurrent.context.workstreams import WorkstreamRegistry
+from digest.context.workstreams import WorkstreamRegistry
 
 
 class TestWorkstreamRegistryChannelMapping:

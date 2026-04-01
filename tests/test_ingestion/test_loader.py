@@ -8,9 +8,9 @@ from typing import Any
 
 import pytest
 
-from evercurrent.dataset.schema import SlackMessage
-from evercurrent.fixtures import FixtureStore
-from evercurrent.ingestion.loader import load_message_stream
+from digest.dataset.schema import SlackMessage
+from digest.fixtures import FixtureStore
+from digest.ingestion.loader import load_message_stream
 
 
 def _make_store(

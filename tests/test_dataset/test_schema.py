@@ -8,7 +8,7 @@ team roster with role/channel assignments.
 import pytest
 from pydantic import ValidationError
 
-from evercurrent.dataset.schema import (
+from digest.dataset.schema import (
     CHANNELS,
     SlackMessage,
     SlackReaction,

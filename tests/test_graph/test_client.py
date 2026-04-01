@@ -11,7 +11,7 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
-from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
+from digest.models.atom import Atom, AtomSource, AtomWorkstreams
 
 _TEST_PASSWORD = "test"  # noqa: S105
 
@@ -68,10 +68,10 @@ class TestGraphClientInit:
 
     async def test_create_client_stores_driver(self) -> None:
         """GraphClient stores the driver instance."""
-        with patch("evercurrent.graph.client.AsyncGraphDatabase") as mock_agd:
+        with patch("digest.graph.client.AsyncGraphDatabase") as mock_agd:
             mock_driver, _ = _make_mock_driver_and_session()
             mock_agd.driver.return_value = mock_driver
-            from evercurrent.graph.client import GraphClient
+            from digest.graph.client import GraphClient
 
             client = GraphClient(
                 uri="bolt://localhost:7687",
@@ -85,10 +85,10 @@ class TestGraphClientInit:
 
     async def test_close_shuts_down_driver(self) -> None:
         """close() calls driver.close()."""
-        with patch("evercurrent.graph.client.AsyncGraphDatabase") as mock_agd:
+        with patch("digest.graph.client.AsyncGraphDatabase") as mock_agd:
             mock_driver, _ = _make_mock_driver_and_session()
             mock_agd.driver.return_value = mock_driver
-            from evercurrent.graph.client import GraphClient
+            from digest.graph.client import GraphClient
 
             client = GraphClient(
                 uri="bolt://localhost:7687", user="neo4j", password=_TEST_PASSWORD
@@ -102,10 +102,10 @@ class TestEnsureSchema:
 
     async def test_ensure_schema_runs_constraint_queries(self) -> None:
         """ensure_schema() must execute constraint and index Cypher."""
-        with patch("evercurrent.graph.client.AsyncGraphDatabase") as mock_agd:
+        with patch("digest.graph.client.AsyncGraphDatabase") as mock_agd:
             mock_driver, mock_session = _make_mock_driver_and_session()
             mock_agd.driver.return_value = mock_driver
-            from evercurrent.graph.client import GraphClient
+            from digest.graph.client import GraphClient
 
             client = GraphClient(
                 uri="bolt://localhost:7687", user="neo4j", password=_TEST_PASSWORD
@@ -122,10 +122,10 @@ class TestPersistAtom:
 
     async def test_persist_atom_runs_merge_query(self) -> None:
         """persist_atoms() must MERGE atom nodes into the graph."""
-        with patch("evercurrent.graph.client.AsyncGraphDatabase") as mock_agd:
+        with patch("digest.graph.client.AsyncGraphDatabase") as mock_agd:
             mock_driver, mock_session = _make_mock_driver_and_session()
             mock_agd.driver.return_value = mock_driver
-            from evercurrent.graph.client import GraphClient
+            from digest.graph.client import GraphClient
 
             client = GraphClient(
                 uri="bolt://localhost:7687", user="neo4j", password=_TEST_PASSWORD
@@ -139,10 +139,10 @@ class TestPersistAtom:
 
     async def test_persist_atom_includes_workstream_edges(self) -> None:
         """persist_atoms() must create workstream relationship edges."""
-        with patch("evercurrent.graph.client.AsyncGraphDatabase") as mock_agd:
+        with patch("digest.graph.client.AsyncGraphDatabase") as mock_agd:
             mock_driver, mock_session = _make_mock_driver_and_session()
             mock_agd.driver.return_value = mock_driver
-            from evercurrent.graph.client import GraphClient
+            from digest.graph.client import GraphClient
 
             client = GraphClient(
                 uri="bolt://localhost:7687", user="neo4j", password=_TEST_PASSWORD
@@ -157,10 +157,10 @@ class TestPersistAtom:
 
     async def test_persist_multiple_atoms(self) -> None:
         """persist_atoms() handles a list of atoms."""
-        with patch("evercurrent.graph.client.AsyncGraphDatabase") as mock_agd:
+        with patch("digest.graph.client.AsyncGraphDatabase") as mock_agd:
             mock_driver, mock_session = _make_mock_driver_and_session()
             mock_agd.driver.return_value = mock_driver
-            from evercurrent.graph.client import GraphClient
+            from digest.graph.client import GraphClient
 
             client = GraphClient(
                 uri="bolt://localhost:7687", user="neo4j", password=_TEST_PASSWORD
@@ -172,10 +172,10 @@ class TestPersistAtom:
 
     async def test_persist_empty_list_is_noop(self) -> None:
         """persist_atoms([]) should not execute any queries."""
-        with patch("evercurrent.graph.client.AsyncGraphDatabase") as mock_agd:
+        with patch("digest.graph.client.AsyncGraphDatabase") as mock_agd:
             mock_driver, mock_session = _make_mock_driver_and_session()
             mock_agd.driver.return_value = mock_driver
-            from evercurrent.graph.client import GraphClient
+            from digest.graph.client import GraphClient
 
             client = GraphClient(
                 uri="bolt://localhost:7687", user="neo4j", password=_TEST_PASSWORD
@@ -189,7 +189,7 @@ class TestTemporalQueries:
 
     async def test_atoms_since_returns_records(self) -> None:
         """atoms_since() must run a datetime-filtered Cypher query."""
-        with patch("evercurrent.graph.client.AsyncGraphDatabase") as mock_agd:
+        with patch("digest.graph.client.AsyncGraphDatabase") as mock_agd:
             mock_driver, mock_session = _make_mock_driver_and_session()
             mock_result = AsyncMock()
             mock_result.data.return_value = [
@@ -197,7 +197,7 @@ class TestTemporalQueries:
             ]
             mock_session.run.return_value = mock_result
             mock_agd.driver.return_value = mock_driver
-            from evercurrent.graph.client import GraphClient
+            from digest.graph.client import GraphClient
 
             client = GraphClient(
                 uri="bolt://localhost:7687", user="neo4j", password=_TEST_PASSWORD
@@ -211,13 +211,13 @@ class TestTemporalQueries:
 
     async def test_spec_changes_this_week_filters_by_type(self) -> None:
         """spec_changes_this_week() must filter for SPEC_CHANGE atoms."""
-        with patch("evercurrent.graph.client.AsyncGraphDatabase") as mock_agd:
+        with patch("digest.graph.client.AsyncGraphDatabase") as mock_agd:
             mock_driver, mock_session = _make_mock_driver_and_session()
             mock_result = AsyncMock()
             mock_result.data.return_value = []
             mock_session.run.return_value = mock_result
             mock_agd.driver.return_value = mock_driver
-            from evercurrent.graph.client import GraphClient
+            from digest.graph.client import GraphClient
 
             client = GraphClient(
                 uri="bolt://localhost:7687", user="neo4j", password=_TEST_PASSWORD
@@ -230,7 +230,7 @@ class TestTemporalQueries:
 
     async def test_blocker_patterns_groups_by_workstream(self) -> None:
         """blocker_patterns() must group BLOCKER atoms by workstream."""
-        with patch("evercurrent.graph.client.AsyncGraphDatabase") as mock_agd:
+        with patch("digest.graph.client.AsyncGraphDatabase") as mock_agd:
             mock_driver, mock_session = _make_mock_driver_and_session()
             mock_result = AsyncMock()
             mock_result.data.return_value = [
@@ -238,7 +238,7 @@ class TestTemporalQueries:
             ]
             mock_session.run.return_value = mock_result
             mock_agd.driver.return_value = mock_driver
-            from evercurrent.graph.client import GraphClient
+            from digest.graph.client import GraphClient
 
             client = GraphClient(
                 uri="bolt://localhost:7687", user="neo4j", password=_TEST_PASSWORD
@@ -255,7 +255,7 @@ class TestLoadAllAtoms:
 
     async def test_load_all_atoms_returns_atom_list(self) -> None:
         """load_all_atoms() reconstructs full Atom objects from graph data."""
-        with patch("evercurrent.graph.client.AsyncGraphDatabase") as mock_agd:
+        with patch("digest.graph.client.AsyncGraphDatabase") as mock_agd:
             mock_driver, mock_session = _make_mock_driver_and_session()
             mock_result = AsyncMock()
             mock_result.data.return_value = [
@@ -277,7 +277,7 @@ class TestLoadAllAtoms:
             ]
             mock_session.run.return_value = mock_result
             mock_agd.driver.return_value = mock_driver
-            from evercurrent.graph.client import GraphClient
+            from digest.graph.client import GraphClient
 
             client = GraphClient(
                 uri="bolt://localhost:7687", user="neo4j", password=_TEST_PASSWORD
@@ -293,13 +293,13 @@ class TestLoadAllAtoms:
 
     async def test_load_all_atoms_empty_graph(self) -> None:
         """load_all_atoms() returns empty list when no atoms exist."""
-        with patch("evercurrent.graph.client.AsyncGraphDatabase") as mock_agd:
+        with patch("digest.graph.client.AsyncGraphDatabase") as mock_agd:
             mock_driver, mock_session = _make_mock_driver_and_session()
             mock_result = AsyncMock()
             mock_result.data.return_value = []
             mock_session.run.return_value = mock_result
             mock_agd.driver.return_value = mock_driver
-            from evercurrent.graph.client import GraphClient
+            from digest.graph.client import GraphClient
 
             client = GraphClient(
                 uri="bolt://localhost:7687", user="neo4j", password=_TEST_PASSWORD
@@ -314,7 +314,7 @@ class TestProcessedThreadTs:
 
     async def test_processed_thread_ts_returns_set(self) -> None:
         """processed_thread_ts() returns a set of thread_ts strings."""
-        with patch("evercurrent.graph.client.AsyncGraphDatabase") as mock_agd:
+        with patch("digest.graph.client.AsyncGraphDatabase") as mock_agd:
             mock_driver, mock_session = _make_mock_driver_and_session()
             mock_result = AsyncMock()
             mock_result.data.return_value = [
@@ -323,7 +323,7 @@ class TestProcessedThreadTs:
             ]
             mock_session.run.return_value = mock_result
             mock_agd.driver.return_value = mock_driver
-            from evercurrent.graph.client import GraphClient
+            from digest.graph.client import GraphClient
 
             client = GraphClient(
                 uri="bolt://localhost:7687", user="neo4j", password=_TEST_PASSWORD
@@ -334,13 +334,13 @@ class TestProcessedThreadTs:
 
     async def test_processed_thread_ts_empty_graph(self) -> None:
         """processed_thread_ts() returns empty set when no atoms exist."""
-        with patch("evercurrent.graph.client.AsyncGraphDatabase") as mock_agd:
+        with patch("digest.graph.client.AsyncGraphDatabase") as mock_agd:
             mock_driver, mock_session = _make_mock_driver_and_session()
             mock_result = AsyncMock()
             mock_result.data.return_value = []
             mock_session.run.return_value = mock_result
             mock_agd.driver.return_value = mock_driver
-            from evercurrent.graph.client import GraphClient
+            from digest.graph.client import GraphClient
 
             client = GraphClient(
                 uri="bolt://localhost:7687", user="neo4j", password=_TEST_PASSWORD
@@ -355,14 +355,14 @@ class TestAtomCount:
 
     async def test_atom_count_returns_integer(self) -> None:
         """atom_count() must return the total number of atoms in the graph."""
-        with patch("evercurrent.graph.client.AsyncGraphDatabase") as mock_agd:
+        with patch("digest.graph.client.AsyncGraphDatabase") as mock_agd:
             mock_driver, mock_session = _make_mock_driver_and_session()
             mock_result = AsyncMock()
             mock_record = {"count": 42}
             mock_result.single.return_value = mock_record
             mock_session.run.return_value = mock_result
             mock_agd.driver.return_value = mock_driver
-            from evercurrent.graph.client import GraphClient
+            from digest.graph.client import GraphClient
 
             client = GraphClient(
                 uri="bolt://localhost:7687", user="neo4j", password=_TEST_PASSWORD

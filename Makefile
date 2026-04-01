@@ -56,8 +56,8 @@ quality: lint format typecheck test complexity interrogate vulture ## Run all qu
 
 license-check: ## Check dependency licenses
 	@echo "=== License Compliance Check ==="
-	uv run pip-licenses --format=markdown --ignore-packages evercurrent
-	uv run pip-licenses --ignore-packages evercurrent --partial-match \
+	uv run pip-licenses --format=markdown --ignore-packages digest
+	uv run pip-licenses --ignore-packages digest --partial-match \
 		--allow-only="MIT;BSD;Apache;PSF;Python Software Foundation;ISC;Unlicense;Public Domain;CC0;Zlib;Historical Permission Notice and Disclaimer;Mozilla Public License;Academic Free License;0BSD"
 	@echo "All runtime dependencies have approved licenses!"
 
@@ -90,7 +90,7 @@ security: license-check semgrep bandit ## Run all security gates (excluding sbom
 # ─── Documentation ───────────────────────────────────────────────────────────
 
 docs: ## Build Sphinx documentation
-	uv run sphinx-apidoc -f -o docs/api src/evercurrent
+	uv run sphinx-apidoc -f -o docs/api src/digest
 	uv run sphinx-build -b html docs docs/_build/html
 
 docs-serve: docs ## Build and serve Sphinx docs with live reload
@@ -115,7 +115,7 @@ dev: ## Install all dependencies
 	uv sync --all-groups
 
 serve: ## Start the FastAPI backend (port 8000)
-	PYTHONPATH=src uv run uvicorn evercurrent.app:app --reload --reload-dir src --port 8000
+	PYTHONPATH=src uv run uvicorn digest.app:app --reload --reload-dir src --port 8000
 
 serve-frontend: ## Start the React frontend dev server (port 5173)
 	cd frontend && npm run dev

@@ -8,8 +8,8 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from evercurrent.extraction.filter import confidence_filter
-from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
+from digest.extraction.filter import confidence_filter
+from digest.models.atom import Atom, AtomSource, AtomWorkstreams
 
 
 def _make_atom(confidence: float) -> Atom:

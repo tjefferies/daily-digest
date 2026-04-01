@@ -10,8 +10,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from evercurrent.dataset.messages import load_messages
-from evercurrent.dataset.schema import CHANNELS
+from digest.dataset.messages import load_messages
+from digest.dataset.schema import CHANNELS
 
 _FIXTURE_PATH = Path(__file__).resolve().parents[2] / "data" / "slack_messages.json"
 
@@ -156,7 +156,7 @@ class TestLoaderTransformation:
 
     def test_load_messages_returns_slack_message_objects(self) -> None:
         """load_messages() returns SlackMessage objects, not raw dicts."""
-        from evercurrent.dataset.schema import SlackMessage
+        from digest.dataset.schema import SlackMessage
 
         messages = load_messages()
         assert len(messages) > 0

@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from evercurrent.models.digest import (
+from digest.models.digest import (
     Digest,
     DigestItem,
     DigestSection,

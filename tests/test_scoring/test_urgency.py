@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
-from evercurrent.scoring.urgency import score_urgency
+from digest.models.atom import Atom, AtomSource, AtomWorkstreams
+from digest.scoring.urgency import score_urgency
 
 
 def _make_atom(urgency: str = "medium") -> Atom:

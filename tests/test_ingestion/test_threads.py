@@ -4,8 +4,8 @@ Validates that SlackMessages are grouped into ThreadBundle objects
 based on their thread_ts field.
 """
 
-from evercurrent.dataset.schema import SlackMessage
-from evercurrent.ingestion.threads import ThreadBundle, group_by_thread
+from digest.dataset.schema import SlackMessage
+from digest.ingestion.threads import ThreadBundle, group_by_thread
 
 
 def _msg(

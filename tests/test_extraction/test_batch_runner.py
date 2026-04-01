@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from evercurrent.ingestion.context_window import ContextWindow
+from digest.ingestion.context_window import ContextWindow
 
 
 def _make_window(
@@ -51,7 +51,7 @@ class TestBatchExtractionRunner:
     @pytest.mark.asyncio
     async def test_extract_returns_atoms(self) -> None:
         """Batch extraction returns Atom objects from tool_use results."""
-        from evercurrent.extraction.batch_runner import BatchExtractionRunner
+        from digest.extraction.batch_runner import BatchExtractionRunner
 
         mock_client = MagicMock()
 
@@ -106,7 +106,7 @@ class TestBatchExtractionRunner:
     @pytest.mark.asyncio
     async def test_extract_empty_windows(self) -> None:
         """Empty window list returns empty atom list."""
-        from evercurrent.extraction.batch_runner import BatchExtractionRunner
+        from digest.extraction.batch_runner import BatchExtractionRunner
 
         mock_client = MagicMock()
         runner = BatchExtractionRunner(mock_client)
@@ -117,7 +117,7 @@ class TestBatchExtractionRunner:
     @pytest.mark.asyncio
     async def test_handles_batch_errors(self) -> None:
         """Errored batch results are skipped without crashing."""
-        from evercurrent.extraction.batch_runner import BatchExtractionRunner
+        from digest.extraction.batch_runner import BatchExtractionRunner
 
         mock_client = MagicMock()
 
@@ -140,7 +140,7 @@ class TestBatchExtractionRunner:
     @pytest.mark.asyncio
     async def test_stats_tracked(self) -> None:
         """Runner tracks windows_processed and atoms_produced stats."""
-        from evercurrent.extraction.batch_runner import BatchExtractionRunner
+        from digest.extraction.batch_runner import BatchExtractionRunner
 
         mock_client = MagicMock()
 

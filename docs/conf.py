@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-project = "EverCurrent"
+project = "Daily Digest Tool"
 copyright = "2026, Travis Jefferies"  # noqa: A001
 author = "Travis Jefferies"
 release = "0.1.0"

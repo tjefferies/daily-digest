@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from evercurrent.dataset.schema import CHANNELS
+from digest.dataset.schema import CHANNELS
 
 _DEMO_PATH = Path(__file__).resolve().parents[2] / "data" / "demo_messages.json"
 

@@ -5,8 +5,8 @@ document requirements: 300-500 messages, engineer-register prose,
 thread depth variety, and coverage of all channels and team members.
 """
 
-from evercurrent.dataset.messages import load_messages
-from evercurrent.dataset.schema import CHANNELS, TeamRoster
+from digest.dataset.messages import load_messages
+from digest.dataset.schema import CHANNELS, TeamRoster
 
 
 class TestMessageCount:

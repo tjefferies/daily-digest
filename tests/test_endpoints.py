@@ -8,8 +8,8 @@ from uuid import uuid4
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from evercurrent.app import app, clear_atom_store
-from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
+from digest.app import app, clear_atom_store
+from digest.models.atom import Atom, AtomSource, AtomWorkstreams
 
 
 def _make_atom(
@@ -44,10 +44,10 @@ class TestPipelineRun:
         """Clear atom store between tests."""
         clear_atom_store()
 
-    @patch("evercurrent.app.async_run_pipeline")
+    @patch("digest.app.async_run_pipeline")
     def test_pipeline_run_returns_200(self, mock_run: MagicMock) -> None:
         """Verify POST /pipeline/run returns 200 with status field."""
-        from evercurrent.pipeline import PipelineResult
+        from digest.pipeline import PipelineResult
 
         mock_run.return_value = PipelineResult(
             atoms=[_make_atom()],
@@ -55,10 +55,10 @@ class TestPipelineRun:
         )
 
     @pytest.mark.asyncio
-    @patch("evercurrent.app.async_run_pipeline")
+    @patch("digest.app.async_run_pipeline")
     async def test_pipeline_run_returns_started(self, mock_run: MagicMock) -> None:
         """POST /pipeline/run returns immediately with started status."""
-        from evercurrent.pipeline import PipelineResult
+        from digest.pipeline import PipelineResult
 
         mock_run.return_value = PipelineResult(
             atoms=[_make_atom()],
@@ -154,15 +154,15 @@ class TestDigestEndpoint:
         assert response.status_code == 400
 
     @pytest.mark.asyncio
-    @patch("evercurrent.app.async_run_pipeline")
-    @patch("evercurrent.app.AsyncDigestAssembler")
+    @patch("digest.app.async_run_pipeline")
+    @patch("digest.app.AsyncDigestAssembler")
     async def test_digest_uses_stored_atoms_after_pipeline_run(
         self,
         mock_assembler_cls: MagicMock,
         mock_run: MagicMock,
     ) -> None:
         """After pipeline/run, digest endpoint uses stored atoms for scoring."""
-        from evercurrent.pipeline import PipelineResult
+        from digest.pipeline import PipelineResult
 
         atom = _make_atom()
         mock_run.return_value = PipelineResult(
@@ -195,8 +195,8 @@ class TestDigestEndpoint:
         assert len(u001_calls[0][0][1]) == 1
 
     @pytest.mark.asyncio
-    @patch("evercurrent.app._load_atoms_from_neo4j")
-    @patch("evercurrent.app.AsyncDigestAssembler")
+    @patch("digest.app._load_atoms_from_neo4j")
+    @patch("digest.app.AsyncDigestAssembler")
     async def test_digest_pulls_from_neo4j_when_store_empty(
         self,
         mock_assembler_cls: MagicMock,
@@ -225,7 +225,7 @@ class TestDigestEndpoint:
         mock_load_neo4j.assert_called_once()
 
     @pytest.mark.asyncio
-    @patch("evercurrent.app._load_atoms_from_neo4j")
+    @patch("digest.app._load_atoms_from_neo4j")
     async def test_digest_returns_empty_when_neo4j_also_empty(
         self,
         mock_load_neo4j: MagicMock,
@@ -241,7 +241,7 @@ class TestDigestEndpoint:
         assert data["sections"] == []
 
     @pytest.mark.asyncio
-    @patch("evercurrent.app._load_atoms_from_neo4j")
+    @patch("digest.app._load_atoms_from_neo4j")
     async def test_digest_graceful_neo4j_failure(
         self,
         mock_load_neo4j: MagicMock,

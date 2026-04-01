@@ -11,10 +11,10 @@ import os
 
 import pytest
 
-from evercurrent.dataset.messages import load_messages
-from evercurrent.db.repository import get_processed_bundle_ts, persist_bundle
-from evercurrent.db.session import get_session_factory, reset_engine
-from evercurrent.ingestion.threads import group_by_thread
+from digest.dataset.messages import load_messages
+from digest.db.repository import get_processed_bundle_ts, persist_bundle
+from digest.db.session import get_session_factory, reset_engine
+from digest.ingestion.threads import group_by_thread
 
 
 @pytest.mark.integration
@@ -63,7 +63,7 @@ class TestPopulatePostgresFromDataset:
         """All 307 messages are in the message table."""
         from sqlalchemy import func, select
 
-        from evercurrent.db.models import Message
+        from digest.db.models import Message
 
         factory = get_session_factory()
         async with factory() as session:
@@ -76,7 +76,7 @@ class TestPopulatePostgresFromDataset:
         """Every message has a bundle_membership row."""
         from sqlalchemy import func, select
 
-        from evercurrent.db.models import BundleMembership
+        from digest.db.models import BundleMembership
 
         factory = get_session_factory()
         async with factory() as session:
@@ -91,7 +91,7 @@ class TestPopulatePostgresFromDataset:
         """JSONB raw field is queryable with containment operator."""
         from sqlalchemy import select
 
-        from evercurrent.db.models import Message
+        from digest.db.models import Message
 
         factory = get_session_factory()
         async with factory() as session:

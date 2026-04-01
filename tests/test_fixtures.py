@@ -4,11 +4,11 @@ from pathlib import Path
 
 import pytest
 
-from evercurrent.fixtures import (
+from digest.fixtures import (
     FixtureStore,
     load_fixtures,
 )
-from evercurrent.models.persona import Persona
+from digest.models.persona import Persona
 
 
 @pytest.fixture
