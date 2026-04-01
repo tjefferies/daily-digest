@@ -5,6 +5,25 @@ EverCurrent Daily Digest Tool: Technical Design Document
 =====================================================================
 
 
+.. admonition:: V2 Architecture Update (2026-04-01)
+
+   This document was originally written for V1, which included multi-provider
+   LLM support (Anthropic, OpenAI, Google), sync code paths, and instructor
+   for structured output. **V2 aggressively pruned the codebase** based on
+   lessons from 98 commits. Key changes:
+
+   - **Anthropic-only** with Message Batches API (50% cost savings)
+   - **tool_use for structured output** — instructor dependency removed
+   - **Async-only** — all sync LLM code paths deleted
+   - **Postgres + Neo4j + FAISS** for persistence (delta processing, not kill-and-fill)
+   - **All prompts in config/prompts.yml** — zero hardcoded prompt strings
+   - **All constants in config/pipeline.yml** — model, thresholds, concurrency
+   - **SQLAlchemy async ORM** with alembic migrations for Postgres
+   - **Frontend polls /pipeline/status** for real batch progress
+
+   See :ref:`v2-architecture` below for the current system design.
+   See :ref:`next-steps` for features deferred from V1.
+
 .. note::
 
    **Design Team**
@@ -182,8 +201,8 @@ events and returns lightweight atom dicts with core fields (``type``,
 Stage 2 (enrichment) makes a second LLM call per atom to assign metadata
 (``workstreams``, ``urgency``, ``confidence``, ``implicit_decision``,
 ``phase_relevance``) via an ``EnrichmentResponse``. The two responses are
-merged into full ``Atom`` objects. Both stages use ``instructor`` for
-Pydantic-validated structured output.
+merged into full ``Atom`` objects. Both stages use Anthropic's native
+``tool_use`` for Pydantic-validated structured output.
 
 After extraction, atoms undergo **two-pass validation**: ``DECISION`` and
 ``SPEC_CHANGE`` atoms are re-checked against their source context by a
@@ -953,15 +972,17 @@ be scope inflation that distracts from the core thesis.
      - Best LLM library ecosystem (Anthropic SDK), fast prototyping,
        strong typing with Pydantic for atom schemas.
    * - LLM Provider
-     - Model-agnostic via ``instructor`` (Anthropic, OpenAI, Google).
-       Default: ``claude-sonnet-4-20250514``.
-     - Strong instruction-following for structured extraction,
-       cost-effective for batch processing. ``instructor`` provides
-       Pydantic-validated structured output across all providers.
+     - Anthropic-only via native ``tool_use`` for structured output.
+       Default: ``claude-haiku-4-5``. Uses Message Batches API for
+       50% cost savings on bulk extraction.
+     - Strong instruction-following for structured extraction.
+       ``tool_use`` provides Pydantic-validated structured output
+       without third-party dependencies.
    * - Data Store
-     - In-memory (prototype) / SQLite (optional)
-     - No persistence needed for a take-home demo. The synthetic dataset
-       loads at startup.
+     - Postgres (bundles, atoms, batch logs) + Neo4j (graph queries) + FAISS (embeddings)
+     - Delta processing: bundles persisted to Postgres, only new/changed
+       bundles sent to LLM. Neo4j for persona-relevant graph queries.
+       FAISS for embedding cache and cosine similarity.
    * - Documentation
      - Sphinx (reStructuredText)
      - Professional documentation site, integrates with the GitHub
@@ -1195,3 +1216,93 @@ the LLM cost for high-risk atoms but is justified by the cost of errors.
 high-risk atom types undergo validation). Processing time for the full
 batch increases by around 5 to 10 minutes. Acceptable tradeoff for the
 target scale.
+
+.. _v2-architecture:
+
+---------------------------------------------------------------------------
+13. V2 Architecture
+---------------------------------------------------------------------------
+
+V2 simplified the system based on lessons from 98 commits. The architecture
+is now:
+
+.. code-block:: text
+
+                    ┌─────────────┐
+                    │  Frontend   │ React + polling progress UI
+                    │  :5173      │ preloads 3 persona digests
+                    └──────┬──────┘
+                           │ /api/
+                    ┌──────┴──────┐
+                    │   FastAPI   │ async-only, batch pipeline
+                    │   :8000     │ tool_use structured output
+                    └──┬───┬───┬──┘
+                       │   │   │
+              ┌────────┘   │   └────────┐
+              ▼            ▼            ▼
+        ┌──────────┐ ┌──────────┐ ┌──────────┐
+        │ Postgres │ │  Neo4j   │ │  FAISS   │
+        │ bundles  │ │  atoms   │ │ vectors  │
+        │ atoms    │ │  graph   │ │ cache    │
+        │ batches  │ │  queries │ │ cosine   │
+        └──────────┘ └──────────┘ └──────────┘
+              ▲
+              │ delta check
+        ┌─────┴──────┐
+        │  Anthropic  │
+        │  Batch API  │ tool_use, 50% cost savings
+        └─────────────┘
+
+Key V2 principles:
+
+- **Anthropic-only.** No OpenAI/Google adapters. No factory pattern.
+- **Batch API.** All extraction uses Message Batches API with tool_use.
+- **Delta processing.** Postgres stores bundles; only new bundles are extracted.
+- **Async-only.** No sync code paths. No instructor dependency.
+- **Config-driven.** All prompts in ``config/prompts.yml``, all constants in
+  ``config/pipeline.yml``.
+- **FAISS cosine similarity.** IndexFlatIP with normalized vectors.
+
+.. _next-steps:
+
+---------------------------------------------------------------------------
+14. Next Steps (Deferred from V1)
+---------------------------------------------------------------------------
+
+The following features were considered but deferred to keep the MVP focused:
+
+14.1 Multi-Provider LLM Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+OpenAI and Google Gemini adapters were built in V1 but removed in V2.
+The abstraction layer (``LLMClient`` protocol, factory pattern) added
+complexity without providing value for the prototype. Re-add when a
+second provider is needed, using the same ``AsyncLLMClient`` protocol.
+
+14.2 Real-Time Streaming
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Replace batch extraction with streaming via Slack Events API + Kafka
+for near-real-time atom extraction. Requires infrastructure beyond
+Docker Compose.
+
+14.3 Feedback Loop
+~~~~~~~~~~~~~~~~~~~
+
+Allow users to mark digest items as "useful" or "not useful" to tune
+scoring weights per persona. Requires a feedback storage mechanism
+and a scoring weight update pipeline.
+
+14.4 Multiple Team Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Generalize from the 8-channel robotics team to arbitrary Slack workspaces.
+Requires dynamic channel discovery, workstream inference, and persona
+auto-detection.
+
+14.5 Advanced Evaluation
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Systematic extraction quality evaluation: golden-set annotations,
+precision/recall metrics, hallucination rate tracking. Currently
+validation is binary (valid/invalid) — needs graded scoring.
