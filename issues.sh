@@ -1085,3 +1085,118 @@ BATCH_API=$(bd create \
   --acceptance="1. Pipeline uses batch API for all LLM calls. 2. No rate limiting on full run. 3. 50% cost reduction. 4. Graceful fallback. 5. All tests/gates pass." \
   --silent)
 echo "    Batch API:            $BATCH_API"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# EPIC: V2 AGGRESSIVE PRUNE — MVP WITH WORKING 3-PERSONA PROTOTYPE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+echo ""
+echo "  V2 Prune Epic:"
+
+V2_EPIC=$(bd create \
+  --title="EPIC: V2 Aggressive Prune — MVP with working 3-persona prototype" \
+  --type=feature --priority=0 \
+  --description="Retrospective on 98 commits reveals scope creep and dead code. Prune to working MVP." \
+  --silent)
+echo "    Epic:                 $V2_EPIC"
+
+# Layer 0: Prune dead code
+V2_PRUNE=$(bd create \
+  --title="Remove OpenAI/Google LLM adapters, instructor dependency, and sync code paths" \
+  --type=task --priority=0 \
+  --description="Delete llm/openai.py, llm/google.py, sync ExtractionRunner, sync DigestGenerator, sync run_pipeline, legacy ExtractionResponse. Remove instructor. ~1000 LOC of dead code." \
+  --silent)
+echo "    Prune dead code:      $V2_PRUNE"
+bd dep add "$V2_PRUNE" "$V2_EPIC"
+
+# Layer 1: Infrastructure
+V2_POSTGRES=$(bd create \
+  --title="Add Postgres to docker-compose with SQLAlchemy async ORM models" \
+  --type=task --priority=0 \
+  --description="Postgres 16 service, SQLAlchemy async models for message/bundle/membership/atom with JSONB, alembic migrations, asyncpg driver." \
+  --silent)
+echo "    Postgres:             $V2_POSTGRES"
+bd dep add "$V2_POSTGRES" "$V2_PRUNE"
+
+V2_INSTRUCTOR=$(bd create \
+  --title="Replace instructor with tool_use everywhere, remove instructor dependency" \
+  --type=task --priority=1 \
+  --description="Remove instructor from anthropic.py, validation.py, generation/runner.py. Replace with direct tool_use calls." \
+  --silent)
+echo "    Remove instructor:    $V2_INSTRUCTOR"
+bd dep add "$V2_INSTRUCTOR" "$V2_PRUNE"
+
+V2_PROMPTS=$(bd create \
+  --title="Move all prompts from Python strings to prompts.yml config file" \
+  --type=task --priority=1 \
+  --description="All extraction/validation/generation prompts and tool schemas to config/prompts.yml. Zero hardcoded prompt strings." \
+  --silent)
+echo "    Prompts to YAML:      $V2_PROMPTS"
+bd dep add "$V2_PROMPTS" "$V2_PRUNE"
+
+# Layer 2: Pipeline features
+V2_DELTA=$(bd create \
+  --title="Delta pipeline: persist bundles/atoms to Postgres, skip unchanged bundles" \
+  --type=task --priority=0 \
+  --description="Store ThreadBundles and atoms in Postgres. On re-run, skip unchanged bundles. No kill-and-fill, only delta." \
+  --silent)
+echo "    Delta pipeline:       $V2_DELTA"
+bd dep add "$V2_DELTA" "$V2_POSTGRES"
+
+V2_FAISS=$(bd create \
+  --title="FAISS cosine similarity via IndexFlatIP, replace pure-Python implementation" \
+  --type=task --priority=1 \
+  --description="Use FAISS IndexFlatIP with normalized vectors for cosine similarity. Replace pure-Python cosine_similarity()." \
+  --silent)
+echo "    FAISS cosine:         $V2_FAISS"
+bd dep add "$V2_FAISS" "$V2_PRUNE"
+
+V2_RATELIMIT=$(bd create \
+  --title="Batch API rate limit safeguards: respect 1K RPM and 450K input tokens/min" \
+  --type=task --priority=1 \
+  --description="Token estimation, auto-splitting large batches, exponential backoff on 429. Full 116-window run without rate limits." \
+  --silent)
+echo "    Rate limits:          $V2_RATELIMIT"
+bd dep add "$V2_RATELIMIT" "$V2_PRUNE"
+
+# Layer 3: Frontend
+V2_FRONTEND=$(bd create \
+  --title="Frontend: rewrite for async batch pipeline with polling progress UI" \
+  --type=task --priority=1 \
+  --description="POST returns immediately, poll /pipeline/status with real progress bar, stage labels, auto-refresh on complete." \
+  --silent)
+echo "    Frontend rewrite:     $V2_FRONTEND"
+bd dep add "$V2_FRONTEND" "$V2_DELTA"
+
+V2_FE_NEO4J=$(bd create \
+  --title="Frontend: load atoms/personas from Neo4j at startup, searchable by person" \
+  --type=task --priority=1 \
+  --description="Load existing atoms on mount, instant persona switch from cache, search/filter by person." \
+  --silent)
+echo "    Frontend Neo4j:       $V2_FE_NEO4J"
+bd dep add "$V2_FE_NEO4J" "$V2_FRONTEND"
+
+# Layer 4: Polish
+V2_BATCHLOG=$(bd create \
+  --title="Store LLM batch request/response JSON in Postgres JSONB table" \
+  --type=task --priority=2 \
+  --description="llm_batch_log table with batch_id, stage, request/response JSONB for auditability and debugging." \
+  --silent)
+echo "    Batch logging:        $V2_BATCHLOG"
+bd dep add "$V2_BATCHLOG" "$V2_POSTGRES"
+
+V2_DOCS=$(bd create \
+  --title="Update design-document.rst for V2 simplified architecture" \
+  --type=task --priority=2 \
+  --description="Rewrite for V2: Anthropic-only, batch API, tool_use, Postgres+Neo4j+FAISS, async-only. Deferred features to Next Steps." \
+  --silent)
+echo "    Design docs:          $V2_DOCS"
+bd dep add "$V2_DOCS" "$V2_DELTA"
+
+V2_TESTS=$(bd create \
+  --title="Replace 90% unit test coverage target with 80% + integration tests" \
+  --type=task --priority=2 \
+  --description="Lower threshold to 80%. Add integration tests: batch API smoke, Postgres round-trip, Neo4j round-trip, FAISS persist, full pipeline e2e." \
+  --silent)
+echo "    Integration tests:    $V2_TESTS"
+bd dep add "$V2_TESTS" "$V2_DELTA"
