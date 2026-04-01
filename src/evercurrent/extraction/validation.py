@@ -173,12 +173,22 @@ async def _submit_validation_batch(
     total = len(requests)
     logger.info("Validation batch %s: %d requests", batch_id, total)
 
+    consecutive_failures = 0
     for _attempt in range(_MAX_POLL_ATTEMPTS):
-        await asyncio.sleep(_POLL_INTERVAL)
+        delay = _POLL_INTERVAL * (2 ** min(consecutive_failures, 5))
+        await asyncio.sleep(delay)
         try:
             status = client.messages.batches.retrieve(batch_id)
+            consecutive_failures = 0
         except Exception:
-            logger.warning("Validation poll failed for %s, retrying", batch_id, exc_info=True)
+            consecutive_failures += 1
+            logger.warning(
+                "Validation poll failed for %s (attempt %d, next retry in %.0fs)",
+                batch_id,
+                consecutive_failures,
+                _POLL_INTERVAL * (2 ** min(consecutive_failures, 5)),
+                exc_info=True,
+            )
             continue
         counts = status.request_counts
         logger.info(
