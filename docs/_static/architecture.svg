@@ -1,139 +1,138 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1060" font-family="'Segoe UI', Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 680" font-family="'Segoe UI', Helvetica, Arial, sans-serif">
   <defs>
-    <linearGradient id="layerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#e8f4fd"/>
       <stop offset="100%" stop-color="#d1ecf9"/>
     </linearGradient>
-    <linearGradient id="inputGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#fff3cd"/>
-      <stop offset="100%" stop-color="#ffeeba"/>
-    </linearGradient>
-    <linearGradient id="outputGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#d4edda"/>
       <stop offset="100%" stop-color="#c3e6cb"/>
     </linearGradient>
-    <linearGradient id="filterGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fff3cd"/>
+      <stop offset="100%" stop-color="#ffeeba"/>
+    </linearGradient>
+    <linearGradient id="redGrad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#f8d7da"/>
       <stop offset="100%" stop-color="#f5c6cb"/>
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#e8daef"/>
+      <stop offset="100%" stop-color="#d7bde2"/>
     </linearGradient>
     <filter id="shadow" x="-2%" y="-2%" width="104%" height="108%">
       <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.12"/>
     </filter>
-    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
-      <polygon points="0 0, 10 3.5, 0 7" fill="#5a6c7d"/>
-    </marker>
   </defs>
 
   <!-- Title -->
-  <text x="400" y="32" text-anchor="middle" font-size="20" font-weight="700" fill="#1a2a3a">EverCurrent Architecture</text>
-  <text x="400" y="52" text-anchor="middle" font-size="12" fill="#5a6c7d">Five-Layer Pipeline: Slack Messages to Personalized Digests</text>
+  <text x="410" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">EverCurrent V2 Architecture</text>
+  <text x="410" y="50" text-anchor="middle" font-size="11" fill="#7f8c8d">Anthropic-only · Batch API · tool_use · Async-only · Delta Processing</text>
 
-  <!-- Input: Slack Messages -->
-  <rect x="260" y="72" width="280" height="50" rx="25" fill="url(#inputGrad)" stroke="#d4a017" stroke-width="1.5" filter="url(#shadow)"/>
-  <text x="400" y="101" text-anchor="middle" font-size="14" font-weight="600" fill="#856404">Slack Messages (JSON fixtures)</text>
+  <!-- Frontend -->
+  <rect x="280" y="70" width="260" height="60" rx="8" fill="url(#greenGrad)" stroke="#27ae60" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="410" y="95" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a5e2a">React Frontend :5173</text>
+  <text x="410" y="112" text-anchor="middle" font-size="10" fill="#2d6a3f">Polling progress · Preloaded digests · Instant persona switch</text>
 
-  <!-- Arrow: Input -> L1 -->
-  <line x1="400" y1="122" x2="400" y2="148" stroke="#5a6c7d" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- Arrow down -->
+  <line x1="410" y1="130" x2="410" y2="155" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <text x="430" y="148" font-size="9" fill="#95a5a6">/api/</text>
 
-  <!-- Layer 1: Ingestion -->
-  <rect x="80" y="152" width="680" height="100" rx="10" fill="url(#layerGrad)" stroke="#4a90c4" stroke-width="1.5" filter="url(#shadow)"/>
-  <rect x="80" y="152" width="44" height="100" rx="10 0 0 10" fill="#4a90c4"/>
-  <text x="102" y="208" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" transform="rotate(-90 102 208)">L1</text>
-  <text x="142" y="182" font-size="16" font-weight="700" fill="#1a2a3a">Ingestion</text>
-  <text x="142" y="202" font-size="12" fill="#3a5a7a">Channel loading, thread reconstruction, and context window assembly</text>
-  <text x="142" y="220" font-size="11" fill="#5a7a9a">Channel routing | Thread grouping into ThreadBundles | Continuation detection</text>
-  <text x="142" y="238" font-size="11" fill="#5a7a9a">Token-based context window compression | Conversational unit assembly</text>
+  <!-- FastAPI -->
+  <rect x="250" y="155" width="320" height="65" rx="8" fill="url(#blueGrad)" stroke="#2980b9" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="410" y="178" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a4a6e">FastAPI Backend :8000</text>
+  <text x="410" y="195" text-anchor="middle" font-size="10" fill="#2c6690">Async-only · Batch pipeline · tool_use structured output</text>
+  <text x="410" y="210" text-anchor="middle" font-size="9" fill="#5499c7">/pipeline/run → /pipeline/status → /digest/{persona_id}</text>
 
-  <!-- Arrow: L1 -> L2 -->
-  <line x1="400" y1="252" x2="400" y2="278" stroke="#5a6c7d" stroke-width="2" marker-end="url(#arrow)"/>
-  <text x="412" y="270" font-size="10" fill="#5a6c7d" font-style="italic">context windows (thread text + metadata)</text>
+  <!-- Pipeline Box -->
+  <rect x="60" y="245" width="700" height="220" rx="8" fill="none" stroke="#bdc3c7" stroke-width="1" stroke-dasharray="6,3"/>
+  <text x="80" y="263" font-size="10" font-weight="bold" fill="#7f8c8d">PIPELINE (async, configurable: batch or async mode)</text>
 
-  <!-- Layer 2: Extraction -->
-  <rect x="80" y="282" width="680" height="120" rx="10" fill="url(#layerGrad)" stroke="#4a90c4" stroke-width="1.5" filter="url(#shadow)"/>
-  <rect x="80" y="282" width="44" height="120" rx="10 0 0 10" fill="#3a7cb8"/>
-  <text x="102" y="348" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" transform="rotate(-90 102 348)">L2</text>
-  <text x="142" y="312" font-size="16" font-weight="700" fill="#1a2a3a">Two-Stage Extraction</text>
-  <text x="142" y="332" font-size="12" fill="#3a5a7a">LLM-powered structured extraction via instructor (Pydantic models)</text>
-  <!-- Two-stage sub-boxes -->
-  <rect x="150" y="344" width="270" height="44" rx="6" fill="#fff" stroke="#4a90c4" stroke-width="1" opacity="0.8"/>
-  <text x="160" y="362" font-size="11" font-weight="600" fill="#1a2a3a">Stage 1: Coarse Extraction</text>
-  <text x="160" y="378" font-size="10" fill="#5a7a9a">Identify events: type, summary, detail, source</text>
-  <rect x="440" y="344" width="300" height="44" rx="6" fill="#fff" stroke="#4a90c4" stroke-width="1" opacity="0.8"/>
-  <text x="450" y="362" font-size="11" font-weight="600" fill="#1a2a3a">Stage 2: Enrichment</text>
-  <text x="450" y="378" font-size="10" fill="#5a7a9a">Workstreams, urgency, confidence, phase relevance</text>
-  <!-- Arrow between stages -->
-  <line x1="420" y1="366" x2="435" y2="366" stroke="#4a90c4" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <!-- Ingestion -->
+  <rect x="80" y="275" width="150" height="55" rx="6" fill="url(#orangeGrad)" stroke="#e67e22" stroke-width="1" filter="url(#shadow)"/>
+  <text x="155" y="297" text-anchor="middle" font-size="11" font-weight="bold" fill="#7d4e00">Ingestion</text>
+  <text x="155" y="312" text-anchor="middle" font-size="9" fill="#9a6b1e">Threads · Continuations</text>
+  <text x="155" y="323" text-anchor="middle" font-size="9" fill="#9a6b1e">Semantic + Structural</text>
 
-  <!-- Arrow: L2 -> Filter -->
-  <line x1="400" y1="402" x2="400" y2="422" stroke="#5a6c7d" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- Arrow -->
+  <line x1="230" y1="302" x2="255" y2="302" stroke="#7f8c8d" stroke-width="1.5"/>
 
-  <!-- Filter + Validation gate -->
-  <rect x="200" y="426" width="400" height="40" rx="8" fill="url(#filterGrad)" stroke="#c0392b" stroke-width="1.2" filter="url(#shadow)"/>
-  <text x="400" y="443" text-anchor="middle" font-size="12" font-weight="600" fill="#721c24">Confidence Filter (≥ 0.7)</text>
-  <text x="400" y="458" text-anchor="middle" font-size="10" fill="#943e48">+ Two-pass validation against source context</text>
+  <!-- Extraction (Batch) -->
+  <rect x="255" y="275" width="170" height="55" rx="6" fill="url(#blueGrad)" stroke="#2980b9" stroke-width="1" filter="url(#shadow)"/>
+  <text x="340" y="297" text-anchor="middle" font-size="11" font-weight="bold" fill="#1a4a6e">Extraction</text>
+  <text x="340" y="312" text-anchor="middle" font-size="9" fill="#2c6690">Stage 1: Coarse → Stage 2: Enrich</text>
+  <text x="340" y="323" text-anchor="middle" font-size="9" fill="#2c6690">Batch API · tool_use · 50% savings</text>
 
-  <!-- Arrow: Filter -> L3 -->
-  <line x1="400" y1="466" x2="400" y2="486" stroke="#5a6c7d" stroke-width="2" marker-end="url(#arrow)"/>
-  <text x="412" y="480" font-size="10" fill="#5a6c7d" font-style="italic">validated atoms</text>
+  <!-- Arrow -->
+  <line x1="425" y1="302" x2="450" y2="302" stroke="#7f8c8d" stroke-width="1.5"/>
 
-  <!-- Layer 3: Context Backbone -->
-  <rect x="80" y="490" width="680" height="100" rx="10" fill="url(#layerGrad)" stroke="#4a90c4" stroke-width="1.5" filter="url(#shadow)"/>
-  <rect x="80" y="490" width="44" height="100" rx="10 0 0 10" fill="#2d6aa0"/>
-  <text x="102" y="546" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" transform="rotate(-90 102 546)">L3</text>
-  <text x="142" y="520" font-size="16" font-weight="700" fill="#1a2a3a">Context Backbone</text>
-  <text x="142" y="540" font-size="12" fill="#3a5a7a">Structured world model for persona-aware scoring</text>
-  <text x="142" y="558" font-size="11" fill="#5a7a9a">Team roster + roles | Workstream registry | Per-workstream phase vectors (PhaseVector)</text>
-  <text x="142" y="576" font-size="11" fill="#5a7a9a">Component-to-workstream mapping | Persona models | Collaborator graphs</text>
+  <!-- Validation + Filter -->
+  <rect x="450" y="275" width="140" height="55" rx="6" fill="url(#redGrad)" stroke="#c0392b" stroke-width="1" filter="url(#shadow)"/>
+  <text x="520" y="297" text-anchor="middle" font-size="11" font-weight="bold" fill="#7b241c">Validation</text>
+  <text x="520" y="312" text-anchor="middle" font-size="9" fill="#943126">Rate-limited · Chunked</text>
+  <text x="520" y="323" text-anchor="middle" font-size="9" fill="#943126">Confidence filter ≥0.7</text>
 
-  <!-- Arrow: L3 -> L4 -->
-  <line x1="400" y1="590" x2="400" y2="616" stroke="#5a6c7d" stroke-width="2" marker-end="url(#arrow)"/>
-  <text x="412" y="608" font-size="10" fill="#5a6c7d" font-style="italic">atoms + persona + phase context</text>
+  <!-- Arrow -->
+  <line x1="590" y1="302" x2="620" y2="302" stroke="#7f8c8d" stroke-width="1.5"/>
 
-  <!-- Layer 4: Relevance Scoring -->
-  <rect x="80" y="620" width="680" height="130" rx="10" fill="url(#layerGrad)" stroke="#4a90c4" stroke-width="1.5" filter="url(#shadow)"/>
-  <rect x="80" y="620" width="44" height="130" rx="10 0 0 10" fill="#1f5a8a"/>
-  <text x="102" y="691" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" transform="rotate(-90 102 691)">L4</text>
-  <text x="142" y="648" font-size="16" font-weight="700" fill="#1a2a3a">Relevance Scoring</text>
-  <text x="142" y="668" font-size="12" fill="#3a5a7a">Five-dimension composite scoring per (atom, persona) pair</text>
-  <!-- Scoring dimensions: 3 across top row, 2 across bottom row -->
-  <text x="150" y="690" font-size="11" fill="#5a7a9a" font-weight="600">Workstream Proximity (0.30)</text>
-  <text x="380" y="690" font-size="11" fill="#5a7a9a" font-weight="600">Role Alignment (0.20)</text>
-  <text x="580" y="690" font-size="11" fill="#5a7a9a" font-weight="600">Phase Alignment (0.20)</text>
-  <text x="150" y="710" font-size="11" fill="#5a7a9a" font-weight="600">Urgency (0.15)</text>
-  <text x="380" y="710" font-size="11" fill="#5a7a9a" font-weight="600">Social Signal (0.15)</text>
-  <text x="142" y="735" font-size="11" fill="#5a7a9a">Critical threshold overflow (≥ 0.85 always included) | Priority-tier ranking</text>
+  <!-- Scoring + Generation -->
+  <rect x="620" y="275" width="125" height="55" rx="6" fill="url(#purpleGrad)" stroke="#8e44ad" stroke-width="1" filter="url(#shadow)"/>
+  <text x="682" y="297" text-anchor="middle" font-size="11" font-weight="bold" fill="#512e5f">Scoring</text>
+  <text x="682" y="312" text-anchor="middle" font-size="9" fill="#6c3483">5-dim composite</text>
+  <text x="682" y="323" text-anchor="middle" font-size="9" fill="#6c3483">Per-persona digests</text>
 
-  <!-- Arrow: L4 -> L5 -->
-  <line x1="400" y1="750" x2="400" y2="776" stroke="#5a6c7d" stroke-width="2" marker-end="url(#arrow)"/>
-  <text x="412" y="768" font-size="10" fill="#5a6c7d" font-style="italic">ranked ScoredAtoms with dimension breakdowns</text>
+  <!-- Delta Check -->
+  <rect x="80" y="350" width="300" height="45" rx="6" fill="#fef9e7" stroke="#f39c12" stroke-width="1" filter="url(#shadow)"/>
+  <text x="230" y="370" text-anchor="middle" font-size="11" font-weight="bold" fill="#7d6608">Delta Processing</text>
+  <text x="230" y="385" text-anchor="middle" font-size="9" fill="#9a7d0a">Check Postgres for existing bundles → skip unchanged → only extract new</text>
 
-  <!-- Layer 5: Digest Generation -->
-  <rect x="80" y="780" width="680" height="100" rx="10" fill="url(#layerGrad)" stroke="#4a90c4" stroke-width="1.5" filter="url(#shadow)"/>
-  <rect x="80" y="780" width="44" height="100" rx="10 0 0 10" fill="#14476a"/>
-  <text x="102" y="836" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" transform="rotate(-90 102 836)">L5</text>
-  <text x="142" y="808" font-size="16" font-weight="700" fill="#1a2a3a">Digest Generation</text>
-  <text x="142" y="828" font-size="12" fill="#3a5a7a">LLM-generated personalized daily briefings (instructor + DigestResponse)</text>
-  <text x="142" y="846" font-size="11" fill="#5a7a9a">Briefing tone | Four sections: Requires Action | Decisions &amp; Changes | Progress &amp; Risks | Broader Context</text>
-  <text x="142" y="864" font-size="11" fill="#5a7a9a">Source-linked references (#channel, thread_ts) | Persona-specific framing</text>
+  <!-- Config -->
+  <rect x="450" y="350" width="295" height="45" rx="6" fill="#fef9e7" stroke="#f39c12" stroke-width="1" filter="url(#shadow)"/>
+  <text x="597" y="370" text-anchor="middle" font-size="11" font-weight="bold" fill="#7d6608">Config-Driven</text>
+  <text x="597" y="385" text-anchor="middle" font-size="9" fill="#9a7d0a">pipeline.yml (constants) · prompts.yml (all prompts) · .env (secrets)</text>
 
-  <!-- Arrow: L5 -> Output -->
-  <line x1="400" y1="880" x2="400" y2="906" stroke="#5a6c7d" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- LLM Request Logging -->
+  <rect x="80" y="410" width="665" height="35" rx="6" fill="#eaf2f8" stroke="#5dade2" stroke-width="1"/>
+  <text x="410" y="432" text-anchor="middle" font-size="10" fill="#2471a3">LLM Request/Response Logging → batch_log table (full JSONB bodies for debugging + replay)</text>
 
-  <!-- Output: Personalized Daily Digest -->
-  <rect x="140" y="910" width="520" height="55" rx="27" fill="url(#outputGrad)" stroke="#28a745" stroke-width="1.5" filter="url(#shadow)"/>
-  <text x="400" y="936" text-anchor="middle" font-size="14" font-weight="600" fill="#155724">Personalized Daily Digest</text>
-  <text x="400" y="954" text-anchor="middle" font-size="11" fill="#3a7a4a">One per engineer — relevance is f(atom, persona), not f(atom)</text>
+  <!-- Storage Layer -->
+  <text x="80" y="480" font-size="10" font-weight="bold" fill="#7f8c8d">PERSISTENCE</text>
 
-  <!-- API layer on the right -->
-  <rect x="770" y="152" width="24" height="728" rx="5" fill="#e8daef" stroke="#8e44ad" stroke-width="1" stroke-dasharray="4,2"/>
-  <text x="782" y="530" text-anchor="middle" font-size="9" fill="#6c3483" transform="rotate(90 782 530)">FastAPI: /health | /pipeline/run | /digest/{persona_id}</text>
+  <!-- Postgres -->
+  <rect x="80" y="490" width="200" height="70" rx="8" fill="url(#blueGrad)" stroke="#2980b9" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="180" y="515" text-anchor="middle" font-size="12" font-weight="bold" fill="#1a4a6e">Postgres :5432</text>
+  <text x="180" y="530" text-anchor="middle" font-size="9" fill="#2c6690">Messages · Bundles · Atoms</text>
+  <text x="180" y="543" text-anchor="middle" font-size="9" fill="#2c6690">Batch Logs · SQLAlchemy async</text>
 
-  <!-- Config sidebar -->
-  <rect x="6" y="152" width="34" height="728" rx="5" fill="#f0f0f0" stroke="#ccc" stroke-width="1" stroke-dasharray="4,2"/>
-  <text x="23" y="530" text-anchor="middle" font-size="9" fill="#888" transform="rotate(-90 23 530)">YAML Config (pipeline, scoring weights, personas, phases, workstreams)</text>
+  <!-- Neo4j -->
+  <rect x="310" y="490" width="200" height="70" rx="8" fill="url(#greenGrad)" stroke="#27ae60" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="410" y="515" text-anchor="middle" font-size="12" font-weight="bold" fill="#1a5e2a">Neo4j :7687</text>
+  <text x="410" y="530" text-anchor="middle" font-size="9" fill="#2d6a3f">Atom → Channel · Workstream</text>
+  <text x="410" y="543" text-anchor="middle" font-size="9" fill="#2d6a3f">Graph queries · Persona relevance</text>
 
-  <!-- Knowledge Graph (future) callout -->
-  <rect x="580" y="490" width="170" height="44" rx="6" fill="#fff" stroke="#aaa" stroke-width="1" stroke-dasharray="4,2" opacity="0.7"/>
-  <text x="665" y="508" text-anchor="middle" font-size="10" font-weight="600" fill="#888">Neo4j Knowledge Graph</text>
-  <text x="665" y="522" text-anchor="middle" font-size="9" fill="#aaa">Schema ready, not yet wired</text>
+  <!-- FAISS -->
+  <rect x="540" y="490" width="200" height="70" rx="8" fill="url(#purpleGrad)" stroke="#8e44ad" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="640" y="515" text-anchor="middle" font-size="12" font-weight="bold" fill="#512e5f">FAISS</text>
+  <text x="640" y="530" text-anchor="middle" font-size="9" fill="#6c3483">IndexFlatIP · Cosine similarity</text>
+  <text x="640" y="543" text-anchor="middle" font-size="9" fill="#6c3483">Embedding cache · Persistent</text>
+
+  <!-- Anthropic -->
+  <rect x="250" y="590" width="320" height="60" rx="8" fill="#fdebd0" stroke="#e67e22" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="410" y="615" text-anchor="middle" font-size="13" font-weight="bold" fill="#7d4e00">Anthropic Claude API</text>
+  <text x="410" y="632" text-anchor="middle" font-size="10" fill="#9a6b1e">Message Batches API · tool_use · 50% cost savings · Rate limit safeguards</text>
+
+  <!-- Arrows from pipeline to storage -->
+  <line x1="180" y1="460" x2="180" y2="490" stroke="#2980b9" stroke-width="1.5"/>
+  <line x1="410" y1="460" x2="410" y2="490" stroke="#27ae60" stroke-width="1.5"/>
+  <line x1="640" y1="460" x2="640" y2="490" stroke="#8e44ad" stroke-width="1.5"/>
+
+  <!-- Arrow from pipeline to Anthropic -->
+  <line x1="410" y1="460" x2="410" y2="590" stroke="#e67e22" stroke-width="1.5" stroke-dasharray="6,3"/>
+
+  <!-- Arrow from frontend to backend -->
+  <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#7f8c8d"/>
+    </marker>
+  </defs>
 </svg>
