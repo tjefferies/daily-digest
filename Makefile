@@ -90,6 +90,7 @@ security: license-check semgrep bandit ## Run all security gates (excluding sbom
 # ─── Documentation ───────────────────────────────────────────────────────────
 
 docs: ## Build Sphinx documentation
+	uv run sphinx-apidoc -f -o docs/api src/evercurrent
 	uv run sphinx-build -b html docs docs/_build/html
 
 docs-serve: docs ## Build and serve Sphinx docs with live reload
