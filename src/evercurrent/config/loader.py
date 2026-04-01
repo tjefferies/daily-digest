@@ -21,6 +21,7 @@ _CONFIG_FILES = [
     "scoring",
     "personas",
     "pipeline",
+    "prompts",
 ]
 
 _cached_config: dict[str, Any] | None = None

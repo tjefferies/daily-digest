@@ -27,24 +27,7 @@ _pipeline_cfg = get_config()["pipeline"]
 _MODEL = _pipeline_cfg["model"]
 _VALIDATION_MAX_TOKENS = _pipeline_cfg["validation_max_tokens"]
 
-_VALIDATION_PROMPT = """\
-You are validating an information atom extracted from a Slack conversation.
-
-## Original conversation:
-{context_text}
-
-## Extracted atom:
-{atom_json}
-
-## Task:
-Does this atom accurately represent what was said in the conversation?
-Check for:
-- Overstated conclusions (presenting uncertain discussion as firm decision)
-- Understated impact (missing affected workstreams or urgency)
-- Fabricated details (numbers, names, or specs not in the original text)
-
-Respond with JSON: {{"valid": true/false, "reason": "explanation if invalid"}}
-"""
+_VALIDATION_PROMPT = get_config()["prompts"]["validation"]
 
 
 def _demote_atom(atom: Atom, reason: str) -> Atom:
