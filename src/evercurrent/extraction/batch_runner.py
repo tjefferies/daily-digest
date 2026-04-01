@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 from evercurrent.config.loader import get_config
+from evercurrent.db.llm_logger import log_llm_request, log_llm_response
 from evercurrent.extraction.prompt import build_coarse_prompt, build_enrichment_prompt
 from evercurrent.models.atom import Atom, AtomSource, AtomType
 from evercurrent.models.responses import EnrichmentResponse
@@ -466,6 +467,10 @@ class BatchExtractionRunner:
             errored=0,
         )
         logger.info("Batch %s submitted: %d requests (%s)", batch_id, total, stage)
+        await log_llm_request(
+            batch_id=batch_id, stage=stage, request_count=total,
+            request_body=requests,
+        )
 
         for _attempt in range(_MAX_POLL_ATTEMPTS):
             await asyncio.sleep(_POLL_INTERVAL)
@@ -517,5 +522,12 @@ class BatchExtractionRunner:
             succeeded,
             failed,
             total,
+        )
+        await log_llm_response(
+            batch_id=batch_id, status="ended",
+            response_body={
+                "succeeded": succeeded, "failed": failed,
+                "total": total, "results": dict(results),
+            },
         )
         return results

@@ -88,7 +88,7 @@ class TestMetadata:
         cols = {c.name for c in BatchLog.__table__.columns}
         expected = {
             "id", "batch_id", "stage", "request_count", "status",
-            "request_summary", "response_summary", "created_at", "completed_at",
+            "request_body", "response_body", "created_at", "completed_at",
         }
         assert cols == expected
 

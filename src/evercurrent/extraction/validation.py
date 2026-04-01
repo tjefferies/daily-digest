@@ -13,6 +13,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from evercurrent.config.loader import get_config
+from evercurrent.db.llm_logger import log_llm_request, log_llm_response
 from evercurrent.models.responses import ValidationResponse
 
 if TYPE_CHECKING:
@@ -74,6 +75,14 @@ async def async_validate_atoms(
     if not atoms:
         return []
 
+    to_validate = [a for a in atoms if a.type in _VALIDATED_TYPES]
+    validation_id = f"validation-{id(atoms)}"
+    await log_llm_request(
+        batch_id=validation_id, stage="validation",
+        request_count=len(to_validate),
+        request_body={"atoms": [a.model_dump(mode="json") for a in to_validate]},
+    )
+
     semaphore = asyncio.Semaphore(_VALIDATION_CONCURRENCY)
 
     async def _maybe_validate(atom: Atom) -> Atom:
@@ -93,10 +102,19 @@ async def async_validate_atoms(
         if i + chunk_size < len(atoms):
             await asyncio.sleep(_VALIDATION_CHUNK_DELAY)
 
+    demoted = sum(1 for r in results if r.confidence < 0.5)
     logger.info(
-        "Validation: %d atoms checked, %d chunks",
+        "Validation: %d atoms checked, %d chunks, %d demoted",
         len(atoms),
         (len(atoms) + chunk_size - 1) // chunk_size,
+        demoted,
+    )
+    await log_llm_response(
+        batch_id=validation_id, status="completed",
+        response_body={
+            "validated": len(to_validate), "demoted": demoted,
+            "results": [r.model_dump(mode="json") for r in results],
+        },
     )
     return results
 

@@ -247,8 +247,8 @@ class BatchLog(Base):
         stage: Pipeline stage (extraction_stage1, extraction_stage2, etc.).
         request_count: Number of requests in the batch.
         status: Final batch status (ended, canceled, etc.).
-        request_summary: Summary of requests (custom_ids, token estimates).
-        response_summary: Summary of results (succeeded/failed counts).
+        request_body: Full JSON request body sent to Anthropic API.
+        response_body: Full JSON response body received from Anthropic API.
         created_at: When the batch was submitted.
         completed_at: When the batch finished.
     """
@@ -260,8 +260,8 @@ class BatchLog(Base):
     stage: Mapped[str] = mapped_column(String, nullable=False)
     request_count: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[str] = mapped_column(String, nullable=False, default="submitted")
-    request_summary: Mapped[dict] = mapped_column(JsonType, nullable=False)
-    response_summary: Mapped[dict | None] = mapped_column(JsonType, nullable=True)
+    request_body: Mapped[dict] = mapped_column(JsonType, nullable=False)
+    response_body: Mapped[dict | None] = mapped_column(JsonType, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(tz=UTC),
