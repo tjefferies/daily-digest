@@ -61,7 +61,26 @@ Three things make this hard:
    affects me?" question.
 
 ---------------------------------------------------------------------------
-2. Architecture Overview (5 min)
+2. Assumptions (1 min)
+---------------------------------------------------------------------------
+
+.. admonition:: Speaker Notes
+
+   Briefly walk through the operating envelope. These assumptions define
+   what was built and — more importantly — what was deliberately scoped out.
+
+Key assumptions (full table in design doc Section 2):
+
+- **A2:** 20–30 people, 300–500 msgs/day. Batch territory, not streaming.
+- **A4:** People wear multiple hats. Weighted topic interests, not role buckets.
+- **A5:** Phase is per-workstream, not per-project. Linear progression.
+- **A9:** English-only text processing.
+- **A10:** Message text only — no files, images, or edits tracked.
+- **A11:** Validation limited to DECISION and SPEC_CHANGE atoms.
+- **A14:** Neo4j failures are soft (digest still works); Postgres is critical.
+
+---------------------------------------------------------------------------
+3. Architecture Overview (5 min)
 ---------------------------------------------------------------------------
 
 .. admonition:: Speaker Notes
@@ -105,7 +124,7 @@ Three things make this hard:
    are YAML, not hardcoded.
 
 ---------------------------------------------------------------------------
-3. The Extraction Pipeline (7 min)
+4. The Extraction Pipeline (7 min)
 ---------------------------------------------------------------------------
 
 .. admonition:: Speaker Notes
@@ -202,7 +221,7 @@ data, extraction is **zero LLM calls**. The full request and response bodies
 are logged to the ``batch_log`` table for debugging and replay.
 
 ---------------------------------------------------------------------------
-4. The Scoring Engine (5 min)
+5. The Scoring Engine (5 min)
 ---------------------------------------------------------------------------
 
 .. admonition:: Speaker Notes
@@ -246,7 +265,7 @@ visibly - at least 2 items change position. This is testable and tested.
    ``src/digest/scoring/composite.py`` → ``score_atoms()``
 
 ---------------------------------------------------------------------------
-5. Live Demo (5 min)
+6. Live Demo (5 min)
 ---------------------------------------------------------------------------
 
 .. admonition:: Speaker Notes
@@ -275,46 +294,6 @@ visibly - at least 2 items change position. This is testable and tested.
 
       MATCH (a:Atom)-[:ORIGINATES_IN]->(w:Workstream)
       RETURN a.summary, w.name LIMIT 10
-
----------------------------------------------------------------------------
-6. Lessons Learned (3 min)
----------------------------------------------------------------------------
-
-.. admonition:: Speaker Notes
-
-   This is where you show engineering maturity. Not "here's what I built"
-   but "here's what I built, threw away, and rebuilt better."
-
-**120 commits. 101 tracked issues. A full V1→V2 rewrite.**
-
-What we built in V1 and deleted in V2:
-
-.. list-table::
-   :header-rows: 1
-   :widths: 40 60
-
-   * - V1 (deleted)
-     - V2 (kept)
-   * - OpenAI + Google adapters (420 LOC)
-     - Anthropic-only
-   * - ``instructor`` middleware
-     - Native ``tool_use``
-   * - Sync + async dual code paths
-     - Async-only
-   * - 90% mock-only test coverage
-     - 80% + real integration tests
-   * - In-memory only, kill-and-fill
-     - Postgres delta processing
-
-**The big lesson:** 90% test coverage with 574 mocked tests caught zero
-production bugs. Every real bug (Neo4j hostname in Docker, Cypher syntax
-on Neo4j 2025, malformed UUIDs from the LLM, markdown-fenced JSON) was
-discovered at runtime. 80% coverage with 4 real integration tests is
-worth more.
-
-**The pruning:** V2 deleted 1,179 lines of dead code in a single commit.
-The codebase went from 6,095 LOC to 4,916 LOC while adding Postgres,
-FAISS, batch API, and delta processing.
 
 ---------------------------------------------------------------------------
 7. Connection to EverCurrent (2 min)
@@ -352,31 +331,3 @@ their project is in the development lifecycle. That's the core of what
 EverCurrent does: connecting the right information to the right person
 at the right time.
 
----------------------------------------------------------------------------
-Appendix: Quick Reference
----------------------------------------------------------------------------
-
-.. list-table::
-   :header-rows: 1
-   :widths: 30 70
-
-   * - Item
-     - Value
-   * - Total commits
-     - 120
-   * - Issues tracked
-     - 102 (101 closed)
-   * - Source LOC
-     - ~5,500
-   * - Tests
-     - 511 (490 unit + 21 integration)
-   * - Synthetic dataset
-     - 307 messages, 8 channels, 20 engineers
-   * - Demo personas
-     - 3 (Maya, Elena, Ryan)
-   * - LLM
-     - Anthropic Claude (Haiku 4.5, configurable)
-   * - Persistence
-     - Postgres + Neo4j + FAISS
-   * - Docker services
-     - 4 (backend, frontend, neo4j, postgres)
