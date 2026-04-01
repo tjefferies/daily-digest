@@ -56,7 +56,48 @@ The tool becomes immediately useful instead of a demo.
 - The existing ``SlackMessage`` model and ingestion pipeline require
   zero changes - only the data source switches from fixture to API
 
-Priority 2: Scheduled Pipeline
+Priority 2: PLM / ERP Connectors
+----------------------------------
+
+**User value:** Phase context and spec baselines come directly from the
+system of record instead of being inferred from Slack or manually toggled.
+This eliminates the biggest accuracy gap in the current scoring model.
+
+The prototype infers phase context from two sources: a manual frontend
+toggle (``?phase_override=workstream:phase``) and hardcoded defaults in
+``config/phases.yml``. Both are fragile. In production, the ground truth
+for "what phase is the chassis in?" lives in the PLM/ERP system — Arena,
+Teamcenter, Windchill, or Jira with phase-gate workflows. A direct
+connector would provide:
+
+**Technical approach:**
+
+- **Automated phase detection.** Poll PLM phase-gate status per
+  subsystem/workstream. When a gate review passes (e.g., chassis EVT → DVT),
+  update the phase vector in real time. No manual toggle needed.
+- **Spec baseline tracking.** Import the current spec baseline (part
+  numbers, tolerances, material selections) from the PLM BOM. When the
+  extraction pipeline finds a ``SPEC_CHANGE`` atom, compare against the
+  PLM baseline to determine if this is a *new* change or a known revision.
+  This reduces false positives from re-discussed old changes.
+- **ECO cross-reference.** Engineering Change Orders in PLM systems are
+  the formal record of spec changes. Cross-referencing extracted
+  ``SPEC_CHANGE`` atoms against open ECOs surfaces mismatches: changes
+  discussed in Slack but not yet captured in an ECO (informal decisions
+  that need formalization), and ECOs filed without corresponding Slack
+  discussion (potential communication gaps).
+- **Per-subsystem phase granularity.** PLM systems track phase at a finer
+  granularity than "workstream" — individual assemblies, subassemblies,
+  or even part-level phases. The scoring model's phase alignment dimension
+  would gain precision by using this granular phase data instead of the
+  current workstream-level approximation.
+
+This is a fundamentally different solution architecture than inferring
+phase from message patterns. Inference is a reasonable fallback when no
+PLM exists, but direct integration is more reliable and provides the
+spec baseline that inference cannot.
+
+Priority 3: Scheduled Pipeline
 -------------------------------
 
 **User value:** Digests appear in engineers' inboxes every morning without
@@ -72,7 +113,7 @@ anyone pressing a button. The tool becomes a habit, not a novelty.
 - Deliver via Slack DM, email, or both (user preference)
 - Include a "digest ready" notification in a shared channel
 
-Priority 3: Feedback Loop
+Priority 4: Feedback Loop
 ---------------------------
 
 **User value:** The digest gets smarter over time. Items the engineer
@@ -91,7 +132,7 @@ ignores stop appearing; items they click through get boosted.
 - A/B testing framework: random assignment to scoring variants, measure
   engagement rate per variant
 
-Priority 4: Evaluation Framework
+Priority 5: Evaluation Framework
 ----------------------------------
 
 **User value:** Confidence that the system is actually catching the
@@ -109,7 +150,7 @@ important things and not hallucinating.
 - Automated regression tests: any code change that drops precision below
   baseline fails CI
 
-Priority 5: Multi-Team Support
+Priority 6: Multi-Team Support
 -------------------------------
 
 **User value:** Generalize from one robotics team to any Slack workspace.
@@ -126,7 +167,7 @@ Daily Digest Tool becomes a product, not a bespoke tool.
 - Self-service onboarding: 3–4 question flow generates initial persona
 - Multi-tenant Postgres schema with workspace isolation
 
-Priority 6: Configuration UI
+Priority 7: Configuration UI
 -------------------------------
 
 **User value:** Non-technical users can tune the system without editing
@@ -154,10 +195,6 @@ on-prem inference is required (vLLM, TGI with open-weight models).
 Kafka for near-real-time atom extraction. Requires infrastructure beyond
 Docker Compose. The current batch model (process yesterday's messages
 each morning) is the right approach for the target scale.
-
-**PLM / ERP Connectors.** Auto-detect spec changes from ECO
-notifications, cross-reference atom mentions of part numbers with PLM
-records. Valuable for teams using Arena, Teamcenter, or similar.
 
 **CAD Comment Monitoring.** Onshape and Fusion 360 comments on 3D models
 often contain implicit decisions about geometry changes that never reach
