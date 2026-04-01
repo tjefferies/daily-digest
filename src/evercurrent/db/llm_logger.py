@@ -2,7 +2,7 @@
 
 Logs the full JSON request and response bodies for every LLM call
 (batch or individual async) to the batch_log table. Enables
-debugging, cost tracking, and replay. Graceful degradation —
+debugging, cost tracking, and replay. Graceful degradation -
 logging failures never crash the pipeline.
 
 Deduplication: a (batch_id, stage) pair is logged once. Duplicate
@@ -48,7 +48,7 @@ async def log_llm_request(
                 select(BatchLog.id).where(BatchLog.batch_id == batch_id),
             )
             if existing.scalar_one_or_none() is not None:
-                return  # Already logged — skip
+                return  # Already logged - skip
             session.add(
                 BatchLog(
                     batch_id=batch_id,

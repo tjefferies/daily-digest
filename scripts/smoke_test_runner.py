@@ -90,7 +90,7 @@ async def run_smoke_test() -> bool:
     print(f"  Extracted {len(raw_atoms)} raw atoms from {len(selected)} windows")
 
     if not raw_atoms:
-        print("  WARNING: No atoms extracted — check API key and model")
+        print("  WARNING: No atoms extracted - check API key and model")
         return False
 
     # ── Stage 5: Validation ───────────────────────────────────────────────

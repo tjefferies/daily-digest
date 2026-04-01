@@ -1,4 +1,4 @@
-"""Tests for SQLAlchemy ORM models — schema structure validation."""
+"""Tests for SQLAlchemy ORM models - schema structure validation."""
 
 from __future__ import annotations
 

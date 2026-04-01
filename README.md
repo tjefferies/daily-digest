@@ -6,7 +6,7 @@ EverCurrent solves the critical information loss problem in hardware engineering
 a missed Slack thread about a spec change can cost weeks, dollars, and physical
 waste. The system ingests team communication, extracts structured atoms of
 information, scores them against each engineer's context, and generates
-personalized daily digests — so every team member sees exactly what matters to
+personalized daily digests - so every team member sees exactly what matters to
 them.
 
 ## Architecture
@@ -18,10 +18,10 @@ persona-specific daily digests via the Anthropic Message Batches API:
 
 **Key principles:**
 - **Anthropic-only** with Message Batches API (50% cost savings)
-- **tool_use** for structured output — no instructor dependency
-- **Async-only** — no sync code paths
-- **Delta processing** — Postgres stores bundles; only new bundles are extracted
-- **Config-driven** — all prompts in `config/prompts.yml`, all constants in `config/pipeline.yml`
+- **tool_use** for structured output - no instructor dependency
+- **Async-only** - no sync code paths
+- **Delta processing** - Postgres stores bundles; only new bundles are extracted
+- **Config-driven** - all prompts in `config/prompts.yml`, all constants in `config/pipeline.yml`
 
 ## Quick Start
 
@@ -95,7 +95,7 @@ curl http://localhost:8000/digest/U001
 
 ## Demo Personas
 
-Three personas demonstrate differential relevance — the same data produces
+Three personas demonstrate differential relevance - the same data produces
 meaningfully different digests for each:
 
 | Persona         | ID   | Role                      | Top Workstreams                    |
@@ -104,7 +104,7 @@ meaningfully different digests for each:
 | Elena Vasquez   | U007 | Supply Chain Manager       | supply-chain (1.0), chassis (0.5) |
 | Ryan Torres     | U010 | Engineering Manager        | chassis (0.8), drivetrain (0.8)   |
 
-Persona switching in the frontend is **instant** — all 3 digests are preloaded
+Persona switching in the frontend is **instant** - all 3 digests are preloaded
 on startup from Neo4j cache.
 
 ## Quality Gates

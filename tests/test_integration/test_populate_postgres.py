@@ -25,7 +25,7 @@ class TestPopulatePostgresFromDataset:
     def _require_postgres(self) -> None:
         """Skip if POSTGRES_DSN is not set. Reset engine between tests."""
         if not os.environ.get("POSTGRES_DSN"):
-            pytest.skip("POSTGRES_DSN not set — run with docker compose")
+            pytest.skip("POSTGRES_DSN not set - run with docker compose")
         reset_engine()
 
     async def test_persist_all_bundles(self) -> None:

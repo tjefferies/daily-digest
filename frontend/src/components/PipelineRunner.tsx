@@ -55,7 +55,7 @@ export default function PipelineRunner({ onComplete }: PipelineRunnerProps) {
     poll()
   }, [poll, stopPolling])
 
-  // Check status on mount — resume polling if already running
+  // Check status on mount - resume polling if already running
   useEffect(() => {
     const checkInitial = async () => {
       try {
@@ -121,7 +121,7 @@ export default function PipelineRunner({ onComplete }: PipelineRunnerProps) {
           <span className="text-xs text-emerald-600 font-medium">
             ✓ Pipeline complete
             {status?.stats?.atoms_after_filter != null &&
-              ` — ${status.stats.atoms_after_filter} atoms`}
+              ` - ${status.stats.atoms_after_filter} atoms`}
           </span>
         )}
       </div>

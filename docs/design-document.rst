@@ -36,7 +36,7 @@ where mistakes are physical and often irreversible.
 1.2 Why Existing Solutions Fail
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Slack's built-in features are pull-based — they require the user to know what
+Slack's built-in features are pull-based - they require the user to know what
 to look for. Generic AI summarization tools treat all readers as identical.
 But a summary of #chassis-design that's useful for the mechanical engineer is
 noise for the supply chain lead, who only needs the material change buried in
@@ -118,26 +118,26 @@ responsibility and interface contracts.
 The pipeline is triggered on demand via ``POST /pipeline/run`` (production:
 scheduled daily at 06:00 local time).
 
-**Layer 1 — Ingest.** Messages are loaded, grouped into thread bundles, and
+**Layer 1 - Ingest.** Messages are loaded, grouped into thread bundles, and
 checked for semantic continuations using FAISS cosine similarity (threshold
 0.45). Each bundle is assembled into a context window: short threads are
 included in full; long threads are compressed to the root message, top-reacted
 replies, and final 5 messages.
 
-**Layer 2 — Extract.** Each context window passes through a two-stage
+**Layer 2 - Extract.** Each context window passes through a two-stage
 Anthropic Batch API pipeline (see Section 4). Stage 1 extracts coarse atoms;
 Stage 2 enriches with metadata. Both use ``tool_use`` for structured output.
 
-**Layer 3 — Validate & Filter.** All ``DECISION`` and ``SPEC_CHANGE`` atoms
+**Layer 3 - Validate & Filter.** All ``DECISION`` and ``SPEC_CHANGE`` atoms
 are validated in a single batch against their source context. Invalid atoms
 have confidence halved. A confidence filter (threshold ≥ 0.7) removes
 low-quality atoms.
 
-**Layer 4 — Score.** Each validated atom is scored for each persona across
+**Layer 4 - Score.** Each validated atom is scored for each persona across
 five relevance dimensions (see Section 5). Atoms are ranked by composite
 score, capped at the persona's ``max_items``.
 
-**Layer 5 — Generate.** Scored atoms and persona context are passed to the
+**Layer 5 - Generate.** Scored atoms and persona context are passed to the
 LLM, which generates a four-section digest via ``tool_use`` structured output.
 
 3.2 Persistence
@@ -159,7 +159,7 @@ Persistent embedding cache with sentence-transformers (all-MiniLM-L6-v2).
 
 Bundles are persisted to Postgres *before* extraction. On re-run, the pipeline
 queries for existing bundles and only extracts new/changed ones. This means
-zero LLM calls on unchanged data — critical for cost control during
+zero LLM calls on unchanged data - critical for cost control during
 development and idempotent production runs.
 
 3.4 Tech Stack
@@ -205,15 +205,15 @@ development and idempotent production runs.
 
 Thread reconstruction operates in three passes:
 
-**Pass 1 — Structural grouping.** Group messages by Slack ``thread_ts``.
+**Pass 1 - Structural grouping.** Group messages by Slack ``thread_ts``.
 
-**Pass 2 — Implicit threading.** Identify top-level messages that continue
+**Pass 2 - Implicit threading.** Identify top-level messages that continue
 earlier conversations using a hybrid approach: structural matching
 (@-mentions, quote blocks, back-references) as a fast path, and semantic
 embedding cosine similarity (threshold 0.45) as a fallback. Channel-aware,
 first-match.
 
-**Pass 3 — Context windowing.** Assemble each conversational unit into a
+**Pass 3 - Context windowing.** Assemble each conversational unit into a
 context window within LLM token limits. Long threads are compressed to the
 opener, most-reacted messages, and final 5 messages.
 
@@ -233,7 +233,7 @@ opener, most-reacted messages, and final 5 messages.
      - "Team agreed to switch housing from aluminum to magnesium."
    * - ``SPEC_CHANGE``
      - A modification to an established spec, tolerance, or requirement.
-       Highest-risk type — silently invalidates downstream work.
+       Highest-risk type - silently invalidates downstream work.
      - "Motor torque updated from 2.5 Nm to 3.1 Nm."
    * - ``ACTION_ITEM``
      - A task assigned to a specific person with an implied deadline.
@@ -315,8 +315,8 @@ validation requests across all threads are collected into a single batch.
 ~~~~~~~~~~~~~~~~
 
 A message is not inherently important. It is important *to someone* in
-*some context*. The same ``SPEC_CHANGE`` — "motor torque increased from
-2.5 Nm to 3.1 Nm" — is critical for the power systems engineer, important
+*some context*. The same ``SPEC_CHANGE`` - "motor torque increased from
+2.5 Nm to 3.1 Nm" - is critical for the power systems engineer, important
 for supply chain, contextual for the PM, and irrelevant for the enclosure ME.
 
 5.2 Scoring Dimensions
@@ -345,7 +345,7 @@ adjacent = 0.75, decreasing with distance. Because different workstreams
 occupy different phases (assumption A5), lookup is per-workstream.
 
 **Urgency (0.15).** Atom urgency (low=0.25, medium=0.5, high=0.75,
-critical=1.0). Boosts relevance but doesn't override it — an urgent
+critical=1.0). Boosts relevance but doesn't override it - an urgent
 firmware atom is still irrelevant to a mechanical engineer.
 
 **Social Signal (0.15).** Was this atom from a conversation involving the
@@ -373,7 +373,7 @@ of rank position.
    :alt: Persona model structure
    :width: 100%
 
-A persona models what a specific person cares about — richer than a role
+A persona models what a specific person cares about - richer than a role
 label, more stable than a per-query signal.
 
 .. code-block:: json
@@ -401,7 +401,7 @@ label, more stable than a per-query signal.
 
 The phase vector is a first-class entity: a robotics program might have
 chassis in DVT, thermal in late EVT, sensors in EVT, and end-effector in
-Concept — all simultaneously. Phase alignment scoring queries each
+Concept - all simultaneously. Phase alignment scoring queries each
 workstream independently.
 
 For the prototype, three personas are manually defined. Production
@@ -418,17 +418,17 @@ frequency), organizational data (title, team), and self-declaration.
 Four priority-tiered sections, consistent structure across personas but
 different *contents* based on relevance scoring:
 
-**Section 1 — Requires Your Action.** Atoms above the critical threshold
+**Section 1 - Requires Your Action.** Atoms above the critical threshold
 involving an explicit or inferred action. Intentionally short (0–5 items).
 
-**Section 2 — Decisions & Changes.** ``DECISION`` and ``SPEC_CHANGE`` atoms
+**Section 2 - Decisions & Changes.** ``DECISION`` and ``SPEC_CHANGE`` atoms
 from relevant workstreams. This catches the "material change you didn't know
 about" failure mode.
 
-**Section 3 — Progress & Risks.** ``STATUS_UPDATE``, ``TEST_RESULT``,
+**Section 3 - Progress & Risks.** ``STATUS_UPDATE``, ``TEST_RESULT``,
 ``BLOCKER``, and ``RISK`` atoms ordered by relevance.
 
-**Section 4 — Broader Context.** Lower-relevance atoms for general team
+**Section 4 - Broader Context.** Lower-relevance atoms for general team
 awareness. Optional (controlled by persona preference), capped at 5 items.
 
 7.2 Generation Prompt
@@ -551,7 +551,7 @@ digests. The ME's digest emphasizes chassis test results; the supply chain
 lead's emphasizes material changes and vendor risks; the EM's emphasizes
 blockers and cross-functional dependencies.
 
-**Signal surfacing.** The digest surfaces "buried signals" — the material
+**Signal surfacing.** The digest surfaces "buried signals" - the material
 change should appear in the supply chain lead's digest even though it
 originated in #chassis-design.
 
@@ -630,7 +630,7 @@ These questions should be answered before production scoping:
 
 **ADR-001: Batch over stream.** The target scale (300–500 msgs/day) does
 not justify streaming infrastructure. Batch processing with a daily job
-covers the use case. Truly urgent items use Slack's native notifications —
+covers the use case. Truly urgent items use Slack's native notifications -
 the digest is for *awareness*, not *alerting*.
 
 **ADR-002: LLM extraction over rule-based NLP.** "Let's just go with
@@ -641,7 +641,7 @@ missed decision vastly exceeds the monthly API cost.
 
 **ADR-003: Atom granularity.** One atom per discrete information unit, not
 per message or thread. A 30-message thread might contain a test result, a
-decision, and an action item — different personas care about different atoms
+decision, and an action item - different personas care about different atoms
 from the same thread.
 
 **ADR-004: Phase as vector, not scalar.** Phase is tracked per-workstream

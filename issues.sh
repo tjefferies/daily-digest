@@ -991,7 +991,7 @@ CENTRALIZE_MODEL=$(bd create \
   --title="Centralize LLM model config: single pipeline.yml setting propagates to all extraction calls" \
   --type=task \
   --priority=2 \
-  --description="Currently the model name is read from pipeline.yml in runner.py at module level, but other places (validation, digest assembly) may instantiate their own model references. Ensure there is ONE canonical model setting in pipeline.yml that propagates to every LLM call in the pipeline — Stage 1 coarse, Stage 2 enrichment, validation, and digest generation. No hardcoded model strings anywhere in source code." \
+  --description="Currently the model name is read from pipeline.yml in runner.py at module level, but other places (validation, digest assembly) may instantiate their own model references. Ensure there is ONE canonical model setting in pipeline.yml that propagates to every LLM call in the pipeline - Stage 1 coarse, Stage 2 enrichment, validation, and digest generation. No hardcoded model strings anywhere in source code." \
   --design="1. Audit all files that reference a model name string or read from config independently. 2. Ensure every LLM call site reads model from the single pipeline.yml 'model' key. 3. Remove any hardcoded model strings. 4. Verify with grep that no model string literals remain in src/." \
   --acceptance="1. Changing pipeline.yml model value changes the model used in ALL LLM calls. 2. No hardcoded model strings in src/. 3. All existing tests pass. 4. All quality gates pass." \
   --silent)
@@ -1069,7 +1069,7 @@ DIGEST_NEO4J=$(bd create \
   --title="Frontend: pull digest data from Neo4j via backend API instead of in-memory store" \
   --type=feature \
   --priority=1 \
-  --description="Update /digest/{persona_id} endpoint to query atoms from Neo4j first, falling back to in-memory store. Frontend already calls GET /digest/{persona_id} — only backend needs changes. Enables digest across server restarts without re-running pipeline." \
+  --description="Update /digest/{persona_id} endpoint to query atoms from Neo4j first, falling back to in-memory store. Frontend already calls GET /digest/{persona_id} - only backend needs changes. Enables digest across server restarts without re-running pipeline." \
   --design="1. In get_digest(), query Neo4j for atoms via GraphClient. 2. Use Neo4j atoms for scoring if available. 3. Fall back to _atom_store if Neo4j fails or empty. 4. May need new GraphClient method to return full Atom objects. 5. Frontend needs no changes." \
   --acceptance="1. GET /digest returns Neo4j atoms when available. 2. Works without /pipeline/run if Neo4j has data. 3. Graceful fallback if Neo4j down. 4. Frontend displays correctly. 5. All tests pass." \
   --silent)
@@ -1087,14 +1087,14 @@ BATCH_API=$(bd create \
 echo "    Batch API:            $BATCH_API"
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# EPIC: V2 AGGRESSIVE PRUNE — MVP WITH WORKING 3-PERSONA PROTOTYPE
+# EPIC: V2 AGGRESSIVE PRUNE - MVP WITH WORKING 3-PERSONA PROTOTYPE
 # ═══════════════════════════════════════════════════════════════════════════════
 
 echo ""
 echo "  V2 Prune Epic:"
 
 V2_EPIC=$(bd create \
-  --title="EPIC: V2 Aggressive Prune — MVP with working 3-persona prototype" \
+  --title="EPIC: V2 Aggressive Prune - MVP with working 3-persona prototype" \
   --type=feature --priority=0 \
   --description="Retrospective on 98 commits reveals scope creep and dead code. Prune to working MVP." \
   --silent)

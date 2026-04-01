@@ -104,7 +104,7 @@ class TestDeltaSkipsBundles:
         # Filter bundles like the pipeline does
         new_bundles = [b for b in bundles if b.root_message.message_ts not in processed]
 
-        # ZERO new bundles — nothing to extract
+        # ZERO new bundles - nothing to extract
         assert len(new_bundles) == 0
 
     async def test_new_bundle_is_not_skipped(self, db) -> None:  # noqa: ANN001
@@ -168,6 +168,6 @@ class TestDeltaSkipsBundles:
         # Zero windows = zero LLM calls
         assert len(windows) == 0, (
             f"Expected 0 windows (all skipped), got {len(windows)}. "
-            f"Delta processing is NOT working — these bundles would "
+            f"Delta processing is NOT working - these bundles would "
             f"trigger {len(windows)} LLM batch requests."
         )

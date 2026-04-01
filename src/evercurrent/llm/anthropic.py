@@ -1,7 +1,7 @@
 """Anthropic Claude async adapter for the LLM client interface.
 
 Wraps the AsyncAnthropic SDK client. Uses native tool_use for
-structured output — no instructor dependency needed.
+structured output - no instructor dependency needed.
 """
 
 from __future__ import annotations

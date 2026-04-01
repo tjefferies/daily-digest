@@ -38,7 +38,7 @@ function App() {
         const first = digestCache[DEMO_PERSONAS[0].user_id]
         if (first) setDigest(first)
       } catch {
-        // Startup preload failed — will fetch on demand
+        // Startup preload failed - will fetch on demand
       } finally {
         setLoading(false)
       }

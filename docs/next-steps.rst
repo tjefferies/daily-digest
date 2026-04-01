@@ -54,7 +54,7 @@ The tool becomes immediately useful instead of a demo.
   (``message_deleted``) by updating or tombstoning atoms
 - Deduplicate on ``(channel_id, message_ts)`` composite key
 - The existing ``SlackMessage`` model and ingestion pipeline require
-  zero changes — only the data source switches from fixture to API
+  zero changes - only the data source switches from fixture to API
 
 Priority 2: Scheduled Pipeline
 -------------------------------
@@ -104,7 +104,7 @@ important things and not hallucinating.
 - Measure extraction precision/recall against golden set
 - Track hallucination rate: atoms that fail validation as a percentage
   of total extracted
-- Graded scoring beyond binary valid/invalid — assess whether extracted
+- Graded scoring beyond binary valid/invalid - assess whether extracted
   details (numbers, names, dates) match source text exactly
 - Automated regression tests: any code change that drops precision below
   baseline fails CI

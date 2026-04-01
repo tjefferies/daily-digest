@@ -153,7 +153,7 @@ class TestLLMRequestResponseLogging:
             )
             rows = result.scalars().all()
 
-        # merge is idempotent — should be 1 row, not 2
+        # merge is idempotent - should be 1 row, not 2
         assert len(rows) == 1, (
             f"Expected 1 row for batch_id=msgbatch_test_003, got {len(rows)}. "
             f"Duplicate logging detected!"

@@ -1,4 +1,4 @@
-# All LLM prompts — edit here, not in Python code.
+# All LLM prompts - edit here, not in Python code.
 
 coarse_extraction: |
   You are an engineering information extraction system. Your task is to analyze

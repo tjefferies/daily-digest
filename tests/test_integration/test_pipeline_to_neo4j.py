@@ -57,7 +57,7 @@ class TestPipelineToNeo4j:
         for w in selected:
             print(f"    {w.channel} thread_ts={w.thread_ts}")
 
-        # Extraction (async mode — individual calls, faster for 2 windows)
+        # Extraction (async mode - individual calls, faster for 2 windows)
         client = create_async_llm_client()
         runner = AsyncExtractionRunner(client)
         raw_atoms = await runner.extract(selected)
@@ -65,7 +65,7 @@ class TestPipelineToNeo4j:
         print(f"  Extracted: {len(raw_atoms)} raw atoms")
         assert len(raw_atoms) > 0, "No atoms extracted from 2 windows"
 
-        # Validation — collect all (index, atom, context) tuples for batch
+        # Validation - collect all (index, atom, context) tuples for batch
         window_text_by_ts = {w.thread_ts: w.thread_text for w in selected}
         atoms_with_context = []
         for i, atom in enumerate(raw_atoms):

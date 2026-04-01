@@ -2,7 +2,7 @@
 
 Submits all Stage 1 (coarse extraction) prompts as a single batch,
 polls for completion, then submits all Stage 2 (enrichment) prompts
-as a second batch. Uses tool_use for structured JSON output — the LLM
+as a second batch. Uses tool_use for structured JSON output - the LLM
 returns clean JSON via tool calls, eliminating markdown fencing issues.
 Provides 50% cost savings and avoids per-request rate limits.
 """
@@ -195,7 +195,7 @@ def _extract_tool_input(message: Any) -> dict[str, Any] | None:  # noqa: ANN401
 class BatchExtractionRunner:
     """Two-stage extraction runner using Anthropic Message Batches API.
 
-    Uses tool_use for structured output — the LLM returns clean JSON
+    Uses tool_use for structured output - the LLM returns clean JSON
     via tool calls. Submits all prompts per stage as a single batch,
     polls for completion, then parses tool_use results.
 

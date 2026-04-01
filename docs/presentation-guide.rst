@@ -7,7 +7,7 @@ EverCurrent Deep Dive: 30-Minute Presentation Guide
 .. note::
 
    **Audience:** EverCurrent engineering team (Ye Wang et al.)
-   — builders of agentic AI systems for manufacturing.
+   - builders of agentic AI systems for manufacturing.
 
    **Format:** Live walkthrough with running code. Not slides.
 
@@ -77,20 +77,20 @@ Three things make this hard:
 **Key architectural decisions:**
 
 - **Anthropic-only with Message Batches API.** 50% cost savings. We tried
-  multi-provider (OpenAI, Google) in V1 and ripped it out — added 800 LOC
+  multi-provider (OpenAI, Google) in V1 and ripped it out - added 800 LOC
   of dead abstraction without providing value. Build for one provider first.
 
 - **``tool_use`` for structured output.** The LLM returns clean JSON via
   tool calls. We tried ``instructor`` (a Python middleware library) and
-  removed it — the native API does the same thing without a dependency.
+  removed it - the native API does the same thing without a dependency.
 
 - **Three persistence layers:**
 
-  - **Postgres** (SQLAlchemy async) — system of record for messages, bundles,
+  - **Postgres** (SQLAlchemy async) - system of record for messages, bundles,
     atoms, and LLM request/response audit logs. Enables delta processing.
-  - **Neo4j** — graph queries for atom→channel→workstream→participant
+  - **Neo4j** - graph queries for atom→channel→workstream→participant
     relationships. Powers persona-relevant queries.
-  - **FAISS** — embedding vector cache with ``IndexFlatIP`` for cosine
+  - **FAISS** - embedding vector cache with ``IndexFlatIP`` for cosine
     similarity. Prevents recomputing embeddings across pipeline runs.
 
 - **Delta processing, not kill-and-fill.** Postgres stores previously
@@ -101,7 +101,7 @@ Three things make this hard:
 
    ``src/evercurrent/pipeline.py`` → ``_async_run_pipeline_inner()``
    orchestrates the full flow. The pipeline config lives in
-   ``config/pipeline.yml`` — all constants (model, thresholds, concurrency)
+   ``config/pipeline.yml`` - all constants (model, thresholds, concurrency)
    are YAML, not hardcoded.
 
 ---------------------------------------------------------------------------
@@ -208,7 +208,7 @@ are logged to the ``batch_log`` table for debugging and replay.
 .. admonition:: Speaker Notes
 
    Show the scoring dimensions table. The key insight is that relevance
-   is a function of (atom, persona) — the same atom scores differently
+   is a function of (atom, persona) - the same atom scores differently
    for different readers.
 
 Five dimensions, weighted per persona:
@@ -239,7 +239,7 @@ Five dimensions, weighted per persona:
 **The phase alignment insight:** Phase is per-workstream, not per-project.
 Chassis can be in DVT while thermal is still in late EVT. When a persona
 toggles their thermal workstream from EVT to DVT, atom rankings shift
-visibly — at least 2 items change position. This is testable and tested.
+visibly - at least 2 items change position. This is testable and tested.
 
 .. admonition:: Code path
 
@@ -255,20 +255,20 @@ visibly — at least 2 items change position. This is testable and tested.
 
 **Demo flow:**
 
-1. **Show the 3 personas** — Maya (chassis engineer), Elena (supply chain),
+1. **Show the 3 personas** - Maya (chassis engineer), Elena (supply chain),
    Ryan (engineering manager). Same data, different digests.
 
-2. **Switch personas** — Instant. No loading spinner. All 3 digests are
+2. **Switch personas** - Instant. No loading spinner. All 3 digests are
    precooked at pipeline completion and cached in memory.
 
-3. **Run the pipeline** — Click "Run Pipeline". Show the progress bar
+3. **Run the pipeline** - Click "Run Pipeline". Show the progress bar
    polling ``/pipeline/status`` every 2 seconds with real batch counts
    from the Anthropic API.
 
-4. **Phase toggle** — Switch thermal from EVT to DVT. Watch atom rankings
+4. **Phase toggle** - Switch thermal from EVT to DVT. Watch atom rankings
    shift. This is Evaluation Criterion 3 from the design doc.
 
-5. **Neo4j browser** — Open http://localhost:7474. Show the
+5. **Neo4j browser** - Open http://localhost:7474. Show the
    Atom→Channel→Workstream→Participant graph. Run:
 
    .. code-block:: cypher
@@ -345,7 +345,7 @@ This take-home is a focused instance of what EverCurrent builds:
    * - Cross-workstream affected tags
      - Breaking knowledge silos across 100+ tools
 
-**The hardest problem I solved** wasn't the LLM pipeline — it was making
+**The hardest problem I solved** wasn't the LLM pipeline - it was making
 relevance *relational*. The same information means different things to
 different people depending on their role, their workstreams, and where
 their project is in the development lifecycle. That's the core of what

@@ -170,7 +170,7 @@ class ContextWindow(Base):
 
     One bundle produces exactly one context window. Stores the
     full window as JSONB (thread_text, message_range, token estimate)
-    for reproducibility — you can see exactly what the LLM received.
+    for reproducibility - you can see exactly what the LLM received.
 
     Attributes:
         bundle_ts: FK to thread_bundle (primary key, 1:1 with bundle).

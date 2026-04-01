@@ -21,7 +21,7 @@ The Problem
    **Cost: $40K, 3-week delay, missed DVT milestone.**
 
 This isn't a software problem. In hardware engineering, missed information
-is measured in **physical waste and schedule slip** — not in minutes and
+is measured in **physical waste and schedule slip** - not in minutes and
 keystrokes.
 
 Three things make this hard:
@@ -88,7 +88,7 @@ Extraction Pipeline
 Two-Stage Extraction
 ~~~~~~~~~~~~~~~~~~~~~
 
-**Stage 1 — Coarse:** "What happened?" via ``extract_atoms`` tool.
+**Stage 1 - Coarse:** "What happened?" via ``extract_atoms`` tool.
 
 .. code-block:: json
 
@@ -99,7 +99,7 @@ Two-Stage Extraction
      "source": {"channel": "#chassis-design", "thread_ts": "1711990000.000100"}
    }
 
-**Stage 2 — Enrich:** "Who does it affect?" via ``enrich_atom`` tool.
+**Stage 2 - Enrich:** "Who does it affect?" via ``enrich_atom`` tool.
 
 .. code-block:: json
 
@@ -136,8 +136,8 @@ Scoring Engine
 Same Atom, Different Scores
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The material change decision — "switching housing from aluminum to
-magnesium AZ91D" — scores differently for each persona:
+The material change decision - "switching housing from aluminum to
+magnesium AZ91D" - scores differently for each persona:
 
 .. list-table::
    :header-rows: 1
@@ -218,16 +218,16 @@ Live Demo
 
 **Demo flow:**
 
-1. **Three personas** — Maya, Elena, Ryan. Same data, different digests.
-   Switch between them — **instant** (preloaded from Neo4j cache).
+1. **Three personas** - Maya, Elena, Ryan. Same data, different digests.
+   Switch between them - **instant** (preloaded from Neo4j cache).
 
-2. **Run the pipeline** — Click "Run Pipeline". Watch the progress bar
+2. **Run the pipeline** - Click "Run Pipeline". Watch the progress bar
    poll ``/pipeline/status`` every 2s with real Anthropic batch counts.
 
-3. **Phase toggle** — Switch thermal from EVT to DVT. Watch atom
+3. **Phase toggle** - Switch thermal from EVT to DVT. Watch atom
    rankings shift. At least 2 items change position.
 
-4. **Neo4j browser** — ``http://localhost:7474``
+4. **Neo4j browser** - ``http://localhost:7474``
 
    .. code-block:: cypher
 
@@ -238,7 +238,7 @@ Live Demo
 Engineering Maturity
 ---------------------------------------------------------------------------
 
-**Not just "what I built" — what I built, threw away, and rebuilt better.**
+**Not just "what I built" - what I built, threw away, and rebuilt better.**
 
 .. list-table::
    :header-rows: 1
@@ -290,7 +290,7 @@ Mapping to EverCurrent
    * - Cross-workstream ``affected`` tags
      - Breaking knowledge silos across tools
 
-The hardest problem wasn't the LLM pipeline — it was making relevance
+The hardest problem wasn't the LLM pipeline - it was making relevance
 *relational*. The same information means different things to different
 people depending on their role, their workstreams, and where their project
 is in the development lifecycle. **That's the core of what EverCurrent
