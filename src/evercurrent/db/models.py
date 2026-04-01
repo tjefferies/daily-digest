@@ -121,10 +121,6 @@ class ThreadBundle(Base):
         back_populates="bundle",
         cascade="all, delete-orphan",
     )
-    atoms: Mapped[list[Atom]] = relationship(
-        back_populates="bundle",
-        cascade="all, delete-orphan",
-    )
 
 
 class BundleMembership(Base):
@@ -169,8 +165,48 @@ class BundleMembership(Base):
     )
 
 
+class ContextWindow(Base):
+    """The assembled text sent to the LLM for extraction.
+
+    One bundle produces exactly one context window. Stores the
+    full window as JSONB (thread_text, message_range, token estimate)
+    for reproducibility — you can see exactly what the LLM received.
+
+    Attributes:
+        bundle_ts: FK to thread_bundle (primary key, 1:1 with bundle).
+        channel: Channel where the thread lives.
+        compressed: Whether the window was compressed to fit token limit.
+        raw: Full context window as JSONB (thread_text, message_range, etc.).
+        created_at: When this window was assembled.
+    """
+
+    __tablename__ = "context_window"
+
+    bundle_ts: Mapped[str] = mapped_column(
+        String,
+        ForeignKey("thread_bundle.root_message_ts"),
+        primary_key=True,
+    )
+    channel: Mapped[str] = mapped_column(String, nullable=False)
+    compressed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    raw: Mapped[dict] = mapped_column(JsonType, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(tz=UTC),
+    )
+
+    bundle: Mapped[ThreadBundle] = relationship(backref="context_window")
+    atoms: Mapped[list[Atom]] = relationship(back_populates="context_window")
+
+    __table_args__ = (
+        Index("idx_cw_channel", "channel"),
+        Index("idx_cw_compressed", "compressed"),
+        Index("idx_cw_created", "created_at"),
+    )
+
+
 class Atom(Base):
-    """An extracted information atom linked to its source bundle.
+    """An extracted information atom linked to its source context window.
 
     Attributes:
         atom_id: UUID primary key.
@@ -181,7 +217,7 @@ class Atom(Base):
         confidence: LLM confidence score.
         implicit_decision: Whether this was implicit.
         source: Full LLM-returned provenance as JSONB.
-        source_bundle_ts: FK to the thread bundle that produced this atom.
+        source_bundle_ts: FK to the context window that produced this atom.
         created_at: When this atom was created.
     """
 
@@ -214,7 +250,7 @@ class Atom(Base):
     source: Mapped[dict] = mapped_column(JsonType, nullable=False)
     source_bundle_ts: Mapped[str] = mapped_column(
         String,
-        ForeignKey("thread_bundle.root_message_ts"),
+        ForeignKey("context_window.bundle_ts"),
         nullable=False,
     )
     created_at: Mapped[datetime] = mapped_column(
@@ -222,7 +258,7 @@ class Atom(Base):
         default=lambda: datetime.now(tz=UTC),
     )
 
-    bundle: Mapped[ThreadBundle] = relationship(back_populates="atoms")
+    context_window: Mapped[ContextWindow] = relationship(back_populates="atoms")
 
     __table_args__ = (
         CheckConstraint(

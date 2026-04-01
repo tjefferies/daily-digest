@@ -9,6 +9,7 @@ from evercurrent.db.models import (
     BatchLog,
     BundleMembership,
     BundleRole,
+    ContextWindow,
     Message,
     ThreadBundle,
     UrgencyLevel,
@@ -76,11 +77,23 @@ class TestMetadata:
     """Verify SQLAlchemy metadata for migrations."""
 
     def test_base_has_all_tables(self) -> None:
-        """Base metadata includes all 5 tables."""
+        """Base metadata includes all 6 tables."""
         table_names = set(Base.metadata.tables.keys())
         assert table_names == {
-            "message", "thread_bundle", "bundle_membership", "atom", "batch_log",
+            "message", "thread_bundle", "bundle_membership",
+            "context_window", "atom", "batch_log",
         }
+
+    def test_context_window_table(self) -> None:
+        """ContextWindow model has correct table name and columns."""
+        assert ContextWindow.__tablename__ == "context_window"
+        cols = {c.name for c in ContextWindow.__table__.columns}
+        assert cols == {"bundle_ts", "channel", "compressed", "raw", "created_at"}
+
+    def test_atom_fk_points_to_context_window(self) -> None:
+        """Atom.source_bundle_ts FK references context_window, not thread_bundle."""
+        atom_fks = {fk.target_fullname for fk in Atom.__table__.foreign_keys}
+        assert "context_window.bundle_ts" in atom_fks
 
     def test_batch_log_table(self) -> None:
         """BatchLog model has correct table name and columns."""
@@ -95,7 +108,7 @@ class TestMetadata:
     def test_foreign_keys_exist(self) -> None:
         """Key foreign key relationships are defined."""
         atom_fks = {fk.target_fullname for fk in Atom.__table__.foreign_keys}
-        assert "thread_bundle.root_message_ts" in atom_fks
+        assert "context_window.bundle_ts" in atom_fks
 
         membership_fks = {fk.target_fullname for fk in BundleMembership.__table__.foreign_keys}
         assert "message.message_ts" in membership_fks

@@ -17,7 +17,12 @@ from anthropic import Anthropic
 
 from evercurrent.config.loader import get_config
 from evercurrent.dataset.messages import load_messages
-from evercurrent.db.repository import get_processed_bundle_ts, persist_atoms, persist_bundle
+from evercurrent.db.repository import (
+    get_processed_bundle_ts,
+    persist_atoms,
+    persist_bundle,
+    persist_context_windows,
+)
 from evercurrent.db.session import get_session_factory
 from evercurrent.extraction.batch_runner import BatchExtractionRunner
 from evercurrent.extraction.filter import confidence_filter
@@ -183,6 +188,22 @@ async def _postgres_persist_bundles(bundles: list) -> None:
         logger.info("Postgres: persisted %d bundles", len(bundles))
     except Exception:
         logger.warning("Postgres bundle persistence failed", exc_info=True)
+
+
+async def _postgres_persist_context_windows(windows: list) -> None:
+    """Persist context windows to Postgres.
+
+    Args:
+        windows: Assembled context windows.
+    """
+    try:
+        factory = get_session_factory()
+        async with factory() as session:
+            await persist_context_windows(session, windows)
+            await session.commit()
+        logger.info("Postgres: persisted %d context windows", len(windows))
+    except Exception:
+        logger.warning("Postgres context window persistence failed", exc_info=True)
 
 
 async def _postgres_persist_atoms(atoms: list[Atom]) -> None:
@@ -368,6 +389,10 @@ async def _async_run_pipeline_inner(
     if max_windows > 0 and len(windows) > max_windows:
         logger.info("Capping windows: %d → %d", len(windows), max_windows)
         windows = windows[:max_windows]
+
+    # Persist context windows to Postgres (what the LLM will see)
+    await _postgres_persist_context_windows(windows)
+
     logger.info(
         "Ingestion: %d messages → %d threads (%d skipped, %d continuations) → %d windows",
         len(messages),

@@ -4,13 +4,21 @@ Provides the Postgres persistence layer for messages, thread bundles,
 bundle memberships, and atoms. All operations are async via asyncpg.
 """
 
-from evercurrent.db.models import Atom, BatchLog, BundleMembership, Message, ThreadBundle
+from evercurrent.db.models import (
+    Atom,
+    BatchLog,
+    BundleMembership,
+    ContextWindow,
+    Message,
+    ThreadBundle,
+)
 from evercurrent.db.session import get_session
 
 __all__ = [
     "Atom",
     "BatchLog",
     "BundleMembership",
+    "ContextWindow",
     "Message",
     "ThreadBundle",
     "get_session",

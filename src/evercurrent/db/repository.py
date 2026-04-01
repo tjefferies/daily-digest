@@ -18,6 +18,7 @@ from evercurrent.db.models import (
 from evercurrent.db.models import (
     BundleMembership,
     BundleRole,
+    ContextWindow,
     Message,
     ThreadBundle,
 )
@@ -89,6 +90,32 @@ async def persist_bundle(
         )
 
     await session.flush()
+
+
+async def persist_context_windows(
+    session: AsyncSession,
+    windows: list,
+) -> None:
+    """Persist context windows to Postgres.
+
+    Stores the full window as JSONB for reproducibility.
+
+    Args:
+        session: Active async SQLAlchemy session.
+        windows: ContextWindow objects from the ingestion layer.
+    """
+    for w in windows:
+        await session.merge(
+            ContextWindow(
+                bundle_ts=w.thread_ts,
+                channel=w.channel,
+                compressed=w.compressed,
+                raw=w.model_dump(mode="json"),
+            )
+        )
+
+    await session.flush()
+    logger.info("Persisted %d context windows to Postgres", len(windows))
 
 
 async def persist_atoms(

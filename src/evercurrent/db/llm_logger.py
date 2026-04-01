@@ -49,13 +49,15 @@ async def log_llm_request(
             )
             if existing.scalar_one_or_none() is not None:
                 return  # Already logged — skip
-            session.add(BatchLog(
-                batch_id=batch_id,
-                stage=stage,
-                request_count=request_count,
-                status="submitted",
-                request_body=body,
-            ))
+            session.add(
+                BatchLog(
+                    batch_id=batch_id,
+                    stage=stage,
+                    request_count=request_count,
+                    status="submitted",
+                    request_body=body,
+                )
+            )
             await session.commit()
     except Exception:
         logger.debug("Failed to log LLM request to Postgres", exc_info=True)
