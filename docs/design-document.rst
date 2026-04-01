@@ -945,9 +945,16 @@ the digest shifts when a workstream moves from EVT to DVT.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Live Slack integration (no OAuth, no bot, no real-time event subscription).
-Persistent storage or user accounts. The adaptive feedback loop (described
+User accounts or authentication. The adaptive feedback loop (described
 in section 5.4, stubbed in prototype). PLM/ERP/PM tool connectors.
 Production error handling, monitoring, or observability.
+
+.. note::
+
+   Persistent storage **is** implemented in V2: Postgres (bundles, atoms,
+   context windows, batch logs), Neo4j (atom graph with workstream/channel
+   relations), and FAISS (embedding cache). Delta processing ensures
+   re-runs skip unchanged bundles (zero LLM calls).
 
 These are described in this design document as evidence that the production
 path has been thought through, but implementing them in a take-home would
@@ -1223,45 +1230,97 @@ target scale.
 13. V2 Architecture
 ---------------------------------------------------------------------------
 
-V2 simplified the system based on lessons from 98 commits. The architecture
-is now:
+V2 simplified the system based on lessons from 98 commits. See the full
+architecture diagram:
 
-.. code-block:: text
+.. image:: _static/architecture.svg
+   :alt: EverCurrent V2 architecture diagram
+   :width: 100%
 
-                    ┌─────────────┐
-                    │  Frontend   │ React + polling progress UI
-                    │  :5173      │ preloads 3 persona digests
-                    └──────┬──────┘
-                           │ /api/
-                    ┌──────┴──────┐
-                    │   FastAPI   │ async-only, batch pipeline
-                    │   :8000     │ tool_use structured output
-                    └──┬───┬───┬──┘
-                       │   │   │
-              ┌────────┘   │   └────────┐
-              ▼            ▼            ▼
-        ┌──────────┐ ┌──────────┐ ┌──────────┐
-        │ Postgres │ │  Neo4j   │ │  FAISS   │
-        │ bundles  │ │  atoms   │ │ vectors  │
-        │ atoms    │ │  graph   │ │ cache    │
-        │ batches  │ │  queries │ │ cosine   │
-        └──────────┘ └──────────┘ └──────────┘
-              ▲
-              │ delta check
-        ┌─────┴──────┐
-        │  Anthropic  │
-        │  Batch API  │ tool_use, 50% cost savings
-        └─────────────┘
+13.1 Key V2 Principles
+~~~~~~~~~~~~~~~~~~~~~~~
 
-Key V2 principles:
-
-- **Anthropic-only.** No OpenAI/Google adapters. No factory pattern.
-- **Batch API.** All extraction uses Message Batches API with tool_use.
-- **Delta processing.** Postgres stores bundles; only new bundles are extracted.
-- **Async-only.** No sync code paths. No instructor dependency.
+- **Anthropic-only.** No OpenAI/Google adapters. No factory pattern. Single
+  provider eliminates adapter complexity.
+- **Batch API.** All extraction and validation uses Message Batches API with
+  ``tool_use`` for structured output. 50% cost savings over per-request calls.
+- **Delta processing.** Bundles persisted to Postgres before extraction. On
+  re-run, only new/changed bundles are sent to the LLM. Zero LLM calls on
+  unchanged data.
+- **Async-only.** No sync code paths. No instructor dependency. FastAPI,
+  SQLAlchemy async, Neo4j async driver, AsyncAnthropic SDK.
 - **Config-driven.** All prompts in ``config/prompts.yml``, all constants in
-  ``config/pipeline.yml``.
-- **FAISS cosine similarity.** IndexFlatIP with normalized vectors.
+  ``config/pipeline.yml``, personas in ``config/personas.yml``, scoring
+  weights in ``config/scoring.yml``, phases in ``config/phases.yml``.
+- **FAISS cosine similarity.** IndexFlatIP with L2 normalization for semantic
+  continuation detection.
+- **Intermediate observability.** JSON dumps to ``/tmp/evercurrent/`` after
+  each pipeline step. Full LLM request/response body logging in Postgres
+  ``batch_log`` table.
+
+13.2 Pipeline Flow
+~~~~~~~~~~~~~~~~~~~
+
+The async pipeline executes in five layers:
+
+**L1: Ingestion.** Load messages, group by thread, detect semantic
+continuations (FAISS cosine similarity, threshold 0.45), assemble context
+windows with token estimation.
+
+**L2: Extraction.** Two-stage Anthropic Batch API with ``tool_use``:
+Stage 1 (coarse: 8 atom types, summary, detail, source) and Stage 2
+(enrichment: workstreams, urgency, confidence, phase_relevance). Sub-batches
+of up to 200 requests each.
+
+**L3: Validation.** All ``DECISION`` and ``SPEC_CHANGE`` atoms collected
+across all threads into a single Batch API call. Each atom validated against
+its own source context window. Invalid atoms have confidence halved and
+warning appended. Confidence filter (threshold >= 0.7) removes low-quality
+atoms.
+
+**L4: Scoring.** 5-dimension composite scoring per (atom, persona) pair:
+workstream proximity (0.30), role-type alignment (0.20), phase alignment
+(0.20), urgency (0.15), social signal (0.15). Atoms ranked by composite
+score, capped at persona's ``max_items``, critical flagging above 0.85.
+
+**L5: Generation.** LLM generates 4-section digest per persona via
+``tool_use`` structured output: requires_action, decisions_changes,
+progress_risks, broader_context. Each item has headline, context,
+source_channel, and atom_id.
+
+13.3 Persistence
+~~~~~~~~~~~~~~~~~
+
+**Postgres** (:5433 Docker-mapped). BCNF schema: ``message`` →
+``bundle_membership`` → ``thread_bundle`` → ``context_window`` → ``atom``.
+Plus ``batch_log`` for full LLM request/response JSONB bodies. SQLAlchemy
+async ORM with asyncpg driver.
+
+**Neo4j** (:7687). Graph schema: ``:Atom`` nodes connected to ``:Channel``,
+``:Workstream``, ``:Participant`` via ``EXTRACTED_FROM``, ``ORIGINATES_IN``,
+``AFFECTS``, ``INVOLVES`` relations. Used for digest precooking on startup
+and graph-based queries.
+
+**FAISS.** IndexFlatIP with L2-normalized vectors for cosine similarity.
+Persistent index at ``data/vectorstore.index``. ``CachedEmbedder`` with
+``sentence-transformers`` (all-MiniLM-L6-v2).
+
+13.4 Frontend
+~~~~~~~~~~~~~~
+
+React + TypeScript + Tailwind CSS. Preloads all 3 persona digests on mount
+for instant switching. ``PipelineRunner`` polls ``GET /pipeline/status``
+every 2 seconds for real batch progress (succeeded/processing/errored
+counts). ``PhaseToggle`` sends ``?phase_override=workstream:phase`` for
+live phase sensitivity demo.
+
+13.5 Demo Numbers
+~~~~~~~~~~~~~~~~~~
+
+307 messages → 116 thread bundles → 116 context windows → 308 atoms
+(Postgres) / 323 atoms (Neo4j) → 5-dimension scored → 4-section digests
+per persona. 3 personas: Maya Chen (ME Lead, U001), Elena Vasquez
+(Supply Chain, U007), Ryan Torres (EM, U010).
 
 .. _next-steps:
 
