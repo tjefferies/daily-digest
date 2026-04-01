@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest
@@ -15,8 +15,11 @@ from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
 def _msg(ts: str, text: str = "hello", thread_ts: str | None = None) -> SlackMessage:
     """Create a minimal SlackMessage."""
     return SlackMessage(
-        message_ts=ts, thread_ts=thread_ts,
-        channel="#test", user_id="U001", text=text,
+        message_ts=ts,
+        thread_ts=thread_ts,
+        channel="#test",
+        user_id="U001",
+        text=text,
     )
 
 
@@ -35,8 +38,10 @@ def _atom(bundle_ts: str = "1000.001") -> Atom:
         summary="Test decision",
         detail="Detail",
         source=AtomSource(
-            channel="#test", thread_ts=bundle_ts,
-            message_range=[0, 1], key_participants=["U001"],
+            channel="#test",
+            thread_ts=bundle_ts,
+            message_range=[0, 1],
+            key_participants=["U001"],
         ),
         workstreams=AtomWorkstreams(originating="chassis"),
         urgency="medium",

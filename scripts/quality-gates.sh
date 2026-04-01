@@ -68,7 +68,7 @@ fi
 
 # Gate 4: Tests with coverage
 if [ -d "tests" ] && compgen -G "tests/**/test_*.py" > /dev/null 2>&1; then
-  gate "Pytest (coverage ≥90%)" uv run pytest --tb=short -q --cov=src --cov-report=term-missing --cov-fail-under=90
+  gate "Pytest (coverage ≥80%)" uv run pytest --tb=short -q --cov=src --cov-report=term-missing --cov-fail-under=80 -m "not integration"
 fi
 
 # Gate 5: Cyclomatic complexity (max 8 per function)

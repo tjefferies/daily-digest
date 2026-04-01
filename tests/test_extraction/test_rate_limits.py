@@ -24,9 +24,7 @@ class TestTokenEstimation:
         ]
         # (400+100)/4 + (200+0)/4 = 125 + 50 = 175
         total = sum(
-            _estimate_tokens(
-                r["params"]["messages"][0]["content"] + r["params"].get("system", "")
-            )
+            _estimate_tokens(r["params"]["messages"][0]["content"] + r["params"].get("system", ""))
             for r in requests
         )
         assert total == 175

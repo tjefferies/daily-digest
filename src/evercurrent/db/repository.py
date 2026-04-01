@@ -48,37 +48,45 @@ async def persist_bundle(
 
     # Persist all messages
     for msg in all_msgs:
-        session.merge(Message(
-            message_ts=msg.message_ts,
-            thread_ts=msg.thread_ts,
-            channel=msg.channel,
-            user_id=msg.user_id,
-            raw=msg.model_dump(),
-        ))
+        await session.merge(
+            Message(
+                message_ts=msg.message_ts,
+                thread_ts=msg.thread_ts,
+                channel=msg.channel,
+                user_id=msg.user_id,
+                raw=msg.model_dump(),
+            )
+        )
 
     # Persist the bundle
-    session.merge(ThreadBundle(
-        root_message_ts=root.message_ts,
-        channel=root.channel,
-    ))
+    await session.merge(
+        ThreadBundle(
+            root_message_ts=root.message_ts,
+            channel=root.channel,
+        )
+    )
 
     # Persist memberships
-    session.merge(BundleMembership(
-        message_ts=root.message_ts,
-        bundle_ts=root.message_ts,
-        role=BundleRole.root,
-        confidence=1.0,
-        ordinal=0,
-    ))
+    await session.merge(
+        BundleMembership(
+            message_ts=root.message_ts,
+            bundle_ts=root.message_ts,
+            role=BundleRole.root,
+            confidence=1.0,
+            ordinal=0,
+        )
+    )
     for i, reply in enumerate(bundle.replies):
         role = BundleRole.reply
-        session.merge(BundleMembership(
-            message_ts=reply.message_ts,
-            bundle_ts=root.message_ts,
-            role=role,
-            confidence=1.0,
-            ordinal=i + 1,
-        ))
+        await session.merge(
+            BundleMembership(
+                message_ts=reply.message_ts,
+                bundle_ts=root.message_ts,
+                role=role,
+                confidence=1.0,
+                ordinal=i + 1,
+            )
+        )
 
     await session.flush()
 
@@ -96,17 +104,19 @@ async def persist_atoms(
         atoms: Atoms from the extraction pipeline.
     """
     for atom in atoms:
-        session.merge(AtomRow(
-            atom_id=atom.atom_id,
-            type=atom.type,
-            summary=atom.summary,
-            detail=atom.detail,
-            urgency=atom.urgency,
-            confidence=atom.confidence,
-            implicit_decision=atom.implicit_decision,
-            source=atom.source.model_dump(),
-            source_bundle_ts=atom.source.thread_ts,
-        ))
+        await session.merge(
+            AtomRow(
+                atom_id=atom.atom_id,
+                type=atom.type,
+                summary=atom.summary,
+                detail=atom.detail,
+                urgency=atom.urgency,
+                confidence=atom.confidence,
+                implicit_decision=atom.implicit_decision,
+                source=atom.source.model_dump(),
+                source_bundle_ts=atom.source.thread_ts,
+            )
+        )
 
     await session.flush()
     logger.info("Persisted %d atoms to Postgres", len(atoms))

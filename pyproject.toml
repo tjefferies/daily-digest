@@ -38,6 +38,7 @@ dev = [
     "sphinx-autodoc-typehints>=3.9.11",
     "sphinx-autobuild>=2025.8.25",
     "vulture>=2.16",
+    "aiosqlite>=0.22.1",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -84,6 +85,9 @@ asyncio_mode = "auto"
 pythonpath = ["src"]
 testpaths = ["tests"]
 addopts = "-v --strict-markers"
+markers = [
+    "integration: requires external services (Neo4j, Postgres, Anthropic API)",
+]
 
 [tool.coverage.run]
 source = ["src"]

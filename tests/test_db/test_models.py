@@ -40,9 +40,16 @@ class TestModelTablesExist:
         assert Atom.__tablename__ == "atom"
         cols = {c.name for c in Atom.__table__.columns}
         expected = {
-            "atom_id", "type", "summary", "detail", "urgency",
-            "confidence", "implicit_decision", "source",
-            "source_bundle_ts", "created_at",
+            "atom_id",
+            "type",
+            "summary",
+            "detail",
+            "urgency",
+            "confidence",
+            "implicit_decision",
+            "source",
+            "source_bundle_ts",
+            "created_at",
         }
         assert cols == expected
 
@@ -74,15 +81,9 @@ class TestMetadata:
 
     def test_foreign_keys_exist(self) -> None:
         """Key foreign key relationships are defined."""
-        atom_fks = {
-            fk.target_fullname
-            for fk in Atom.__table__.foreign_keys
-        }
+        atom_fks = {fk.target_fullname for fk in Atom.__table__.foreign_keys}
         assert "thread_bundle.root_message_ts" in atom_fks
 
-        membership_fks = {
-            fk.target_fullname
-            for fk in BundleMembership.__table__.foreign_keys
-        }
+        membership_fks = {fk.target_fullname for fk in BundleMembership.__table__.foreign_keys}
         assert "message.message_ts" in membership_fks
         assert "thread_bundle.root_message_ts" in membership_fks

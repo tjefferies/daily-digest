@@ -68,10 +68,8 @@ def _split_into_sub_batches(
     """
     if not requests:
         return []
-    return [
-        requests[i : i + max_per_batch]
-        for i in range(0, len(requests), max_per_batch)
-    ]
+    return [requests[i : i + max_per_batch] for i in range(0, len(requests), max_per_batch)]
+
 
 # Tool definitions for structured output via tool_use.
 _COARSE_TOOL = {
@@ -417,10 +415,12 @@ class BatchExtractionRunner:
                 return self._client.messages.batches.create(requests=requests)
             except Exception as exc:
                 if "429" in str(exc) or "rate" in str(exc).lower():
-                    delay = _RETRY_BASE_DELAY * (2 ** attempt)
+                    delay = _RETRY_BASE_DELAY * (2**attempt)
                     logger.warning(
                         "Rate limited, retrying in %.1fs (attempt %d/%d)",
-                        delay, attempt + 1, _MAX_RETRIES,
+                        delay,
+                        attempt + 1,
+                        _MAX_RETRIES,
                     )
                     await asyncio.sleep(delay)
                 else:
@@ -443,15 +443,14 @@ class BatchExtractionRunner:
         """
         # Estimate input tokens
         est_tokens = sum(
-            _estimate_tokens(
-                r["params"]["messages"][0]["content"]
-                + r["params"].get("system", "")
-            )
+            _estimate_tokens(r["params"]["messages"][0]["content"] + r["params"].get("system", ""))
             for r in requests
         )
         logger.info(
             "Submitting %s batch: %d requests, ~%d est. input tokens",
-            stage, len(requests), est_tokens,
+            stage,
+            len(requests),
+            est_tokens,
         )
 
         # Submit with retry + exponential backoff on 429

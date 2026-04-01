@@ -12,6 +12,7 @@ import uuid
 from datetime import UTC, datetime
 
 from sqlalchemy import (
+    JSON,
     Boolean,
     CheckConstraint,
     DateTime,
@@ -26,6 +27,9 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+
+# Use JSONB on Postgres, JSON on SQLite (for testing)
+JsonType = JSON().with_variant(JSONB(), "postgresql")
 
 
 class Base(DeclarativeBase):
@@ -83,7 +87,7 @@ class Message(Base):
     )
     channel: Mapped[str] = mapped_column(String, nullable=False)
     user_id: Mapped[str] = mapped_column(String, nullable=False)
-    raw: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    raw: Mapped[dict] = mapped_column(JsonType, nullable=False)
 
     __table_args__ = (
         Index("idx_message_thread", "thread_ts"),
@@ -207,7 +211,7 @@ class Atom(Base):
         nullable=False,
         default=False,
     )
-    source: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    source: Mapped[dict] = mapped_column(JsonType, nullable=False)
     source_bundle_ts: Mapped[str] = mapped_column(
         String,
         ForeignKey("thread_bundle.root_message_ts"),
