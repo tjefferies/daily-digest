@@ -56,13 +56,12 @@ class TestPipelineRun:
 
     @pytest.mark.asyncio
     @patch("evercurrent.app.async_run_pipeline")
-    async def test_pipeline_run_extracts_atoms(self, mock_run: MagicMock) -> None:
-        """POST /pipeline/run executes the pipeline and stores atoms."""
+    async def test_pipeline_run_returns_started(self, mock_run: MagicMock) -> None:
+        """POST /pipeline/run returns immediately with started status."""
         from evercurrent.pipeline import PipelineResult
 
-        atom = _make_atom()
         mock_run.return_value = PipelineResult(
-            atoms=[atom],
+            atoms=[_make_atom()],
             stats={"atoms_extracted": 1, "atoms_after_filter": 1},
         )
 
@@ -72,33 +71,19 @@ class TestPipelineRun:
 
         assert response.status_code == 200
         data = response.json()
-        assert data["status"] == "complete"
-        assert data["stats"]["atoms_extracted"] == 1
+        assert data["status"] == "started"
 
     @pytest.mark.asyncio
-    @patch("evercurrent.app.async_run_pipeline")
-    async def test_pipeline_run_returns_stats(self, mock_run: MagicMock) -> None:
-        """POST /pipeline/run returns pipeline processing stats."""
-        from evercurrent.pipeline import PipelineResult
-
-        mock_run.return_value = PipelineResult(
-            atoms=[],
-            stats={
-                "messages_loaded": 300,
-                "threads_found": 40,
-                "context_windows": 40,
-                "atoms_extracted": 0,
-                "atoms_after_filter": 0,
-            },
-        )
-
+    async def test_pipeline_status_returns_state(self) -> None:
+        """GET /pipeline/status returns current pipeline state."""
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:
-            response = await client.post("/pipeline/run")
+            response = await client.get("/pipeline/status")
 
+        assert response.status_code == 200
         data = response.json()
-        assert "stats" in data
-        assert data["stats"]["messages_loaded"] == 300
+        assert "state" in data
+        assert data["state"] in ("idle", "running", "complete", "failed")
 
 
 class TestDigestEndpoint:

@@ -6,10 +6,12 @@ Wires the full 5-layer pipeline: Ingestion → Extraction → Scoring → Genera
 
 After pipeline/run, pre-generates digests for all 3 demo personas
 so the frontend loads instantly without additional LLM calls.
+Pipeline runs asynchronously in the background; poll /pipeline/status.
 """
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
@@ -32,10 +34,10 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     """Schedule background precook from Neo4j, don't block startup."""
-    import asyncio
 
     async def _background_precook() -> None:
         await asyncio.sleep(5)  # wait for Neo4j to be ready
@@ -73,6 +75,15 @@ _atom_store: list[Atom] = []
 # Pre-generated digest cache: persona_id → digest dict.
 _digest_cache: dict[str, dict[str, Any]] = {}
 
+# Pipeline run state for async status polling.
+_pipeline_status: dict[str, Any] = {
+    "state": "idle",  # idle | running | complete | failed
+    "stage": "",
+    "stats": {},
+    "error": None,
+}
+_pipeline_task: asyncio.Task[None] | None = None
+
 
 def clear_atom_store() -> None:
     """Clear the in-memory atom store and digest cache.
@@ -81,6 +92,7 @@ def clear_atom_store() -> None:
     """
     _atom_store.clear()
     _digest_cache.clear()
+    _pipeline_status.update(state="idle", stage="", stats={}, error=None)
 
 
 async def _load_atoms_from_neo4j() -> list[Atom]:
@@ -110,9 +122,6 @@ async def _load_atoms_from_neo4j() -> list[Atom]:
 async def _precook_digests(atoms: list[Atom]) -> None:
     """Pre-generate digests for all demo personas.
 
-    Scores atoms and generates LLM digest sections for each persona,
-    caching results so GET /digest returns instantly.
-
     Args:
         atoms: Extracted atoms from the pipeline.
     """
@@ -140,6 +149,33 @@ async def _precook_digests(atoms: list[Atom]) -> None:
             )
 
 
+async def _run_pipeline_background() -> None:
+    """Run the pipeline in the background, updating status as it progresses."""
+    try:
+        _pipeline_status.update(state="running", stage="extraction", error=None)
+
+        client = create_async_llm_client()
+        result = await async_run_pipeline(client)
+
+        _atom_store.clear()
+        _atom_store.extend(result.atoms)
+        _digest_cache.clear()
+        _pipeline_status.update(stage="generating digests", stats=result.stats)
+
+        logger.info("Pipeline complete: %d atoms stored", len(result.atoms))
+
+        await _precook_digests(result.atoms)
+
+        _pipeline_status.update(
+            state="complete",
+            stage="done",
+            stats=result.stats,
+        )
+    except Exception as exc:
+        logger.warning("Pipeline failed", exc_info=True)
+        _pipeline_status.update(state="failed", error=str(exc))
+
+
 @app.get("/health")
 async def health_check() -> dict[str, str]:
     """Return application health status.
@@ -152,29 +188,37 @@ async def health_check() -> dict[str, str]:
 
 @app.post("/pipeline/run")
 async def pipeline_run() -> dict[str, Any]:
-    """Trigger the extraction-to-digest pipeline.
+    """Trigger the extraction-to-digest pipeline in the background.
 
-    Runs the full pipeline, stores atoms, then pre-generates digests
-    for all 3 demo personas so the frontend loads instantly.
+    Returns immediately with status. Poll GET /pipeline/status for progress.
 
     Returns:
-        A dict with status and processing stats.
+        A dict with status indicating the pipeline has started.
     """
-    client = create_async_llm_client()
-    result = await async_run_pipeline(client)
+    global _pipeline_task  # noqa: PLW0603
 
-    _atom_store.clear()
-    _atom_store.extend(result.atoms)
-    _digest_cache.clear()
+    if _pipeline_status["state"] == "running":
+        return {"status": "already_running", "message": "Pipeline is already in progress"}
 
-    logger.info("Pipeline complete: %d atoms stored", len(result.atoms))
-
-    # Pre-generate digests for all demo personas
-    await _precook_digests(result.atoms)
-
+    _pipeline_task = asyncio.create_task(_run_pipeline_background())
     return {
-        "status": "complete",
-        "stats": result.stats,
+        "status": "started",
+        "message": "Pipeline started. Poll GET /pipeline/status for progress.",
+    }
+
+
+@app.get("/pipeline/status")
+async def pipeline_status() -> dict[str, Any]:
+    """Return current pipeline run status.
+
+    Returns:
+        A dict with state, stage, stats, and error fields.
+    """
+    return {
+        "state": _pipeline_status["state"],
+        "stage": _pipeline_status["stage"],
+        "stats": _pipeline_status["stats"],
+        "error": _pipeline_status["error"],
     }
 
 
