@@ -20,6 +20,16 @@ _engine = None
 _session_factory: async_sessionmaker[AsyncSession] | None = None
 
 
+def reset_engine() -> None:
+    """Reset the cached engine and session factory.
+
+    Call between tests or when switching event loops.
+    """
+    global _engine, _session_factory  # noqa: PLW0603
+    _engine = None
+    _session_factory = None
+
+
 def _get_dsn() -> str:
     """Get the Postgres DSN from env or config.
 
