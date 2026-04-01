@@ -34,12 +34,18 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
-    """Load atoms from Neo4j and pre-generate digests on startup."""
-    atoms = await _load_atoms_from_neo4j()
-    if atoms:
-        _atom_store.extend(atoms)
-        await _precook_digests(atoms)
-        logger.info("Startup: pre-generated digests from %d Neo4j atoms", len(atoms))
+    """Schedule background precook from Neo4j, don't block startup."""
+    import asyncio
+
+    async def _background_precook() -> None:
+        await asyncio.sleep(5)  # wait for Neo4j to be ready
+        atoms = await _load_atoms_from_neo4j()
+        if atoms:
+            _atom_store.extend(atoms)
+            await _precook_digests(atoms)
+            logger.info("Background precook: %d atoms, %d digests", len(atoms), len(_digest_cache))
+
+    asyncio.create_task(_background_precook())
     yield
 
 
