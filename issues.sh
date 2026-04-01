@@ -1237,3 +1237,15 @@ echo "    Next Steps:           $NEXT_STEPS"
 bd dep add "$NEXT_STEPS" "$V2_DOCS"
 bd dep add "$VISUAL_PRES" "$NEXT_STEPS"
 bd dep add "$PRESENTATION" "$NEXT_STEPS"
+
+# ─── DESIGN DOC CONSOLIDATION ───────────────────────────────────────────────
+DESIGN_CONSOLIDATE=$(bd create \
+  --title="Consolidate design-document.rst: V2-only, concise, SVG-rich" \
+  --type=task --priority=1 \
+  --description="Rewrite design doc for evaluator: remove ALL V1 references, cut ~40-50% length, generate 3+ new SVGs (extraction pipeline, scoring dimensions, data flow, persona model). Eliminate Section 13 (merge into relevant sections). Merge Sections 11+14 into single Production Path. Tighten ADRs to 3-4 sentences each." \
+  --acceptance="1. No V1 references. 2. Line count reduced ~40-50%. 3. 3+ new SVGs. 4. Section 13 eliminated. 5. Sections 11+14 merged. 6. Sphinx renders clean. 7. Tests pass." \
+  --silent)
+echo "    Design Consolidate:   $DESIGN_CONSOLIDATE"
+bd dep add "$DESIGN_CONSOLIDATE" "$V2_DOCS"
+bd dep add "$VISUAL_PRES" "$DESIGN_CONSOLIDATE"
+bd dep add "$PRESENTATION" "$DESIGN_CONSOLIDATE"
