@@ -1372,3 +1372,11 @@ DATAFLOW_SVG_FIX=$(bd create \
   --description="In docs/_static/data-flow.svg: 1) Remove color legend. 2) Slate color for all top-row pipeline boxes. 3) Keep bottom persistence row colors. 4) Center bottom row under top row." \
   --silent)
 echo "    Dataflow SVG Fix:     $DATAFLOW_SVG_FIX"
+
+# ─── LIVE DEMO FLOW ─────────────────────────────────────────────────────────
+LIVE_DEMO=$(bd create \
+  --title="Design & implement ≤5-min live demo flow" \
+  --type=feature --priority=1 \
+  --description="Live demo: flash demo_messages.json, run async pipeline (extraction_mode: async), display persona digests. Switch from batch API to async extraction for speed. Parallelize _precook_digests(). Add fresh-run dedup bypass. Frontend message flash panel. Target: ≤5 min end-to-end. See beads evercurrent-7pb for full analysis." \
+  --silent)
+echo "    Live Demo:            $LIVE_DEMO"
