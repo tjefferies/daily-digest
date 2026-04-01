@@ -86,14 +86,51 @@ message; it is a relationship between a message and a reader.**
      - Context backbone population.
      - Medium
    * - A7
-     - The digest is a read-only artifact covering the previous 24 hours.
-     - Digest rendering, feedback availability.
+     - The digest is a read-only artifact. The prototype processes all
+       available messages; production would filter to the previous 24 hours.
+     - Digest rendering, temporal scope, feedback availability.
      - Low
    * - A8
      - Slack channels are organized primarily by workstream
        (``#chassis-design``, ``#supply-chain``, etc.) with cross-cutting
        channels (``#amr-general``, ``#testing``).
      - Channel-to-workstream mapping.
+     - Medium
+   * - A9
+     - All communication is in English. Continuation detection regex
+       patterns ("re:", "following up on"), LLM prompts, and atom type
+       taxonomy are English-only.
+     - Multilingual support requires prompt localization and regex
+       rewrite.
+     - Medium
+   * - A10
+     - Actionable information is in message text. Files, images, link
+       previews, and Slack rich formatting are not processed. Message
+       edits and deletions are not tracked.
+     - Ingestion scope. PLM/CAD connector would address the file gap.
+     - Medium
+   * - A11
+     - Validation targets only the two highest-risk atom types
+       (``DECISION``, ``SPEC_CHANGE``). Other types (``ACTION_ITEM``,
+       ``BLOCKER``, ``RISK``, ``TEST_RESULT``, ``STATUS_UPDATE``,
+       ``QUESTION``) pass through with extraction confidence only.
+     - Validation cost model, hallucination risk for non-validated types.
+     - Medium
+   * - A12
+     - Phase progression is linear (Concept → EVT → DVT → PVT → MP)
+       with graduated distance scoring. Non-linear progressions (phase
+       rollbacks, parallel tracks) are not modeled.
+     - Phase alignment scoring dimension.
+     - Medium
+   * - A13
+     - All timestamps are UTC. No timezone configuration or localization.
+     - Digest generation timestamps, scheduled pipeline timing.
+     - Low
+   * - A14
+     - Neo4j failures are non-critical (soft failure with warning log).
+       Postgres failures are critical (pipeline aborts). FAISS embedding
+       cache persists to disk across runs.
+     - Persistence layer fault tolerance hierarchy.
      - Medium
 
 ---------------------------------------------------------------------------
