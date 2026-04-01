@@ -12,6 +12,10 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+from dotenv import load_dotenv
+
+# Load .env file for local development (no-op if not present)
+load_dotenv()
 
 _CONFIG_DIR = Path(__file__).resolve().parents[3] / "config"
 
