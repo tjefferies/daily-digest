@@ -3,11 +3,15 @@
 Configures the main application with CORS middleware for local
 frontend development and provides the digest pipeline endpoints.
 Wires the full 5-layer pipeline: Ingestion → Extraction → Scoring → Generation.
+
+After pipeline/run, pre-generates digests for all 3 demo personas
+so the frontend loads instantly without additional LLM calls.
 """
 
 from __future__ import annotations
 
 import logging
+from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
@@ -22,14 +26,28 @@ from evercurrent.llm.factory import create_async_llm_client
 from evercurrent.pipeline import async_run_pipeline
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+
     from evercurrent.models.atom import Atom
 
 logger = logging.getLogger(__name__)
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    """Load atoms from Neo4j and pre-generate digests on startup."""
+    atoms = await _load_atoms_from_neo4j()
+    if atoms:
+        _atom_store.extend(atoms)
+        await _precook_digests(atoms)
+        logger.info("Startup: pre-generated digests from %d Neo4j atoms", len(atoms))
+    yield
+
 
 app = FastAPI(
     title="EverCurrent",
     description="Context-aware Slack daily digest for robotics hardware teams",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -40,16 +58,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# In-memory atom store: populated by /pipeline/run, consumed by /digest.
+# Demo persona IDs matching frontend/src/components/PersonaSelector.tsx
+_DEMO_PERSONAS = ["U001", "U007", "U010"]
+
+# In-memory atom store: populated by /pipeline/run.
 _atom_store: list[Atom] = []
+
+# Pre-generated digest cache: persona_id → digest dict.
+_digest_cache: dict[str, dict[str, Any]] = {}
 
 
 def clear_atom_store() -> None:
-    """Clear the in-memory atom store.
+    """Clear the in-memory atom store and digest cache.
 
     Used by tests to reset state between test cases.
     """
     _atom_store.clear()
+    _digest_cache.clear()
 
 
 async def _load_atoms_from_neo4j() -> list[Atom]:
@@ -76,6 +101,39 @@ async def _load_atoms_from_neo4j() -> list[Atom]:
         await graph.close()
 
 
+async def _precook_digests(atoms: list[Atom]) -> None:
+    """Pre-generate digests for all demo personas.
+
+    Scores atoms and generates LLM digest sections for each persona,
+    caching results so GET /digest returns instantly.
+
+    Args:
+        atoms: Extracted atoms from the pipeline.
+    """
+    if not atoms:
+        return
+
+    client = create_async_llm_client()
+    assembler = AsyncDigestAssembler(client)
+
+    for persona_id in _DEMO_PERSONAS:
+        try:
+            digest = await assembler.assemble(persona_id, atoms)
+            _digest_cache[persona_id] = digest
+            section_count = len(digest.get("sections", []))
+            logger.info(
+                "Pre-generated digest for %s: %d sections",
+                persona_id,
+                section_count,
+            )
+        except Exception:
+            logger.warning(
+                "Failed to pre-generate digest for %s",
+                persona_id,
+                exc_info=True,
+            )
+
+
 @app.get("/health")
 async def health_check() -> dict[str, str]:
     """Return application health status.
@@ -90,8 +148,8 @@ async def health_check() -> dict[str, str]:
 async def pipeline_run() -> dict[str, Any]:
     """Trigger the extraction-to-digest pipeline.
 
-    Runs the full Ingestion → Extraction → Filter → Validation pipeline
-    and stores extracted atoms for subsequent /digest requests.
+    Runs the full pipeline, stores atoms, then pre-generates digests
+    for all 3 demo personas so the frontend loads instantly.
 
     Returns:
         A dict with status and processing stats.
@@ -101,8 +159,13 @@ async def pipeline_run() -> dict[str, Any]:
 
     _atom_store.clear()
     _atom_store.extend(result.atoms)
+    _digest_cache.clear()
 
     logger.info("Pipeline complete: %d atoms stored", len(result.atoms))
+
+    # Pre-generate digests for all demo personas
+    await _precook_digests(result.atoms)
+
     return {
         "status": "complete",
         "stats": result.stats,
@@ -116,8 +179,8 @@ async def get_digest(
 ) -> dict[str, Any]:
     """Retrieve the generated digest for a specific persona.
 
-    Tries atoms from: (1) in-memory store, (2) Neo4j graph.
-    If both are empty, returns an empty digest structure.
+    Serves from pre-generated cache when available. Falls back to
+    on-demand generation from in-memory atoms or Neo4j.
 
     Args:
         persona_id: Slack user ID of the persona.
@@ -141,7 +204,11 @@ async def get_digest(
                 detail=f"Invalid phase_override: {phase_override!r}. Expected 'workstream:phase'",
             )
 
-    # Try in-memory store first, then Neo4j
+    # Return cached digest if available (no phase override)
+    if phase_override is None and persona_id in _digest_cache:
+        return _digest_cache[persona_id]
+
+    # On-demand generation: try in-memory store first, then Neo4j
     atoms: list[Atom] = list(_atom_store)
     if not atoms:
         try:
@@ -158,7 +225,7 @@ async def get_digest(
             "phase_override": phase_override,
         }
 
-    # Wire the assembler with available atoms
+    # Generate on demand (phase override or uncached persona)
     client = create_async_llm_client()
     assembler = AsyncDigestAssembler(client)
     return await assembler.assemble(persona_id, atoms, phase_override)

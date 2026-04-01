@@ -7,6 +7,7 @@ Provides a cached accessor for repeated access without re-reading.
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
@@ -53,7 +54,27 @@ def load_config(config_dir: str | None = None) -> dict[str, Any]:
         with path.open() as f:
             config[name] = yaml.safe_load(f)
 
+    _apply_env_overrides(config)
     return config
+
+
+def _apply_env_overrides(config: dict[str, Any]) -> None:
+    """Override config values from environment variables.
+
+    Supports NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD for Docker deployments
+    where the Neo4j hostname differs from localhost.
+
+    Args:
+        config: Mutable config dict to update in place.
+    """
+    pipeline = config.get("pipeline", {})
+    neo4j = pipeline.get("neo4j", {})
+    if uri := os.environ.get("NEO4J_URI"):
+        neo4j["uri"] = uri
+    if user := os.environ.get("NEO4J_USER"):
+        neo4j["user"] = user
+    if password := os.environ.get("NEO4J_PASSWORD"):
+        neo4j["password"] = password
 
 
 def get_config() -> dict[str, Any]:

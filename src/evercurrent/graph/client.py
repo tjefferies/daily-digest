@@ -91,10 +91,11 @@ RETURN a.atom_id AS atom_id, a.type AS type, a.summary AS summary,
        a.detail AS detail, a.urgency AS urgency, a.confidence AS confidence,
        a.implicit_decision AS implicit_decision, a.phase_relevance AS phase_relevance,
        a.channel AS channel, a.thread_ts AS thread_ts,
+       a.created_at AS created_at,
        ws_orig.name AS originating,
        collect(DISTINCT ws_aff.name) AS affected,
        collect(DISTINCT p.handle) AS participants
-ORDER BY a.created_at DESC
+ORDER BY created_at DESC
 """
 
 _PROCESSED_THREAD_TS_CYPHER = """\
