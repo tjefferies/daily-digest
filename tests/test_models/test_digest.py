@@ -3,8 +3,12 @@
 import pytest
 from pydantic import ValidationError
 
-from evercurrent.models.atom import Atom
-from evercurrent.models.digest import Digest, DigestSection, SectionType
+from evercurrent.models.digest import (
+    Digest,
+    DigestItem,
+    DigestSection,
+    SectionType,
+)
 
 
 class TestSectionType:
@@ -25,45 +29,34 @@ class TestDigestSection:
     """Tests for DigestSection model."""
 
     @pytest.fixture
-    def sample_atom(self) -> Atom:
-        """Return a sample Atom for digest section tests."""
-        return Atom(
+    def sample_item(self) -> DigestItem:
+        """Return a sample DigestItem for section tests."""
+        return DigestItem(
+            headline="Team agreed to switch housing material",
+            context="Switching from aluminum to magnesium to meet weight target.",
+            source_channel="#chassis-design",
             atom_id="550e8400-e29b-41d4-a716-446655440000",
-            type="DECISION",
-            summary="Team agreed to switch housing material",
-            detail="Switching from aluminum to magnesium to meet weight target.",
-            source={
-                "channel": "#chassis-design",
-                "thread_ts": "1234567890.123456",
-                "message_range": [1, 10],
-                "key_participants": ["@maya"],
-            },
-            workstreams={"originating": "chassis", "affected": ["supply-chain"]},
-            urgency="high",
-            confidence=0.95,
-            implicit_decision=False,
-            phase_relevance=["DVT"],
         )
 
-    def test_valid_section(self, sample_atom: Atom) -> None:
-        """Verify a DigestSection accepts atoms and preserves fields."""
+    def test_valid_section(self, sample_item: DigestItem) -> None:
+        """Verify a DigestSection accepts items and preserves fields."""
         section = DigestSection(
             section_type="requires_action",
             title="Requires Your Action",
-            atoms=[sample_atom],
+            items=[sample_item],
         )
         assert section.section_type == "requires_action"
-        assert len(section.atoms) == 1
-        assert section.atoms[0].type == "DECISION"
+        assert len(section.items) == 1
+        assert section.items[0].headline == "Team agreed to switch housing material"
 
     def test_empty_section(self) -> None:
-        """Verify a DigestSection can be created with no atoms."""
+        """Verify a DigestSection can be created with no items."""
         section = DigestSection(
             section_type="broader_context",
             title="Broader Team Context",
-            atoms=[],
+            items=[],
         )
-        assert section.atoms == []
+        assert section.items == []
 
 
 class TestDigest:
@@ -77,22 +70,18 @@ class TestDigest:
                 DigestSection(
                     section_type="requires_action",
                     title="Requires Your Action",
-                    atoms=[],
                 ),
                 DigestSection(
                     section_type="decisions_changes",
                     title="Decisions & Changes",
-                    atoms=[],
                 ),
                 DigestSection(
                     section_type="progress_risks",
                     title="Progress & Risks",
-                    atoms=[],
                 ),
                 DigestSection(
                     section_type="broader_context",
                     title="Broader Team Context",
-                    atoms=[],
                 ),
             ],
         )
@@ -105,5 +94,4 @@ class TestDigest:
             DigestSection(
                 section_type="invalid_section",
                 title="Bad",
-                atoms=[],
             )

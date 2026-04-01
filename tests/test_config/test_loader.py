@@ -234,7 +234,7 @@ class TestPipelineConfig:
         """Token limits for extraction and generation are set."""
         cfg = get_config()
         assert cfg["pipeline"]["extraction_max_tokens"] == 4096
-        assert cfg["pipeline"]["generation_max_tokens"] == 4096
+        assert cfg["pipeline"]["generation_max_tokens"] == 8192
 
 
 class TestConfigMatchesOriginalHardcoded:

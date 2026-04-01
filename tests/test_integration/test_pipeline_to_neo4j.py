@@ -16,7 +16,7 @@ from evercurrent.config.loader import get_config
 from evercurrent.dataset.messages import load_messages
 from evercurrent.extraction.filter import confidence_filter
 from evercurrent.extraction.runner import AsyncExtractionRunner
-from evercurrent.extraction.validation import async_validate_atoms
+from evercurrent.extraction.validation import async_validate_atoms_batch
 from evercurrent.graph.client import GraphClient
 from evercurrent.ingestion.context_window import assemble_context_windows
 from evercurrent.ingestion.threads import group_by_thread
@@ -65,10 +65,16 @@ class TestPipelineToNeo4j:
         print(f"  Extracted: {len(raw_atoms)} raw atoms")
         assert len(raw_atoms) > 0, "No atoms extracted from 2 windows"
 
-        # Validation
-        validated = raw_atoms
-        for window in selected:
-            validated = await async_validate_atoms(validated, client, window.thread_text)
+        # Validation — collect all (index, atom, context) tuples for batch
+        window_text_by_ts = {w.thread_ts: w.thread_text for w in selected}
+        atoms_with_context = []
+        for i, atom in enumerate(raw_atoms):
+            if atom.type in ("SPEC_CHANGE", "DECISION"):
+                ctx = window_text_by_ts.get(atom.source.thread_ts, "")
+                if ctx:
+                    atoms_with_context.append((i, atom, ctx))
+
+        validated = await async_validate_atoms_batch(atoms_with_context, raw_atoms)
 
         print(f"  After validation: {len(validated)} atoms")
 
