@@ -199,7 +199,7 @@ def _dump_intermediate(filename: str, data: list) -> None:
     """
     import json
 
-    outpath = Path("data") / filename
+    outpath = Path("/tmp") / "evercurrent" / filename  # noqa: S108
     outpath.parent.mkdir(parents=True, exist_ok=True)
     serialized = [
         d.model_dump(mode="json") if hasattr(d, "model_dump") else d
