@@ -238,23 +238,26 @@ async def _persist_to_neo4j(graph: GraphClient, atoms: list[Atom]) -> None:
 async def async_run_pipeline(
     client: AsyncLLMClient,
     embedder: Embedder | None = None,
+    batch_runner: BatchExtractionRunner | None = None,
 ) -> PipelineResult:
     """Run the full extraction pipeline asynchronously with concurrent LLM calls.
 
-    Uses AsyncExtractionRunner for concurrent window processing and
-    async_validate_atoms for concurrent validation. Queries Neo4j to
-    skip already-processed threads and persists new atoms after filtering.
+    Uses BatchExtractionRunner for batched LLM calls (50% cost savings).
+    Queries Neo4j to skip already-processed threads and persists new
+    atoms after filtering.
 
     Args:
         client: AsyncLLMClient-compatible adapter for async LLM API calls.
         embedder: Optional text embedder for semantic continuation detection.
+        batch_runner: Optional pre-created BatchExtractionRunner for
+            progress tracking. If None, one is created internally.
 
     Returns:
         PipelineResult with validated, filtered atoms and processing stats.
     """
     graph = _create_graph_client()
     try:
-        return await _async_run_pipeline_inner(client, embedder, graph)
+        return await _async_run_pipeline_inner(client, embedder, graph, batch_runner)
     finally:
         await graph.close()
 
@@ -263,6 +266,7 @@ async def _async_run_pipeline_inner(
     client: AsyncLLMClient,
     embedder: Embedder | None,
     graph: GraphClient,
+    batch_runner: BatchExtractionRunner | None = None,
 ) -> PipelineResult:
     """Inner pipeline logic with a shared GraphClient.
 
@@ -270,6 +274,7 @@ async def _async_run_pipeline_inner(
         client: AsyncLLMClient-compatible adapter for async LLM API calls.
         embedder: Optional text embedder for semantic continuation detection.
         graph: Active GraphClient for dedup queries and persistence.
+        batch_runner: Optional pre-created BatchExtractionRunner.
 
     Returns:
         PipelineResult with validated, filtered atoms and processing stats.
@@ -316,7 +321,8 @@ async def _async_run_pipeline_inner(
     )
 
     # Layer 2: Extraction (batch API for 50% cost savings, no rate limits)
-    batch_runner = BatchExtractionRunner(Anthropic())
+    if batch_runner is None:
+        batch_runner = BatchExtractionRunner(Anthropic())
     raw_atoms = await batch_runner.extract(windows)
     logger.info("Extraction: %d raw atoms from %d windows", len(raw_atoms), len(windows))
 

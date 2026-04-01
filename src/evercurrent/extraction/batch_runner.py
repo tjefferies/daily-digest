@@ -69,6 +69,14 @@ class BatchExtractionRunner:
             "windows_processed": 0,
             "atoms_produced": 0,
         }
+        self.progress: dict[str, Any] = {
+            "stage": "",
+            "batch_id": "",
+            "total": 0,
+            "succeeded": 0,
+            "processing": 0,
+            "errored": 0,
+        }
 
     async def extract(self, windows: list[ContextWindow]) -> list[Atom]:
         """Extract atoms from context windows via batched two-stage pipeline.
@@ -118,7 +126,7 @@ class BatchExtractionRunner:
                 },
             })
 
-        results = await self._submit_and_poll(requests)
+        results = await self._submit_and_poll(requests, stage="extraction_stage1")
         coarse_map: dict[int, list[dict[str, Any]]] = {}
 
         for custom_id, text in results.items():
@@ -178,7 +186,7 @@ class BatchExtractionRunner:
         if not requests:
             return []
 
-        results = await self._submit_and_poll(requests)
+        results = await self._submit_and_poll(requests, stage="extraction_stage2")
         atoms: list[Atom] = []
 
         for custom_id, text in results.items():
@@ -230,23 +238,41 @@ class BatchExtractionRunner:
     async def _submit_and_poll(
         self,
         requests: list[dict[str, Any]],
+        stage: str = "",
     ) -> dict[str, str]:
         """Submit a batch and poll until completion.
 
         Args:
             requests: List of batch request dicts with custom_id and params.
+            stage: Stage name for progress tracking (e.g. "extraction_stage1").
 
         Returns:
             Dict mapping custom_id to response text for succeeded results.
         """
         batch = self._client.messages.batches.create(requests=requests)
         batch_id = batch.id
-        logger.info("Batch %s submitted: %d requests", batch_id, len(requests))
+        total = len(requests)
+        self.progress.update(
+            stage=stage, batch_id=batch_id,
+            total=total, succeeded=0, processing=total, errored=0,
+        )
+        logger.info("Batch %s submitted: %d requests (%s)", batch_id, total, stage)
 
-        # Poll for completion
+        # Poll for completion, updating progress each cycle
         for _attempt in range(_MAX_POLL_ATTEMPTS):
             await asyncio.sleep(_POLL_INTERVAL)
             status = self._client.messages.batches.retrieve(batch_id)
+            counts = status.request_counts
+            self.progress.update(
+                succeeded=counts.succeeded,
+                processing=counts.processing,
+                errored=counts.errored,
+            )
+            logger.debug(
+                "Batch %s: %d/%d succeeded, %d processing, %d errored",
+                batch_id, counts.succeeded, total,
+                counts.processing, counts.errored,
+            )
             if status.processing_status == "ended":
                 logger.info("Batch %s completed", batch_id)
                 break

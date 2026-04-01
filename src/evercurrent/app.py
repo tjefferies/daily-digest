@@ -17,11 +17,13 @@ from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
+from anthropic import Anthropic
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from evercurrent.config.loader import get_config
 from evercurrent.context.personas import get_persona
+from evercurrent.extraction.batch_runner import BatchExtractionRunner
 from evercurrent.generation.assembler import AsyncDigestAssembler
 from evercurrent.graph.client import GraphClient
 from evercurrent.llm.factory import create_async_llm_client
@@ -79,10 +81,13 @@ _digest_cache: dict[str, dict[str, Any]] = {}
 _pipeline_status: dict[str, Any] = {
     "state": "idle",  # idle | running | complete | failed
     "stage": "",
+    "batch_id": "",
+    "progress": {"total": 0, "succeeded": 0, "processing": 0, "errored": 0},
     "stats": {},
     "error": None,
 }
 _pipeline_task: asyncio.Task[None] | None = None
+_batch_runner: Any = None  # Reference to active BatchExtractionRunner  # noqa: ANN401
 
 
 def clear_atom_store() -> None:
@@ -151,16 +156,30 @@ async def _precook_digests(atoms: list[Atom]) -> None:
 
 async def _run_pipeline_background() -> None:
     """Run the pipeline in the background, updating status as it progresses."""
+    global _batch_runner  # noqa: PLW0603
     try:
-        _pipeline_status.update(state="running", stage="extraction", error=None)
+        runner = BatchExtractionRunner(Anthropic())
+        _batch_runner = runner
+        _pipeline_status.update(
+            state="running",
+            stage="extraction",
+            error=None,
+            batch_id="",
+            progress={"total": 0, "succeeded": 0, "processing": 0, "errored": 0},
+        )
 
         client = create_async_llm_client()
-        result = await async_run_pipeline(client)
+        result = await async_run_pipeline(client, batch_runner=runner)
 
         _atom_store.clear()
         _atom_store.extend(result.atoms)
         _digest_cache.clear()
-        _pipeline_status.update(stage="generating digests", stats=result.stats)
+        _pipeline_status.update(
+            stage="generating_digests",
+            stats=result.stats,
+            batch_id="",
+            progress={"total": 0, "succeeded": 0, "processing": 0, "errored": 0},
+        )
 
         logger.info("Pipeline complete: %d atoms stored", len(result.atoms))
 
@@ -174,6 +193,8 @@ async def _run_pipeline_background() -> None:
     except Exception as exc:
         logger.warning("Pipeline failed", exc_info=True)
         _pipeline_status.update(state="failed", error=str(exc))
+    finally:
+        _batch_runner = None
 
 
 @app.get("/health")
@@ -209,14 +230,31 @@ async def pipeline_run() -> dict[str, Any]:
 
 @app.get("/pipeline/status")
 async def pipeline_status() -> dict[str, Any]:
-    """Return current pipeline run status.
+    """Return current pipeline run status with batch progress.
 
     Returns:
-        A dict with state, stage, stats, and error fields.
+        A dict with state, stage, batch_id, progress, stats, and error.
     """
+    # Read live progress from the active batch runner
+    progress = dict(_pipeline_status.get("progress", {}))
+    batch_id = _pipeline_status.get("batch_id", "")
+    stage = _pipeline_status["stage"]
+
+    if _batch_runner is not None:
+        progress = {
+            "total": _batch_runner.progress["total"],
+            "succeeded": _batch_runner.progress["succeeded"],
+            "processing": _batch_runner.progress["processing"],
+            "errored": _batch_runner.progress["errored"],
+        }
+        batch_id = _batch_runner.progress.get("batch_id", "")
+        stage = _batch_runner.progress.get("stage", stage)
+
     return {
         "state": _pipeline_status["state"],
-        "stage": _pipeline_status["stage"],
+        "stage": stage,
+        "batch_id": batch_id,
+        "progress": progress,
         "stats": _pipeline_status["stats"],
         "error": _pipeline_status["error"],
     }
