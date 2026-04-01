@@ -26,58 +26,6 @@ class LLMResponse:
     text: str
 
 
-class LLMClient(Protocol):
-    """Protocol defining the model-agnostic LLM client interface.
-
-    Any class implementing create_message and create_structured_message
-    can be used as an LLM client throughout the pipeline.
-    """
-
-    def create_message(
-        self,
-        *,
-        model: str,
-        max_tokens: int,
-        messages: list[dict[str, str]],
-        system: str = "",
-    ) -> LLMResponse:
-        """Send a message to the LLM and return a normalized response.
-
-        Args:
-            model: Model identifier string.
-            max_tokens: Maximum tokens in the response.
-            messages: List of message dicts with 'role' and 'content' keys.
-            system: Optional system prompt.
-
-        Returns:
-            LLMResponse containing the extracted text.
-        """
-        ...
-
-    def create_structured_message(
-        self,
-        *,
-        model: str,
-        max_tokens: int,
-        messages: list[dict[str, str]],
-        system: str = "",
-        response_model: type[T],
-    ) -> T:
-        """Send a message and return a typed Pydantic model via instructor.
-
-        Args:
-            model: Model identifier string.
-            max_tokens: Maximum tokens in the response.
-            messages: List of message dicts with 'role' and 'content' keys.
-            system: Optional system prompt.
-            response_model: Pydantic model class for structured output.
-
-        Returns:
-            Instance of the response_model, validated by instructor.
-        """
-        ...
-
-
 class AsyncLLMClient(Protocol):
     """Protocol defining the async model-agnostic LLM client interface.
 

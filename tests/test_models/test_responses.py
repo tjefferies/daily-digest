@@ -8,7 +8,6 @@ from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
 from evercurrent.models.digest import DigestSection
 from evercurrent.models.responses import (
     DigestResponse,
-    ExtractionResponse,
     ValidationResponse,
 )
 
@@ -30,28 +29,6 @@ def _make_atom() -> Atom:
         urgency="medium",
         confidence=0.9,
     )
-
-
-class TestExtractionResponse:
-    """Tests for the ExtractionResponse wrapper model."""
-
-    def test_empty_atoms_list(self) -> None:
-        """ExtractionResponse can hold an empty atom list."""
-        resp = ExtractionResponse(atoms=[])
-        assert resp.atoms == []
-
-    def test_atoms_list_with_items(self) -> None:
-        """ExtractionResponse holds a list of Atom objects."""
-        atom = _make_atom()
-        resp = ExtractionResponse(atoms=[atom])
-        assert len(resp.atoms) == 1
-        assert resp.atoms[0].type == "DECISION"
-
-    def test_multiple_atoms(self) -> None:
-        """ExtractionResponse can hold multiple atoms."""
-        atoms = [_make_atom() for _ in range(3)]
-        resp = ExtractionResponse(atoms=atoms)
-        assert len(resp.atoms) == 3
 
 
 class TestValidationResponse:

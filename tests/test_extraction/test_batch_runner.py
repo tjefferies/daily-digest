@@ -63,20 +63,30 @@ class TestBatchExtractionRunner:
         mock_status.processing_status = "ended"
         mock_client.messages.batches.retrieve.return_value = mock_status
 
-        stage1_input = {"atoms": [{
-            "atom_id": "test-id", "type": "DECISION",
-            "summary": "Test", "detail": "Detail",
-            "source": {
-                "channel": "#test", "thread_ts": "1000.001",
-                "message_range": [0, 1], "key_participants": ["U001"],
-            },
-        }]}
+        stage1_input = {
+            "atoms": [
+                {
+                    "atom_id": "test-id",
+                    "type": "DECISION",
+                    "summary": "Test",
+                    "detail": "Detail",
+                    "source": {
+                        "channel": "#test",
+                        "thread_ts": "1000.001",
+                        "message_range": [0, 1],
+                        "key_participants": ["U001"],
+                    },
+                }
+            ]
+        }
         stage1_result = _make_tool_result("stage1-0", stage1_input)
 
         stage2_input = {
             "workstreams": {"originating": "chassis", "affected": []},
-            "urgency": "medium", "confidence": 0.9,
-            "implicit_decision": False, "phase_relevance": [],
+            "urgency": "medium",
+            "confidence": 0.9,
+            "implicit_decision": False,
+            "phase_relevance": [],
         }
         stage2_result = _make_tool_result("stage2-0-0", stage2_input)
 
@@ -142,20 +152,30 @@ class TestBatchExtractionRunner:
         mock_status.processing_status = "ended"
         mock_client.messages.batches.retrieve.return_value = mock_status
 
-        stage1_input = {"atoms": [{
-            "atom_id": "id1", "type": "BLOCKER",
-            "summary": "Blocked", "detail": "Detail",
-            "source": {
-                "channel": "#test", "thread_ts": "1000.001",
-                "message_range": [0, 1], "key_participants": ["U001"],
-            },
-        }]}
+        stage1_input = {
+            "atoms": [
+                {
+                    "atom_id": "id1",
+                    "type": "BLOCKER",
+                    "summary": "Blocked",
+                    "detail": "Detail",
+                    "source": {
+                        "channel": "#test",
+                        "thread_ts": "1000.001",
+                        "message_range": [0, 1],
+                        "key_participants": ["U001"],
+                    },
+                }
+            ]
+        }
         stage1_result = _make_tool_result("stage1-0", stage1_input)
 
         stage2_input = {
             "workstreams": {"originating": "chassis", "affected": []},
-            "urgency": "high", "confidence": 0.85,
-            "implicit_decision": False, "phase_relevance": [],
+            "urgency": "high",
+            "confidence": 0.85,
+            "implicit_decision": False,
+            "phase_relevance": [],
         }
         stage2_result = _make_tool_result("stage2-0-0", stage2_input)
 

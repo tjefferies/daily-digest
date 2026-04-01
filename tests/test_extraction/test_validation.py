@@ -7,10 +7,10 @@ for atoms that fail validation.
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
-from evercurrent.extraction.validation import async_validate_atoms, validate_atoms
+from evercurrent.extraction.validation import async_validate_atoms
 from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
 from evercurrent.models.responses import ValidationResponse
 
@@ -38,100 +38,6 @@ def _make_atom(
         urgency="medium",
         confidence=confidence,
     )
-
-
-class TestValidationTargeting:
-    """Tests for which atoms get validated."""
-
-    def test_decision_atoms_are_validated(self) -> None:
-        """DECISION atoms trigger a validation call."""
-        client = MagicMock()
-        client.create_structured_message.return_value = ValidationResponse(valid=True)
-        atom = _make_atom("DECISION")
-        result = validate_atoms([atom], client=client, context_text="thread text")
-        client.create_structured_message.assert_called_once()
-        assert len(result) == 1
-
-    def test_spec_change_atoms_are_validated(self) -> None:
-        """SPEC_CHANGE atoms trigger a validation call."""
-        client = MagicMock()
-        client.create_structured_message.return_value = ValidationResponse(valid=True)
-        atom = _make_atom("SPEC_CHANGE")
-        validate_atoms([atom], client=client, context_text="thread text")
-        client.create_structured_message.assert_called_once()
-
-    def test_other_types_skip_validation(self) -> None:
-        """Non-DECISION/SPEC_CHANGE atoms are not validated."""
-        client = MagicMock()
-        atoms = [_make_atom("ACTION_ITEM"), _make_atom("RISK"), _make_atom("BLOCKER")]
-        result = validate_atoms(atoms, client=client, context_text="thread text")
-        client.create_structured_message.assert_not_called()
-        assert len(result) == 3
-
-
-class TestValidationOutcomes:
-    """Tests for validation pass/fail outcomes."""
-
-    def test_valid_atom_keeps_confidence(self) -> None:
-        """Atom that passes validation keeps its confidence."""
-        client = MagicMock()
-        client.create_structured_message.return_value = ValidationResponse(valid=True)
-        atom = _make_atom("DECISION", confidence=0.9)
-        result = validate_atoms([atom], client=client, context_text="text")
-        assert result[0].confidence == 0.9
-
-    def test_invalid_atom_demoted(self) -> None:
-        """Atom that fails validation has confidence halved."""
-        client = MagicMock()
-        client.create_structured_message.return_value = ValidationResponse(
-            valid=False,
-            reason="Overstated the conclusion",
-        )
-        atom = _make_atom("DECISION", confidence=0.9)
-        result = validate_atoms([atom], client=client, context_text="text")
-        assert result[0].confidence == 0.45
-
-    def test_invalid_atom_gets_warning(self) -> None:
-        """Atom that fails validation gets a validation_warning in detail."""
-        client = MagicMock()
-        client.create_structured_message.return_value = ValidationResponse(
-            valid=False,
-            reason="Fabricated spec value",
-        )
-        atom = _make_atom("SPEC_CHANGE", confidence=0.85)
-        result = validate_atoms([atom], client=client, context_text="text")
-        assert "validation warning" in result[0].detail.lower()
-
-
-class TestValidationEdgeCases:
-    """Edge cases for validation."""
-
-    def test_empty_atom_list(self) -> None:
-        """Empty input returns empty output."""
-        client = MagicMock()
-        result = validate_atoms([], client=client, context_text="text")
-        assert result == []
-
-    def test_mixed_types(self) -> None:
-        """Mix of validated and non-validated types."""
-        client = MagicMock()
-        client.create_structured_message.return_value = ValidationResponse(valid=True)
-        atoms = [
-            _make_atom("DECISION"),
-            _make_atom("ACTION_ITEM"),
-            _make_atom("SPEC_CHANGE"),
-        ]
-        result = validate_atoms(atoms, client=client, context_text="text")
-        assert client.create_structured_message.call_count == 2
-        assert len(result) == 3
-
-    def test_instructor_failure_demotes(self) -> None:
-        """If structured output fails, atom is demoted."""
-        client = MagicMock()
-        client.create_structured_message.side_effect = Exception("Instructor failed")
-        atom = _make_atom("DECISION", confidence=0.8)
-        result = validate_atoms([atom], client=client, context_text="text")
-        assert result[0].confidence == 0.4
 
 
 class TestAsyncValidation:

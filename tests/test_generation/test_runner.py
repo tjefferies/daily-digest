@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
-from evercurrent.generation.runner import AsyncDigestGenerator, DigestGenerator
+from evercurrent.generation.runner import AsyncDigestGenerator
 from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
 from evercurrent.models.digest import DigestSection
 from evercurrent.models.persona import DigestPreferences, Persona, ScoringWeights
@@ -92,153 +92,6 @@ def _make_section(
         section_type=section_type,
         title=title,
     )
-
-
-class TestDigestGeneratorInit:
-    """Tests for DigestGenerator initialization."""
-
-    def test_init_stores_client(self) -> None:
-        """Generator stores the LLM client."""
-        client = MagicMock()
-        gen = DigestGenerator(client)
-        assert gen._client is client  # noqa: SLF001
-
-    def test_init_has_stats(self) -> None:
-        """Generator initializes stats tracking."""
-        gen = DigestGenerator(MagicMock())
-        assert gen.stats["personas_processed"] == 0
-        assert gen.stats["sections_produced"] == 0
-
-
-class TestDigestGeneratorGenerate:
-    """Tests for the generate method."""
-
-    def test_generate_returns_digest_sections(self) -> None:
-        """Generate returns a list of DigestSection objects."""
-        client = MagicMock()
-        client.create_structured_message.return_value = DigestResponse(
-            sections=[
-                _make_section("requires_action", "REQUIRES YOUR ACTION"),
-                _make_section("decisions_changes", "DECISIONS & CHANGES"),
-                _make_section("progress_risks", "PROGRESS & RISKS"),
-                _make_section("broader_context", "BROADER CONTEXT"),
-            ]
-        )
-        gen = DigestGenerator(client)
-        scored = [_make_scored_atom()]
-        persona = _make_persona()
-        sections = gen.generate(scored, persona)
-        assert len(sections) == 4
-        assert sections[0].section_type == "requires_action"
-
-    def test_generate_passes_persona_context(self) -> None:
-        """Generate includes persona context in the API call."""
-        client = MagicMock()
-        client.create_structured_message.return_value = DigestResponse(sections=[_make_section()])
-        gen = DigestGenerator(client)
-        persona = _make_persona()
-        gen.generate([_make_scored_atom()], persona)
-        call_args = client.create_structured_message.call_args
-        user_content = call_args.kwargs["messages"][0]["content"]
-        assert "Maya Chen" in user_content
-        assert "IC Engineer" in user_content
-
-    def test_generate_passes_scored_atoms(self) -> None:
-        """Generate includes scored atom data in the API call."""
-        client = MagicMock()
-        client.create_structured_message.return_value = DigestResponse(sections=[_make_section()])
-        gen = DigestGenerator(client)
-        atom = _make_atom(atom_type="BLOCKER")
-        scored = [_make_scored_atom(atom=atom, score=0.9, critical=True)]
-        gen.generate(scored, _make_persona())
-        call_args = client.create_structured_message.call_args
-        user_content = call_args.kwargs["messages"][0]["content"]
-        assert "BLOCKER" in user_content
-        assert "0.9" in user_content
-
-    def test_generate_updates_stats(self) -> None:
-        """Generate increments persona and section counters."""
-        client = MagicMock()
-        client.create_structured_message.return_value = DigestResponse(
-            sections=[
-                _make_section("requires_action", "REQUIRES YOUR ACTION"),
-                _make_section("decisions_changes", "DECISIONS & CHANGES"),
-            ]
-        )
-        gen = DigestGenerator(client)
-        gen.generate([_make_scored_atom()], _make_persona())
-        assert gen.stats["personas_processed"] == 1
-        assert gen.stats["sections_produced"] == 2
-
-    def test_generate_empty_atoms_returns_empty(self) -> None:
-        """Generate with empty atom list returns empty sections."""
-        client = MagicMock()
-        gen = DigestGenerator(client)
-        sections = gen.generate([], _make_persona())
-        assert sections == []
-
-    def test_generate_passes_response_model(self) -> None:
-        """Generate passes DigestResponse as the response_model."""
-        client = MagicMock()
-        client.create_structured_message.return_value = DigestResponse(sections=[])
-        gen = DigestGenerator(client)
-        gen.generate([_make_scored_atom()], _make_persona())
-        call_kwargs = client.create_structured_message.call_args.kwargs
-        assert call_kwargs["response_model"] is DigestResponse
-
-
-class TestBroaderContextFiltering:
-    """Tests for broader context preference filtering."""
-
-    def test_broader_context_excluded_when_disabled(self) -> None:
-        """Broader context section is filtered when preference is false."""
-        client = MagicMock()
-        client.create_structured_message.return_value = DigestResponse(
-            sections=[
-                _make_section("requires_action", "REQUIRES YOUR ACTION"),
-                _make_section("broader_context", "BROADER CONTEXT"),
-            ]
-        )
-        gen = DigestGenerator(client)
-        persona = _make_persona(include_broader_context=False)
-        sections = gen.generate([_make_scored_atom()], persona)
-        section_types = [s.section_type for s in sections]
-        assert "broader_context" not in section_types
-
-    def test_broader_context_included_when_enabled(self) -> None:
-        """Broader context section is kept when preference is true."""
-        client = MagicMock()
-        client.create_structured_message.return_value = DigestResponse(
-            sections=[
-                _make_section("requires_action", "REQUIRES YOUR ACTION"),
-                _make_section("broader_context", "BROADER CONTEXT"),
-            ]
-        )
-        gen = DigestGenerator(client)
-        persona = _make_persona(include_broader_context=True)
-        sections = gen.generate([_make_scored_atom()], persona)
-        section_types = [s.section_type for s in sections]
-        assert "broader_context" in section_types
-
-
-class TestResponseErrorHandling:
-    """Tests for structured output error handling."""
-
-    def test_instructor_failure_returns_empty(self) -> None:
-        """Exception from structured output returns empty list."""
-        client = MagicMock()
-        client.create_structured_message.side_effect = Exception("Instructor failed")
-        gen = DigestGenerator(client)
-        sections = gen.generate([_make_scored_atom()], _make_persona())
-        assert sections == []
-
-    def test_non_text_response_returns_empty(self) -> None:
-        """ValueError from LLM client returns empty list."""
-        client = MagicMock()
-        client.create_structured_message.side_effect = ValueError("non-text response")
-        gen = DigestGenerator(client)
-        sections = gen.generate([_make_scored_atom()], _make_persona())
-        assert sections == []
 
 
 class TestAsyncDigestGenerator:

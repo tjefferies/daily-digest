@@ -20,10 +20,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-openai = ["openai>=1.0"]
-google = ["google-generativeai>=0.8"]
 embeddings = ["sentence-transformers>=3.0"]
-all-llm = ["openai>=1.0", "google-generativeai>=0.8"]
 
 [dependency-groups]
 dev = [

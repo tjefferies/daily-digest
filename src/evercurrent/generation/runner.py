@@ -17,7 +17,7 @@ from evercurrent.generation.prompt import build_generation_prompt
 from evercurrent.models.responses import DigestResponse
 
 if TYPE_CHECKING:
-    from evercurrent.llm.types import AsyncLLMClient, LLMClient
+    from evercurrent.llm.types import AsyncLLMClient
     from evercurrent.models.digest import DigestSection
     from evercurrent.models.persona import Persona
     from evercurrent.scoring.composite import ScoredAtom
@@ -27,70 +27,6 @@ logger = logging.getLogger(__name__)
 _pipeline_cfg = get_config()["pipeline"]
 _MODEL = _pipeline_cfg["model"]
 _MAX_TOKENS = _pipeline_cfg["generation_max_tokens"]
-
-
-class DigestGenerator:
-    """Generates digest sections from scored atoms via LLM.
-
-    For each persona, constructs a user message containing the persona
-    context and ranked scored atoms, then sends to the LLM API with
-    instructor for structured output. Returns DigestSection objects directly.
-
-    Attributes:
-        stats: Dict tracking personas_processed and sections_produced.
-    """
-
-    def __init__(self, client: LLMClient) -> None:
-        """Initialize with an LLM client.
-
-        Args:
-            client: LLMClient-compatible adapter instance.
-        """
-        self._client = client
-        self._system_prompt = build_generation_prompt()
-        self.stats: dict[str, int] = {
-            "personas_processed": 0,
-            "sections_produced": 0,
-        }
-
-    def generate(
-        self,
-        scored_atoms: list[ScoredAtom],
-        persona: Persona,
-    ) -> list[DigestSection]:
-        """Generate digest sections for a persona from scored atoms.
-
-        Args:
-            scored_atoms: Ranked ScoredAtom list from Layer 4.
-            persona: The persona to generate the digest for.
-
-        Returns:
-            List of DigestSection objects from structured LLM response.
-            Returns empty list if no atoms or API/parse failure.
-        """
-        if not scored_atoms:
-            return []
-
-        user_message = _build_user_message(scored_atoms, persona)
-        try:
-            response = self._client.create_structured_message(
-                model=_MODEL,
-                max_tokens=_MAX_TOKENS,
-                system=self._system_prompt,
-                messages=[{"role": "user", "content": user_message}],
-                response_model=DigestResponse,
-            )
-        except Exception:
-            logger.warning("Structured digest generation failed")
-            return []
-
-        sections = response.sections
-        if not persona.digest_preferences.include_broader_context:
-            sections = [s for s in sections if s.section_type != "broader_context"]
-
-        self.stats["personas_processed"] += 1
-        self.stats["sections_produced"] += len(sections)
-        return sections
 
 
 class AsyncDigestGenerator:

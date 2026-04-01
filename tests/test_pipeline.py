@@ -8,7 +8,7 @@ from uuid import uuid4
 import pytest
 
 from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
-from evercurrent.pipeline import PipelineResult, async_run_pipeline, run_pipeline
+from evercurrent.pipeline import PipelineResult, async_run_pipeline
 
 
 def _make_atom(
@@ -33,129 +33,6 @@ def _make_atom(
         urgency="medium",
         confidence=confidence,
     )
-
-
-class TestRunPipeline:
-    """Tests for the run_pipeline orchestrator."""
-
-    @patch("evercurrent.pipeline.ExtractionRunner")
-    @patch("evercurrent.pipeline.validate_atoms")
-    @patch("evercurrent.pipeline.confidence_filter")
-    def test_returns_pipeline_result(
-        self,
-        mock_filter: MagicMock,
-        mock_validate: MagicMock,
-        mock_runner_cls: MagicMock,
-    ) -> None:
-        """run_pipeline returns a PipelineResult with atoms and stats."""
-        atom = _make_atom()
-        mock_runner = MagicMock()
-        mock_runner.extract.return_value = [atom]
-        mock_runner_cls.return_value = mock_runner
-        mock_validate.return_value = [atom]
-
-        from evercurrent.extraction.filter import FilterResult
-
-        mock_filter.return_value = FilterResult(passed=[atom], filtered=[])
-
-        mock_client = MagicMock()
-        result = run_pipeline(mock_client)
-
-        assert isinstance(result, PipelineResult)
-        assert len(result.atoms) == 1
-        assert result.atoms[0].summary == "Test decision"
-
-    @patch("evercurrent.pipeline.ExtractionRunner")
-    @patch("evercurrent.pipeline.validate_atoms")
-    @patch("evercurrent.pipeline.confidence_filter")
-    def test_filters_low_confidence_atoms(
-        self,
-        mock_filter: MagicMock,
-        mock_validate: MagicMock,
-        mock_runner_cls: MagicMock,
-    ) -> None:
-        """Low-confidence atoms are filtered out by the pipeline."""
-        high = _make_atom(summary="High conf", confidence=0.9)
-        low = _make_atom(summary="Low conf", confidence=0.3)
-        mock_runner = MagicMock()
-        mock_runner.extract.return_value = [high, low]
-        mock_runner_cls.return_value = mock_runner
-        mock_validate.return_value = [high, low]
-
-        from evercurrent.extraction.filter import FilterResult
-
-        mock_filter.return_value = FilterResult(passed=[high], filtered=[low])
-
-        mock_client = MagicMock()
-        result = run_pipeline(mock_client)
-
-        assert len(result.atoms) == 1
-        assert result.atoms[0].summary == "High conf"
-
-    @patch("evercurrent.pipeline.ExtractionRunner")
-    @patch("evercurrent.pipeline.validate_atoms")
-    @patch("evercurrent.pipeline.confidence_filter")
-    def test_tracks_stats(
-        self,
-        mock_filter: MagicMock,
-        mock_validate: MagicMock,
-        mock_runner_cls: MagicMock,
-    ) -> None:
-        """Pipeline result includes processing stats."""
-        atom = _make_atom()
-        mock_runner = MagicMock()
-        mock_runner.extract.return_value = [atom]
-        mock_runner_cls.return_value = mock_runner
-        mock_validate.return_value = [atom]
-
-        from evercurrent.extraction.filter import FilterResult
-
-        mock_filter.return_value = FilterResult(passed=[atom], filtered=[])
-
-        mock_client = MagicMock()
-        result = run_pipeline(mock_client)
-
-        assert result.stats["atoms_extracted"] == 1
-        assert result.stats["atoms_after_filter"] == 1
-
-    @patch("evercurrent.pipeline.ExtractionRunner")
-    @patch("evercurrent.pipeline.validate_atoms")
-    @patch("evercurrent.pipeline.confidence_filter")
-    def test_empty_extraction_returns_empty(
-        self,
-        mock_filter: MagicMock,
-        mock_validate: MagicMock,
-        mock_runner_cls: MagicMock,
-    ) -> None:
-        """Pipeline handles zero extracted atoms gracefully."""
-        mock_runner = MagicMock()
-        mock_runner.extract.return_value = []
-        mock_runner_cls.return_value = mock_runner
-        mock_validate.return_value = []
-
-        from evercurrent.extraction.filter import FilterResult
-
-        mock_filter.return_value = FilterResult(passed=[], filtered=[])
-
-        mock_client = MagicMock()
-        result = run_pipeline(mock_client)
-
-        assert result.atoms == []
-        assert result.stats["atoms_extracted"] == 0
-
-
-class TestPipelineResult:
-    """Tests for PipelineResult dataclass."""
-
-    def test_result_stores_atoms_and_stats(self) -> None:
-        """PipelineResult stores atoms and stats."""
-        atom = _make_atom()
-        result = PipelineResult(
-            atoms=[atom],
-            stats={"atoms_extracted": 1, "atoms_after_filter": 1},
-        )
-        assert len(result.atoms) == 1
-        assert result.stats["atoms_extracted"] == 1
 
 
 class TestAsyncRunPipeline:

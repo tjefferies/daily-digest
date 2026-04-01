@@ -2,15 +2,14 @@
 
 from __future__ import annotations
 
-from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 
 from evercurrent.app import app
-from evercurrent.generation.assembler import AsyncDigestAssembler, DigestAssembler
+from evercurrent.generation.assembler import AsyncDigestAssembler
 from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
 from evercurrent.models.digest import DigestSection
 from evercurrent.models.responses import DigestResponse
@@ -64,66 +63,6 @@ def _mock_digest_response() -> DigestResponse:
             ),
         ]
     )
-
-
-class TestDigestAssembler:
-    """Tests for the DigestAssembler orchestrator."""
-
-    def test_assemble_returns_response_dict(self) -> None:
-        """Assembler returns dict with persona_id, generated_at, sections."""
-        client = MagicMock()
-        client.create_structured_message.return_value = _mock_digest_response()
-        assembler = DigestAssembler(client)
-        result = assembler.assemble("U001", atoms=[_make_atom()])
-        assert "persona_id" in result
-        assert "generated_at" in result
-        assert "sections" in result
-        assert result["persona_id"] == "U001"
-
-    def test_assemble_generated_at_is_iso_datetime(self) -> None:
-        """Generated_at is a valid ISO datetime string."""
-        client = MagicMock()
-        client.create_structured_message.return_value = _mock_digest_response()
-        assembler = DigestAssembler(client)
-        result = assembler.assemble("U001", atoms=[_make_atom()])
-        # Should parse without error
-        datetime.fromisoformat(result["generated_at"])
-
-    def test_assemble_unknown_persona_returns_error(self) -> None:
-        """Assembler returns error for unknown persona_id."""
-        assembler = DigestAssembler(MagicMock())
-        result = assembler.assemble("UNKNOWN_USER", atoms=[_make_atom()])
-        assert "error" in result
-
-    def test_assemble_applies_phase_override(self) -> None:
-        """Phase override is applied before scoring."""
-        client = MagicMock()
-        client.create_structured_message.return_value = _mock_digest_response()
-        assembler = DigestAssembler(client)
-        # chassis:PVT is a valid override for Maya Chen (U001)
-        result = assembler.assemble(
-            "U001",
-            atoms=[_make_atom()],
-            phase_override="chassis:PVT",
-        )
-        assert "error" not in result
-        assert result["persona_id"] == "U001"
-
-    def test_assemble_invalid_phase_override_format(self) -> None:
-        """Invalid phase_override format returns error."""
-        assembler = DigestAssembler(MagicMock())
-        result = assembler.assemble(
-            "U001",
-            atoms=[_make_atom()],
-            phase_override="invalid-format",
-        )
-        assert "error" in result
-
-    def test_assemble_empty_atoms(self) -> None:
-        """Assembler with empty atoms returns empty sections."""
-        assembler = DigestAssembler(MagicMock())
-        result = assembler.assemble("U001", atoms=[])
-        assert result["sections"] == []
 
 
 class TestAsyncDigestAssembler:

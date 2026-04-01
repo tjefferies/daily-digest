@@ -1,17 +1,14 @@
-"""Model-agnostic LLM client abstraction (sync and async).
+"""Anthropic LLM client abstraction (async-only).
 
-Provides a unified interface for Anthropic, OpenAI, and Google Gemini
-APIs. Use create_llm_client() or create_async_llm_client() factory
-to instantiate the configured provider.
+Provides the async interface for the Anthropic Claude API.
+Use create_async_llm_client() factory to instantiate.
 """
 
-from evercurrent.llm.factory import create_async_llm_client, create_llm_client
-from evercurrent.llm.types import AsyncLLMClient, LLMClient, LLMResponse
+from evercurrent.llm.factory import create_async_llm_client
+from evercurrent.llm.types import AsyncLLMClient, LLMResponse
 
 __all__ = [
     "AsyncLLMClient",
-    "LLMClient",
     "LLMResponse",
     "create_async_llm_client",
-    "create_llm_client",
 ]

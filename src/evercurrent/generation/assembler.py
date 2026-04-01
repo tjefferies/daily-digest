@@ -11,104 +11,14 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 from evercurrent.context.personas import get_persona
-from evercurrent.generation.runner import AsyncDigestGenerator, DigestGenerator
+from evercurrent.generation.runner import AsyncDigestGenerator
 from evercurrent.scoring.composite import score_atoms
 
 if TYPE_CHECKING:
-    from evercurrent.llm.types import AsyncLLMClient, LLMClient
+    from evercurrent.llm.types import AsyncLLMClient
     from evercurrent.models.atom import Atom
 
 logger = logging.getLogger(__name__)
-
-
-class DigestAssembler:
-    """Orchestrates the full digest pipeline for a single persona.
-
-    Combines persona lookup, phase override, composite scoring, and
-    LLM-based digest generation into one operation.
-
-    Attributes:
-        _client: LLM client adapter.
-        _generator: DigestGenerator for LLM prose generation.
-    """
-
-    def __init__(self, client: LLMClient) -> None:
-        """Initialize with an LLM client.
-
-        Args:
-            client: LLMClient-compatible adapter instance.
-        """
-        self._client = client
-        self._generator = DigestGenerator(client)
-
-    def assemble(
-        self,
-        persona_id: str,
-        atoms: list[Atom],
-        phase_override: str | None = None,
-    ) -> dict[str, Any]:
-        """Assemble a complete digest for a persona.
-
-        Args:
-            persona_id: Slack user ID of the persona.
-            atoms: Extracted atoms to score and generate from.
-            phase_override: Optional "workstream:phase" override string.
-
-        Returns:
-            Dict with persona_id, generated_at, and sections. On error,
-            returns dict with "error" key describing the failure.
-        """
-        persona = get_persona(persona_id)
-        if persona is None:
-            return {"error": f"Unknown persona: {persona_id}"}
-
-        if phase_override is not None:
-            error = self._apply_phase_override(persona_id, phase_override)
-            if error:
-                return {"error": error}
-
-        if not atoms:
-            return {
-                "persona_id": persona_id,
-                "generated_at": datetime.now(tz=UTC).isoformat(),
-                "sections": [],
-            }
-
-        scored = score_atoms(atoms, persona)
-        sections = self._generator.generate(scored, persona)
-
-        return {
-            "persona_id": persona_id,
-            "generated_at": datetime.now(tz=UTC).isoformat(),
-            "sections": [{"section_type": s.section_type, "title": s.title} for s in sections],
-        }
-
-    def _apply_phase_override(
-        self,
-        persona_id: str,
-        phase_override: str,
-    ) -> str | None:
-        """Parse and apply a phase override string.
-
-        Args:
-            persona_id: Persona ID for logging.
-            phase_override: String in "workstream:phase" format.
-
-        Returns:
-            Error message string if invalid, None if successful.
-        """
-        parts = phase_override.split(":")
-        if len(parts) != 2:  # noqa: PLR2004
-            return (
-                f"Invalid phase_override format: {phase_override!r}. Expected 'workstream:phase'"
-            )
-        logger.info(
-            "Phase override for %s: %s -> %s",
-            persona_id,
-            parts[0],
-            parts[1],
-        )
-        return None
 
 
 class AsyncDigestAssembler:

@@ -16,7 +16,7 @@ from evercurrent.config.loader import get_config
 from evercurrent.models.responses import ValidationResponse
 
 if TYPE_CHECKING:
-    from evercurrent.llm.types import AsyncLLMClient, LLMClient
+    from evercurrent.llm.types import AsyncLLMClient
     from evercurrent.models.atom import Atom
 
 logger = logging.getLogger(__name__)
@@ -45,66 +45,6 @@ Check for:
 
 Respond with JSON: {{"valid": true/false, "reason": "explanation if invalid"}}
 """
-
-
-def validate_atoms(
-    atoms: list[Atom],
-    client: LLMClient,
-    context_text: str,
-) -> list[Atom]:
-    """Validate DECISION and SPEC_CHANGE atoms with a second LLM pass.
-
-    Args:
-        atoms: List of extracted Atom objects.
-        client: LLMClient-compatible adapter instance.
-        context_text: Original thread text for validation context.
-
-    Returns:
-        Updated atom list with demoted confidence for invalid atoms.
-    """
-    result: list[Atom] = []
-    for atom in atoms:
-        if atom.type in _VALIDATED_TYPES:
-            atom = _validate_single(atom, client, context_text)
-        result.append(atom)
-    return result
-
-
-def _validate_single(
-    atom: Atom,
-    client: LLMClient,
-    context_text: str,
-) -> Atom:
-    """Run validation on a single atom using structured output.
-
-    Args:
-        atom: The atom to validate.
-        client: LLMClient-compatible adapter instance.
-        context_text: Original conversation text.
-
-    Returns:
-        The atom, possibly with demoted confidence and warning.
-    """
-    prompt = _VALIDATION_PROMPT.format(
-        context_text=context_text,
-        atom_json=atom.model_dump_json(indent=2),
-    )
-
-    try:
-        response = client.create_structured_message(
-            model=_MODEL,
-            max_tokens=_VALIDATION_MAX_TOKENS,
-            messages=[{"role": "user", "content": prompt}],
-            response_model=ValidationResponse,
-        )
-    except Exception:
-        return _demote_atom(atom, "Validation structured output failed")
-
-    if not response.valid:
-        reason = response.reason or "Validation failed"
-        return _demote_atom(atom, reason)
-
-    return atom
 
 
 def _demote_atom(atom: Atom, reason: str) -> Atom:

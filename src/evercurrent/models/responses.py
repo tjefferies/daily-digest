@@ -14,22 +14,11 @@ from __future__ import annotations
 from pydantic import BaseModel, Field
 
 from evercurrent.models.atom import (  # noqa: TC001
-    Atom,
     AtomWorkstreams,
     Phase,
     Urgency,
 )
 from evercurrent.models.digest import DigestSection  # noqa: TC001
-
-
-class ExtractionResponse(BaseModel):
-    """Wrapper for extraction pipeline LLM responses (legacy single-stage).
-
-    Attributes:
-        atoms: List of extracted Atom objects from a context window.
-    """
-
-    atoms: list[Atom] = Field(default_factory=list)
 
 
 class CoarseExtractionResponse(BaseModel):

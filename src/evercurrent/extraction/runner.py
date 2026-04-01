@@ -25,7 +25,7 @@ _VALID_TYPES: set[str] = set(AtomType.__args__)  # type: ignore[attr-defined]
 
 if TYPE_CHECKING:
     from evercurrent.ingestion.context_window import ContextWindow
-    from evercurrent.llm.types import AsyncLLMClient, LLMClient
+    from evercurrent.llm.types import AsyncLLMClient
 
 logger = logging.getLogger(__name__)
 
@@ -67,86 +67,6 @@ def _build_enrichment_message(raw_atom: dict, thread_text: str) -> str:
         f"## Thread Context\n\n{thread_text}\n\n"
         f"## Event to Enrich\n\n```json\n{json.dumps(raw_atom, indent=2)}\n```"
     )
-
-
-class ExtractionRunner:
-    """Two-stage extraction runner: coarse extract then enrich.
-
-    Stage 1 calls the LLM with CoarseExtractionResponse to identify events.
-    Stage 2 calls the LLM with EnrichmentResponse for each event to assign
-    metadata. The results are merged into full Atom objects.
-
-    Attributes:
-        stats: Dict tracking windows_processed and atoms_produced.
-    """
-
-    def __init__(self, client: LLMClient) -> None:
-        """Initialize with an LLM client.
-
-        Args:
-            client: LLMClient-compatible adapter instance.
-        """
-        self._client = client
-        self._coarse_prompt = build_coarse_prompt()
-        self._enrichment_prompt = build_enrichment_prompt()
-        self.stats: dict[str, int] = {
-            "windows_processed": 0,
-            "atoms_produced": 0,
-        }
-
-    def extract(self, windows: list[ContextWindow]) -> list[Atom]:
-        """Extract atoms from context windows via two-stage pipeline.
-
-        Args:
-            windows: ContextWindow objects from Layer 1.
-
-        Returns:
-            List of validated Atom objects extracted from all windows.
-        """
-        all_atoms: list[Atom] = []
-        for window in windows:
-            atoms = self._process_window(window)
-            all_atoms.extend(atoms)
-            self.stats["windows_processed"] += 1
-        self.stats["atoms_produced"] = len(all_atoms)
-        return all_atoms
-
-    def _process_window(self, window: ContextWindow) -> list[Atom]:
-        """Process a single window through Stage 1 → Stage 2."""
-        # Stage 1: coarse extraction
-        try:
-            coarse = self._client.create_structured_message(
-                model=_MODEL,
-                max_tokens=_MAX_TOKENS,
-                system=self._coarse_prompt,
-                messages=[{"role": "user", "content": window.thread_text}],
-                response_model=CoarseExtractionResponse,
-            )
-        except Exception:
-            logger.warning("Stage 1 extraction failed for window", exc_info=True)
-            return []
-
-        # Stage 2: enrich each coarse atom
-        atoms: list[Atom] = []
-        for raw_atom in coarse.atoms:
-            try:
-                enrichment = self._client.create_structured_message(
-                    model=_MODEL,
-                    max_tokens=_MAX_TOKENS,
-                    system=self._enrichment_prompt,
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": _build_enrichment_message(raw_atom, window.thread_text),
-                        }
-                    ],
-                    response_model=EnrichmentResponse,
-                )
-                atoms.append(_merge_atom(raw_atom, enrichment, window))
-            except Exception:
-                logger.warning("Stage 2 enrichment failed for atom", exc_info=True)
-                continue
-        return atoms
 
 
 _DEFAULT_CONCURRENCY = get_config()["pipeline"].get("max_concurrency", 2)

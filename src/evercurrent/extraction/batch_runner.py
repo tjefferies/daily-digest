@@ -226,17 +226,19 @@ class BatchExtractionRunner:
         """
         requests = []
         for i, window in enumerate(windows):
-            requests.append({
-                "custom_id": f"stage1-{i}",
-                "params": {
-                    "model": _MODEL,
-                    "max_tokens": _MAX_TOKENS,
-                    "system": self._coarse_prompt,
-                    "messages": [{"role": "user", "content": window.thread_text}],
-                    "tools": [_COARSE_TOOL],
-                    "tool_choice": {"type": "tool", "name": "extract_atoms"},
-                },
-            })
+            requests.append(
+                {
+                    "custom_id": f"stage1-{i}",
+                    "params": {
+                        "model": _MODEL,
+                        "max_tokens": _MAX_TOKENS,
+                        "system": self._coarse_prompt,
+                        "messages": [{"role": "user", "content": window.thread_text}],
+                        "tools": [_COARSE_TOOL],
+                        "tool_choice": {"type": "tool", "name": "extract_atoms"},
+                    },
+                }
+            )
 
         results = await self._submit_and_poll(requests, stage="extraction_stage1")
         coarse_map: dict[int, list[dict[str, Any]]] = {}
@@ -274,22 +276,27 @@ class BatchExtractionRunner:
             window = windows[win_idx]
             for atom_idx, raw_atom in enumerate(raw_atoms):
                 custom_id = f"stage2-{win_idx}-{atom_idx}"
-                requests.append({
-                    "custom_id": custom_id,
-                    "params": {
-                        "model": _MODEL,
-                        "max_tokens": _MAX_TOKENS,
-                        "system": self._enrichment_prompt,
-                        "messages": [{
-                            "role": "user",
-                            "content": _build_enrichment_message(
-                                raw_atom, window.thread_text,
-                            ),
-                        }],
-                        "tools": [_ENRICHMENT_TOOL],
-                        "tool_choice": {"type": "tool", "name": "enrich_atom"},
-                    },
-                })
+                requests.append(
+                    {
+                        "custom_id": custom_id,
+                        "params": {
+                            "model": _MODEL,
+                            "max_tokens": _MAX_TOKENS,
+                            "system": self._enrichment_prompt,
+                            "messages": [
+                                {
+                                    "role": "user",
+                                    "content": _build_enrichment_message(
+                                        raw_atom,
+                                        window.thread_text,
+                                    ),
+                                }
+                            ],
+                            "tools": [_ENRICHMENT_TOOL],
+                            "tool_choice": {"type": "tool", "name": "enrich_atom"},
+                        },
+                    }
+                )
 
         if not requests:
             return []
@@ -362,8 +369,12 @@ class BatchExtractionRunner:
         batch_id = batch.id
         total = len(requests)
         self.progress.update(
-            stage=stage, batch_id=batch_id,
-            total=total, succeeded=0, processing=total, errored=0,
+            stage=stage,
+            batch_id=batch_id,
+            total=total,
+            succeeded=0,
+            processing=total,
+            errored=0,
         )
         logger.info("Batch %s submitted: %d requests (%s)", batch_id, total, stage)
 
@@ -378,8 +389,11 @@ class BatchExtractionRunner:
             )
             logger.info(
                 "Batch %s: %d/%d succeeded, %d processing, %d errored",
-                batch_id, counts.succeeded, total,
-                counts.processing, counts.errored,
+                batch_id,
+                counts.succeeded,
+                total,
+                counts.processing,
+                counts.errored,
             )
             if status.processing_status == "ended":
                 logger.info("Batch %s completed", batch_id)
@@ -410,6 +424,9 @@ class BatchExtractionRunner:
                 )
         logger.info(
             "Batch %s results: %d succeeded, %d failed of %d total",
-            batch_id, succeeded, failed, total,
+            batch_id,
+            succeeded,
+            failed,
+            total,
         )
         return results

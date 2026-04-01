@@ -19,8 +19,7 @@ from evercurrent.config.loader import get_config
 from evercurrent.dataset.messages import load_messages
 from evercurrent.extraction.batch_runner import BatchExtractionRunner
 from evercurrent.extraction.filter import confidence_filter
-from evercurrent.extraction.runner import ExtractionRunner
-from evercurrent.extraction.validation import async_validate_atoms, validate_atoms
+from evercurrent.extraction.validation import async_validate_atoms
 from evercurrent.graph.client import GraphClient
 from evercurrent.ingestion.cached_embedder import CachedEmbedder
 from evercurrent.ingestion.context_window import assemble_context_windows
@@ -30,7 +29,7 @@ from evercurrent.ingestion.vectorstore import VectorStore
 
 if TYPE_CHECKING:
     from evercurrent.ingestion.embeddings import Embedder
-    from evercurrent.llm.types import AsyncLLMClient, LLMClient
+    from evercurrent.llm.types import AsyncLLMClient
     from evercurrent.models.atom import Atom
 
 logger = logging.getLogger(__name__)
@@ -88,70 +87,6 @@ def _merge_continuations(
             bundle.replies.extend(match.continuations)
             merged += len(match.continuations)
     return merged
-
-
-def run_pipeline(
-    client: LLMClient,
-    embedder: Embedder | None = None,
-) -> PipelineResult:
-    """Run the full extraction pipeline: Ingestion → Extraction → Filter → Validation.
-
-    Args:
-        client: LLMClient-compatible adapter for LLM API calls.
-        embedder: Optional text embedder for semantic continuation detection.
-
-    Returns:
-        PipelineResult with validated, filtered atoms and processing stats.
-    """
-    # Layer 1: Ingestion
-    messages = load_messages()
-    bundles = group_by_thread(messages)
-
-    # Pass 2: Continuation detection (hybrid keyword + semantic)
-    standalones = _extract_standalones(messages, bundles)
-    continuation_matches = detect_continuations(bundles, standalones, embedder=embedder)
-    continuations_merged = _merge_continuations(bundles, continuation_matches)
-
-    windows = assemble_context_windows(bundles)
-    logger.info(
-        "Ingestion: %d messages → %d threads (%d continuations) → %d windows",
-        len(messages),
-        len(bundles),
-        continuations_merged,
-        len(windows),
-    )
-
-    # Layer 2: Extraction
-    runner = ExtractionRunner(client)
-    raw_atoms = runner.extract(windows)
-    logger.info("Extraction: %d raw atoms from %d windows", len(raw_atoms), len(windows))
-
-    # Validation (two-pass for DECISION/SPEC_CHANGE)
-    validated = raw_atoms
-    for window in windows:
-        validated = validate_atoms(validated, client, window.thread_text)
-
-    # Confidence filter
-    filter_result = confidence_filter(validated)
-    atoms = filter_result.passed
-    logger.info(
-        "Filter: %d passed, %d filtered",
-        filter_result.passed_count,
-        filter_result.filtered_count,
-    )
-
-    return PipelineResult(
-        atoms=atoms,
-        stats={
-            "messages_loaded": len(messages),
-            "threads_found": len(bundles),
-            "standalones_found": len(standalones),
-            "continuations_merged": continuations_merged,
-            "context_windows": len(windows),
-            "atoms_extracted": len(raw_atoms),
-            "atoms_after_filter": len(atoms),
-        },
-    )
 
 
 def _get_vectorstore_path() -> Path:
