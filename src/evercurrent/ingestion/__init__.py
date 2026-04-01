@@ -15,6 +15,7 @@ from evercurrent.ingestion.embeddings import (
 )
 from evercurrent.ingestion.loader import load_message_stream
 from evercurrent.ingestion.threads import ThreadBundle, group_by_thread
+from evercurrent.ingestion.vectorstore import VectorStore
 
 __all__ = [
     "ContinuationMatch",
@@ -22,6 +23,7 @@ __all__ = [
     "Embedder",
     "SentenceTransformerEmbedder",
     "ThreadBundle",
+    "VectorStore",
     "assemble_context_windows",
     "cosine_similarity",
     "detect_continuations",

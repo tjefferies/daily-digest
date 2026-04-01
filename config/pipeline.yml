@@ -22,6 +22,10 @@ continuations:
   similarity_threshold: 0.45
   embedding_model: all-MiniLM-L6-v2
 
+# Persistent FAISS vector store for embedding cache.
+vectorstore:
+  path: data/vectorstore.index
+
 # Extraction confidence filter threshold.
 confidence_threshold: 0.7
 
