@@ -64,7 +64,7 @@ anyone pressing a button. The tool becomes a habit, not a novelty.
 
 **Technical approach:**
 
-- Daily cron job (default: 06:00 local time) triggers
+- Daily cron job (default: 03:00 local time) triggers
   ``POST /pipeline/run``
 - Alternative: Slack webhook trigger ("slash command" ``/digest``)
 - Pre-cook digests for all personas after pipeline completes

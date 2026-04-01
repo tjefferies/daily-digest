@@ -1,7 +1,7 @@
 .. _presentation:
 
 =====================================================================
-EverCurrent Daily Digest Tool
+Daily Digest Tool 
 =====================================================================
 
 *Context-aware information insurance for hardware engineering teams.*
