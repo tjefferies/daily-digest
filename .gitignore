@@ -58,3 +58,6 @@ frontend/build/
 sandbox.txt
 data/vectorstore.index
 data/vectorstore.keys
+prompt-template.txt
+loop-dev.txt
+issues.sh
