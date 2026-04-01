@@ -1,8 +1,8 @@
-"""Two-pass validation for SPEC_CHANGE and DECISION atoms via batch API.
+"""Two-pass validation for SPEC_CHANGE and DECISION atoms via single batch.
 
-Submits all validation prompts as a single Anthropic Message Batch
-with tool_use for structured output. Invalid atoms have their
-confidence halved and get a warning annotation.
+Collects ALL validation prompts across all source threads and submits
+them as ONE Anthropic Message Batch with tool_use. Invalid atoms have
+their confidence halved and get a warning annotation.
 """
 
 from __future__ import annotations
@@ -27,12 +27,10 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-_VALIDATED_TYPES = frozenset({"DECISION", "SPEC_CHANGE"})
-
 _pipeline_cfg = get_config()["pipeline"]
 _MODEL = _pipeline_cfg["model"]
 _VALIDATION_MAX_TOKENS = _pipeline_cfg["validation_max_tokens"]
-_MAX_PER_BATCH = _pipeline_cfg.get("max_requests_per_batch", 100)
+_MAX_PER_BATCH = _pipeline_cfg.get("max_requests_per_batch", 200)
 
 _VALIDATION_PROMPT = get_config()["prompts"]["validation"]
 
@@ -69,34 +67,29 @@ def _demote_atom(atom: Atom, reason: str) -> Atom:
     )
 
 
-async def async_validate_atoms(
-    atoms: list[Atom],
-    client: Any,  # noqa: ANN401
-    context_text: str,
+async def async_validate_atoms_batch(
+    atoms_with_context: list[tuple[int, Atom, str]],
+    all_atoms: list[Atom],
 ) -> list[Atom]:
-    """Validate DECISION and SPEC_CHANGE atoms via batch API with tool_use.
+    """Validate all DECISION/SPEC_CHANGE atoms in a single batch.
+
+    Each atom is validated against its own source thread text.
+    All validation requests go into ONE batch submission.
 
     Args:
-        atoms: List of extracted Atom objects.
-        client: Anthropic SDK client (raw, not async adapter) for batch API.
-            Pass a mock in tests.
-        context_text: Original thread text for validation context.
+        atoms_with_context: List of (index, atom, context_text) tuples
+            for atoms that need validation.
+        all_atoms: Full atom list. Validated atoms are updated in place
+            by index.
 
     Returns:
         Updated atom list with demoted confidence for invalid atoms.
     """
-    if not atoms:
-        return []
-
-    to_validate = [(i, a) for i, a in enumerate(atoms) if a.type in _VALIDATED_TYPES]
-    if not to_validate:
-        return atoms
-
-    # Build batch requests
+    # Build ALL validation requests in one list
     requests = []
-    for idx, atom in to_validate:
+    for idx, atom, context in atoms_with_context:
         prompt = _VALIDATION_PROMPT.format(
-            context_text=context_text,
+            context_text=context,
             atom_json=atom.model_dump_json(indent=2),
         )
         requests.append(
@@ -112,17 +105,19 @@ async def async_validate_atoms(
             }
         )
 
-    # Use passed client for batch API (mockable in tests)
-    anthropic = client if isinstance(client, Anthropic) else Anthropic()
+    logger.info("Validation: submitting %d requests as single batch", len(requests))
+
+    # Submit all in one batch (split at max_per_batch)
+    client = Anthropic()
     all_results: dict[str, dict[str, Any]] = {}
     for sub in _split_into_sub_batches(requests, _MAX_PER_BATCH):
-        sub_results = await _submit_validation_batch(anthropic, sub)
+        sub_results = await _submit_validation_batch(client, sub)
         all_results.update(sub_results)
 
-    # Apply results
-    results = list(atoms)
+    # Apply results back to the atom list
+    results = list(all_atoms)
     demoted = 0
-    for idx, atom in to_validate:
+    for idx, atom, _context in atoms_with_context:
         key = f"val-{idx}"
         tool_input = all_results.get(key)
         if tool_input is None:
@@ -134,22 +129,21 @@ async def async_validate_atoms(
             demoted += 1
 
     logger.info(
-        "Validation batch: %d checked, %d demoted of %d total",
-        len(to_validate),
+        "Validation complete: %d checked, %d demoted",
+        len(atoms_with_context),
         demoted,
-        len(atoms),
     )
 
     await log_llm_request(
-        batch_id=f"validation-{id(atoms)}",
+        batch_id=f"validation-{id(all_atoms)}",
         stage="validation",
-        request_count=len(to_validate),
-        request_body={"count": len(to_validate)},
+        request_count=len(requests),
+        request_body={"count": len(requests)},
     )
     await log_llm_response(
-        batch_id=f"validation-{id(atoms)}",
+        batch_id=f"validation-{id(all_atoms)}",
         status="completed",
-        response_body={"validated": len(to_validate), "demoted": demoted},
+        response_body={"validated": len(requests), "demoted": demoted},
     )
 
     return results
@@ -183,10 +177,9 @@ async def _submit_validation_batch(
         except Exception:
             consecutive_failures += 1
             logger.warning(
-                "Validation poll failed for %s (attempt %d, next retry in %.0fs)",
+                "Validation poll failed for %s (attempt %d)",
                 batch_id,
                 consecutive_failures,
-                _POLL_INTERVAL * (2 ** min(consecutive_failures, 5)),
                 exc_info=True,
             )
             continue

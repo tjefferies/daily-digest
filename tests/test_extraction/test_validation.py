@@ -1,4 +1,4 @@
-"""Tests for two-pass validation via batch API with tool_use.
+"""Tests for batch validation with tool_use (single batch for all atoms).
 
 Mocks the Anthropic batch client to avoid real API calls.
 """
@@ -10,13 +10,14 @@ from uuid import uuid4
 
 import pytest
 
-from evercurrent.extraction.validation import async_validate_atoms
+from evercurrent.extraction.validation import async_validate_atoms_batch
 from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
 
 
 def _make_atom(
     atom_type: str = "DECISION",
     confidence: float = 0.9,
+    thread_ts: str = "1000.001",
 ) -> Atom:
     """Create an Atom for testing."""
     return Atom(
@@ -26,119 +27,111 @@ def _make_atom(
         detail="Detail text",
         source=AtomSource(
             channel="#chassis-design",
-            thread_ts="1000.001",
+            thread_ts=thread_ts,
             message_range=[0, 5],
             key_participants=["U001"],
         ),
-        workstreams=AtomWorkstreams(
-            originating="chassis",
-            affected=["thermal"],
-        ),
+        workstreams=AtomWorkstreams(originating="chassis", affected=["thermal"]),
         urgency="medium",
         confidence=confidence,
     )
 
 
-def _mock_anthropic_client(valid: bool = True, reason: str = "") -> MagicMock:
-    """Create a mock Anthropic client that returns batch results."""
+def _mock_batch_results(results: dict[str, dict]) -> MagicMock:
+    """Create mock Anthropic client returning given validation results."""
     from anthropic import Anthropic
 
     client = MagicMock(spec=Anthropic)
 
-    # Mock batch create
     mock_batch = MagicMock()
-    mock_batch.id = "batch_test"
+    mock_batch.id = "batch_val_test"
     client.messages.batches.create.return_value = mock_batch
 
-    # Mock batch retrieve (immediately ended)
     mock_status = MagicMock()
     mock_status.processing_status = "ended"
-    mock_status.request_counts.succeeded = 1
+    mock_status.request_counts.succeeded = len(results)
     mock_status.request_counts.processing = 0
     client.messages.batches.retrieve.return_value = mock_status
 
-    # Mock batch results with tool_use block
-    tool_block = MagicMock()
-    tool_block.type = "tool_use"
-    tool_block.input = {"valid": valid, "reason": reason}
+    batch_results = []
+    for custom_id, tool_input in results.items():
+        tool_block = MagicMock()
+        tool_block.type = "tool_use"
+        tool_block.input = tool_input
+        r = MagicMock()
+        r.custom_id = custom_id
+        r.result.type = "succeeded"
+        r.result.message.content = [tool_block]
+        batch_results.append(r)
 
-    result = MagicMock()
-    result.custom_id = "val-0"
-    result.result.type = "succeeded"
-    result.result.message.content = [tool_block]
-
-    client.messages.batches.results.return_value = [result]
-
+    client.messages.batches.results.return_value = batch_results
     return client
 
 
 class TestBatchValidation:
-    """Tests for batch-based validation with tool_use."""
+    """Tests for single-batch validation."""
 
     @pytest.mark.asyncio
-    async def test_decision_atoms_are_validated(self) -> None:
-        """DECISION atoms go through batch validation."""
-        client = _mock_anthropic_client(valid=True)
-        atom = _make_atom("DECISION")
-        result = await async_validate_atoms([atom], client=client, context_text="text")
-        assert len(result) == 1
-        assert result[0].confidence == 0.9  # not demoted
-        client.messages.batches.create.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_other_types_skip_validation(self) -> None:
-        """Non-DECISION/SPEC_CHANGE atoms skip batch validation entirely."""
-        client = _mock_anthropic_client()
-        atoms = [_make_atom("ACTION_ITEM"), _make_atom("RISK")]
-        result = await async_validate_atoms(atoms, client=client, context_text="text")
-        client.messages.batches.create.assert_not_called()
-        assert len(result) == 2
-
-    @pytest.mark.asyncio
-    async def test_invalid_atom_demoted(self) -> None:
-        """Atoms that fail validation have confidence halved."""
-        client = _mock_anthropic_client(valid=False, reason="Fabricated details")
+    async def test_valid_atoms_keep_confidence(self) -> None:
+        """Valid atoms pass through with original confidence."""
         atom = _make_atom("DECISION", confidence=0.9)
-        result = await async_validate_atoms([atom], client=client, context_text="text")
+        all_atoms = [atom]
+        pairs = [(0, atom, "some context text")]
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(
+                "evercurrent.extraction.validation.Anthropic",
+                lambda: _mock_batch_results({"val-0": {"valid": True, "reason": ""}}),
+            )
+            result = await async_validate_atoms_batch(pairs, all_atoms)
+
+        assert result[0].confidence == 0.9
+
+    @pytest.mark.asyncio
+    async def test_invalid_atoms_demoted(self) -> None:
+        """Invalid atoms have confidence halved."""
+        atom = _make_atom("DECISION", confidence=0.9)
+        all_atoms = [atom]
+        pairs = [(0, atom, "context")]
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(
+                "evercurrent.extraction.validation.Anthropic",
+                lambda: _mock_batch_results(
+                    {"val-0": {"valid": False, "reason": "Fabricated details"}},
+                ),
+            )
+            result = await async_validate_atoms_batch(pairs, all_atoms)
+
         assert result[0].confidence == pytest.approx(0.45)
         assert "Fabricated details" in result[0].detail
 
     @pytest.mark.asyncio
-    async def test_empty_atom_list(self) -> None:
-        """Empty list returns empty without any API calls."""
-        client = _mock_anthropic_client()
-        result = await async_validate_atoms([], client=client, context_text="text")
-        assert result == []
-        client.messages.batches.create.assert_not_called()
-
-    @pytest.mark.asyncio
-    async def test_mixed_types_only_validates_decision_spec(self) -> None:
-        """Only DECISION and SPEC_CHANGE atoms go to batch, others pass through."""
-        client = _mock_anthropic_client(valid=True)
-
-        # Mock returns results for both validatable atoms
-        tool_block = MagicMock()
-        tool_block.type = "tool_use"
-        tool_block.input = {"valid": True, "reason": ""}
-
-        r0 = MagicMock()
-        r0.custom_id = "val-0"
-        r0.result.type = "succeeded"
-        r0.result.message.content = [tool_block]
-
-        r1 = MagicMock()
-        r1.custom_id = "val-2"
-        r1.result.type = "succeeded"
-        r1.result.message.content = [tool_block]
-
-        client.messages.batches.results.return_value = [r0, r1]
-
-        atoms = [
-            _make_atom("DECISION"),      # index 0 → validated
-            _make_atom("ACTION_ITEM"),    # index 1 → skipped
-            _make_atom("SPEC_CHANGE"),    # index 2 → validated
+    async def test_single_batch_for_all_threads(self) -> None:
+        """Atoms from different threads go in ONE batch, not per-thread."""
+        a1 = _make_atom("DECISION", thread_ts="1000.001")
+        a2 = _make_atom("SPEC_CHANGE", thread_ts="2000.001")
+        a3 = _make_atom("ACTION_ITEM")  # not validated
+        all_atoms = [a1, a2, a3]
+        pairs = [
+            (0, a1, "chassis thread context"),
+            (1, a2, "drivetrain thread context"),
         ]
-        result = await async_validate_atoms(atoms, client=client, context_text="text")
+
+        mock_client = _mock_batch_results(
+            {
+                "val-0": {"valid": True, "reason": ""},
+                "val-1": {"valid": True, "reason": ""},
+            }
+        )
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(
+                "evercurrent.extraction.validation.Anthropic",
+                lambda: mock_client,
+            )
+            result = await async_validate_atoms_batch(pairs, all_atoms)
+
+        # ONE batch call, not two
+        mock_client.messages.batches.create.assert_called_once()
         assert len(result) == 3
-        # All should keep original confidence (all valid)
-        assert all(a.confidence == 0.9 for a in result)

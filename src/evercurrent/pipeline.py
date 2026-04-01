@@ -27,7 +27,7 @@ from evercurrent.db.session import get_session_factory
 from evercurrent.extraction.batch_runner import BatchExtractionRunner
 from evercurrent.extraction.filter import confidence_filter
 from evercurrent.extraction.runner import AsyncExtractionRunner
-from evercurrent.extraction.validation import async_validate_atoms
+from evercurrent.extraction.validation import async_validate_atoms_batch
 from evercurrent.graph.client import GraphClient
 from evercurrent.ingestion.cached_embedder import CachedEmbedder
 from evercurrent.ingestion.context_window import assemble_context_windows
@@ -244,40 +244,37 @@ def _dump_intermediate(filename: str, data: list) -> None:
 async def _validate_atoms_by_source(
     raw_atoms: list[Atom],
     windows: list,
-    client: AsyncLLMClient,
+    client: AsyncLLMClient,  # noqa: ARG001
 ) -> list[Atom]:
-    """Validate atoms against their own source windows.
+    """Validate all atoms in a single batch, each against its own source window.
 
     Args:
         raw_atoms: All extracted atoms.
         windows: Context windows for source text lookup.
-        client: Async LLM client for validation calls.
+        client: Unused (kept for interface compat).
 
     Returns:
         Validated atom list with demoted confidence for invalid atoms.
     """
     window_text_by_ts = {w.thread_ts: w.thread_text for w in windows}
-    atoms_by_source: dict[str, list[Atom]] = {}
-    for atom in raw_atoms:
-        atoms_by_source.setdefault(atom.source.thread_ts, []).append(atom)
 
-    validatable = sum(
-        1 for a in raw_atoms if a.type in {"DECISION", "SPEC_CHANGE"}
-    )
+    # Collect ALL (atom, context) pairs for one batch
+    atoms_with_context: list[tuple[int, Atom, str]] = []
+    for i, atom in enumerate(raw_atoms):
+        if atom.type in {"DECISION", "SPEC_CHANGE"}:
+            context = window_text_by_ts.get(atom.source.thread_ts, "")
+            if context:
+                atoms_with_context.append((i, atom, context))
+
     logger.info(
-        "Validation: %d atoms, %d source threads, %d DECISION/SPEC_CHANGE",
-        len(raw_atoms), len(atoms_by_source), validatable,
+        "Validation: %d atoms total, %d DECISION/SPEC_CHANGE → 1 batch",
+        len(raw_atoms), len(atoms_with_context),
     )
 
-    validated: list[Atom] = []
-    done = 0
-    for ts, group in atoms_by_source.items():
-        context = window_text_by_ts.get(ts, "")
-        if context:
-            group = await async_validate_atoms(group, client, context)
-        validated.extend(group)
-        done += len(group)
-        logger.info("Validated %d/%d atoms (thread %s)", done, len(raw_atoms), ts[:15])
+    if not atoms_with_context:
+        return raw_atoms
+
+    validated = await async_validate_atoms_batch(atoms_with_context, raw_atoms)
 
     demoted = sum(1 for a in validated if a.confidence < 0.5)
     logger.info("Validation done: %d atoms, %d demoted", len(validated), demoted)
