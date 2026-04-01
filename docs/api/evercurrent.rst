@@ -12,6 +12,7 @@ Subpackages
    evercurrent.dataset
    evercurrent.extraction
    evercurrent.generation
+   evercurrent.graph
    evercurrent.ingestion
    evercurrent.llm
    evercurrent.models
@@ -20,11 +21,29 @@ Subpackages
 Submodules
 ----------
 
-.. toctree::
-   :maxdepth: 4
+evercurrent.app module
+----------------------
 
-   evercurrent.app
-   evercurrent.fixtures
+.. automodule:: evercurrent.app
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+evercurrent.fixtures module
+---------------------------
+
+.. automodule:: evercurrent.fixtures
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+evercurrent.pipeline module
+---------------------------
+
+.. automodule:: evercurrent.pipeline
+   :members:
+   :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------

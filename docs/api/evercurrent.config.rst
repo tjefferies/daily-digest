@@ -4,10 +4,13 @@ evercurrent.config package
 Submodules
 ----------
 
-.. toctree::
-   :maxdepth: 4
+evercurrent.config.loader module
+--------------------------------
 
-   evercurrent.config.loader
+.. automodule:: evercurrent.config.loader
+   :members:
+   :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------

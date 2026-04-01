@@ -4,15 +4,53 @@ evercurrent.scoring package
 Submodules
 ----------
 
-.. toctree::
-   :maxdepth: 4
+evercurrent.scoring.composite module
+------------------------------------
 
-   evercurrent.scoring.composite
-   evercurrent.scoring.phase_alignment
-   evercurrent.scoring.role_alignment
-   evercurrent.scoring.social_signal
-   evercurrent.scoring.urgency
-   evercurrent.scoring.workstream_proximity
+.. automodule:: evercurrent.scoring.composite
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+evercurrent.scoring.phase\_alignment module
+-------------------------------------------
+
+.. automodule:: evercurrent.scoring.phase_alignment
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+evercurrent.scoring.role\_alignment module
+------------------------------------------
+
+.. automodule:: evercurrent.scoring.role_alignment
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+evercurrent.scoring.social\_signal module
+-----------------------------------------
+
+.. automodule:: evercurrent.scoring.social_signal
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+evercurrent.scoring.urgency module
+----------------------------------
+
+.. automodule:: evercurrent.scoring.urgency
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+evercurrent.scoring.workstream\_proximity module
+------------------------------------------------
+
+.. automodule:: evercurrent.scoring.workstream_proximity
+   :members:
+   :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------

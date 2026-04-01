@@ -4,11 +4,21 @@ evercurrent.dataset package
 Submodules
 ----------
 
-.. toctree::
-   :maxdepth: 4
+evercurrent.dataset.messages module
+-----------------------------------
 
-   evercurrent.dataset.messages
-   evercurrent.dataset.schema
+.. automodule:: evercurrent.dataset.messages
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+evercurrent.dataset.schema module
+---------------------------------
+
+.. automodule:: evercurrent.dataset.schema
+   :members:
+   :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------

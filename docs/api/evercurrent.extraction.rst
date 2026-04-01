@@ -4,13 +4,45 @@ evercurrent.extraction package
 Submodules
 ----------
 
-.. toctree::
-   :maxdepth: 4
+evercurrent.extraction.batch\_runner module
+-------------------------------------------
 
-   evercurrent.extraction.filter
-   evercurrent.extraction.prompt
-   evercurrent.extraction.runner
-   evercurrent.extraction.validation
+.. automodule:: evercurrent.extraction.batch_runner
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+evercurrent.extraction.filter module
+------------------------------------
+
+.. automodule:: evercurrent.extraction.filter
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+evercurrent.extraction.prompt module
+------------------------------------
+
+.. automodule:: evercurrent.extraction.prompt
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+evercurrent.extraction.runner module
+------------------------------------
+
+.. automodule:: evercurrent.extraction.runner
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+evercurrent.extraction.validation module
+----------------------------------------
+
+.. automodule:: evercurrent.extraction.validation
+   :members:
+   :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------

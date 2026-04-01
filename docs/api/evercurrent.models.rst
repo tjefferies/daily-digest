@@ -4,12 +4,37 @@ evercurrent.models package
 Submodules
 ----------
 
-.. toctree::
-   :maxdepth: 4
+evercurrent.models.atom module
+------------------------------
 
-   evercurrent.models.atom
-   evercurrent.models.digest
-   evercurrent.models.persona
+.. automodule:: evercurrent.models.atom
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+evercurrent.models.digest module
+--------------------------------
+
+.. automodule:: evercurrent.models.digest
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+evercurrent.models.persona module
+---------------------------------
+
+.. automodule:: evercurrent.models.persona
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+evercurrent.models.responses module
+-----------------------------------
+
+.. automodule:: evercurrent.models.responses
+   :members:
+   :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
