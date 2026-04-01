@@ -63,39 +63,21 @@ Priority 2: PLM / ERP Connectors
 system of record instead of being inferred from Slack or manually toggled.
 This eliminates the biggest accuracy gap in the current scoring model.
 
-The prototype infers phase context from two sources: a manual frontend
-toggle (``?phase_override=workstream:phase``) and hardcoded defaults in
-``config/phases.yml``. Both are fragile. In production, the ground truth
-for "what phase is the chassis in?" lives in the PLM/ERP system — Arena,
-Teamcenter, Windchill, or Jira with phase-gate workflows. A direct
-connector would provide:
-
 **Technical approach:**
 
-- **Automated phase detection.** Poll PLM phase-gate status per
-  subsystem/workstream. When a gate review passes (e.g., chassis EVT → DVT),
-  update the phase vector in real time. No manual toggle needed.
-- **Spec baseline tracking.** Import the current spec baseline (part
-  numbers, tolerances, material selections) from the PLM BOM. When the
-  extraction pipeline finds a ``SPEC_CHANGE`` atom, compare against the
-  PLM baseline to determine if this is a *new* change or a known revision.
-  This reduces false positives from re-discussed old changes.
-- **ECO cross-reference.** Engineering Change Orders in PLM systems are
-  the formal record of spec changes. Cross-referencing extracted
-  ``SPEC_CHANGE`` atoms against open ECOs surfaces mismatches: changes
-  discussed in Slack but not yet captured in an ECO (informal decisions
-  that need formalization), and ECOs filed without corresponding Slack
-  discussion (potential communication gaps).
-- **Per-subsystem phase granularity.** PLM systems track phase at a finer
-  granularity than "workstream" — individual assemblies, subassemblies,
-  or even part-level phases. The scoring model's phase alignment dimension
-  would gain precision by using this granular phase data instead of the
-  current workstream-level approximation.
+- Poll PLM phase-gate status (Arena, Teamcenter, Windchill) per
+  subsystem — auto-update phase vectors when gates pass, replacing
+  the manual toggle and hardcoded ``config/phases.yml``
+- Import spec baselines from PLM BOM to distinguish new
+  ``SPEC_CHANGE`` atoms from known revisions (reduces false positives)
+- Cross-reference extracted atoms against open ECOs to surface
+  informal decisions not yet formalized and ECOs without Slack discussion
+- Leverage per-subsystem phase granularity (assembly/part-level)
+  for finer scoring precision than workstream-level approximation
 
-This is a fundamentally different solution architecture than inferring
-phase from message patterns. Inference is a reasonable fallback when no
-PLM exists, but direct integration is more reliable and provides the
-spec baseline that inference cannot.
+This is a fundamentally different architecture than inferring phase
+from message patterns. Direct PLM integration provides the spec
+baseline and phase ground truth that inference cannot.
 
 Priority 3: Scheduled Pipeline
 -------------------------------
