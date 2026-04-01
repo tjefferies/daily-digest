@@ -56,3 +56,5 @@ frontend/build/
 
 # Dev files
 sandbox.txt
+data/vectorstore.index
+data/vectorstore.keys

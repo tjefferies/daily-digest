@@ -1052,3 +1052,14 @@ FAISS_DEDUP=$(bd create \
   --silent)
 echo "    FAISS Dedup:          $FAISS_DEDUP"
 bd dep add "$FAISS_DEDUP" "$FAISS_STORE"
+
+# ─── E2E SMOKE TEST SCRIPT ────────────────────────────────────────────────────
+SMOKE_TEST=$(bd create \
+  --title="E2E smoke test script: 3 random windows through full pipeline with FAISS + Neo4j" \
+  --type=task \
+  --priority=1 \
+  --description="Create scripts/smoke-test.sh that runs the full pipeline end-to-end on 3 randomly selected context windows. Must exercise: semantic continuation detection (SentenceTransformerEmbedder), FAISS vectorstore caching (CachedEmbedder + VectorStore), LLM extraction (2-stage coarse + enrichment), validation, confidence filtering, and Neo4j persistence. Requires ANTHROPIC_API_KEY and Neo4j running." \
+  --design="1. Python script invoked by bash wrapper. 2. Load messages, group threads, select 3 random windows. 3. SentenceTransformerEmbedder wrapped with CachedEmbedder + VectorStore. 4. Run continuation detection, extraction, validation, filter, persist to Neo4j. 5. Save vectorstore. 6. Query Neo4j to verify. 7. Print summary. 8. Exit 0 on success." \
+  --acceptance="1. scripts/smoke-test.sh exits 0 on success. 2. Atoms in Neo4j after run. 3. FAISS vectorstore on disk. 4. Re-run uses cached embeddings. 5. Clear error if API key missing or Neo4j down." \
+  --silent)
+echo "    Smoke Test:           $SMOKE_TEST"
