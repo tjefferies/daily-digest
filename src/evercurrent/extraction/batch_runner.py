@@ -35,6 +35,43 @@ _VALID_TYPES: set[str] = set(AtomType.__args__)  # type: ignore[attr-defined]
 
 _POLL_INTERVAL = 5
 _MAX_POLL_ATTEMPTS = 720  # 5s × 720 = 1 hour max
+_CHARS_PER_TOKEN = 4
+_MAX_REQUESTS_PER_BATCH = _pipeline_cfg.get("max_requests_per_batch", 100)
+_RETRY_BASE_DELAY = 2.0
+_MAX_RETRIES = 5
+
+
+def _estimate_tokens(text: str) -> int:
+    """Estimate input token count from text length.
+
+    Args:
+        text: Input text string.
+
+    Returns:
+        Estimated token count (~4 chars per token).
+    """
+    return len(text) // _CHARS_PER_TOKEN
+
+
+def _split_into_sub_batches(
+    requests: list[dict[str, Any]],
+    max_per_batch: int = _MAX_REQUESTS_PER_BATCH,
+) -> list[list[dict[str, Any]]]:
+    """Split a request list into sub-batches.
+
+    Args:
+        requests: Full list of batch request dicts.
+        max_per_batch: Maximum requests per sub-batch.
+
+    Returns:
+        List of sub-batch lists.
+    """
+    if not requests:
+        return []
+    return [
+        requests[i : i + max_per_batch]
+        for i in range(0, len(requests), max_per_batch)
+    ]
 
 # Tool definitions for structured output via tool_use.
 _COARSE_TOOL = {
@@ -240,10 +277,15 @@ class BatchExtractionRunner:
                 }
             )
 
-        results = await self._submit_and_poll(requests, stage="extraction_stage1")
+        # Split into sub-batches and merge results
+        all_results: dict[str, dict[str, Any]] = {}
+        for sub in _split_into_sub_batches(requests):
+            sub_results = await self._submit_and_poll(sub, stage="extraction_stage1")
+            all_results.update(sub_results)
+
         coarse_map: dict[int, list[dict[str, Any]]] = {}
 
-        for custom_id, tool_input in results.items():
+        for custom_id, tool_input in all_results.items():
             idx = int(custom_id.split("-")[1])
             atoms_list = tool_input.get("atoms", [])
             if atoms_list:
@@ -301,10 +343,15 @@ class BatchExtractionRunner:
         if not requests:
             return []
 
-        results = await self._submit_and_poll(requests, stage="extraction_stage2")
+        # Split into sub-batches and merge results
+        all_results: dict[str, dict[str, Any]] = {}
+        for sub in _split_into_sub_batches(requests):
+            sub_results = await self._submit_and_poll(sub, stage="extraction_stage2")
+            all_results.update(sub_results)
+
         atoms: list[Atom] = []
 
-        for custom_id, tool_input in results.items():
+        for custom_id, tool_input in all_results.items():
             parts = custom_id.split("-")
             win_idx = int(parts[1])
             atom_idx = int(parts[2])
@@ -350,6 +397,36 @@ class BatchExtractionRunner:
             phase_relevance=enrichment.phase_relevance,
         )
 
+    async def _create_batch_with_retry(
+        self,
+        requests: list[dict[str, Any]],
+    ) -> Any:  # noqa: ANN401
+        """Submit a batch with exponential backoff on rate limits.
+
+        Args:
+            requests: Batch request dicts.
+
+        Returns:
+            Batch object from the API.
+
+        Raises:
+            Exception: If all retries exhausted.
+        """
+        for attempt in range(_MAX_RETRIES):
+            try:
+                return self._client.messages.batches.create(requests=requests)
+            except Exception as exc:
+                if "429" in str(exc) or "rate" in str(exc).lower():
+                    delay = _RETRY_BASE_DELAY * (2 ** attempt)
+                    logger.warning(
+                        "Rate limited, retrying in %.1fs (attempt %d/%d)",
+                        delay, attempt + 1, _MAX_RETRIES,
+                    )
+                    await asyncio.sleep(delay)
+                else:
+                    raise
+        return self._client.messages.batches.create(requests=requests)
+
     async def _submit_and_poll(
         self,
         requests: list[dict[str, Any]],
@@ -364,8 +441,21 @@ class BatchExtractionRunner:
         Returns:
             Dict mapping custom_id to tool_use input dict for succeeded results.
         """
-        logger.info("Submitting %s batch with %d requests", stage, len(requests))
-        batch = self._client.messages.batches.create(requests=requests)
+        # Estimate input tokens
+        est_tokens = sum(
+            _estimate_tokens(
+                r["params"]["messages"][0]["content"]
+                + r["params"].get("system", "")
+            )
+            for r in requests
+        )
+        logger.info(
+            "Submitting %s batch: %d requests, ~%d est. input tokens",
+            stage, len(requests), est_tokens,
+        )
+
+        # Submit with retry + exponential backoff on 429
+        batch = await self._create_batch_with_retry(requests)
         batch_id = batch.id
         total = len(requests)
         self.progress.update(

@@ -32,6 +32,9 @@ max_windows: 10
 # Maximum concurrent LLM calls for non-batch extraction.
 max_concurrency: 2
 
+# Maximum requests per batch API call (splits larger batches).
+max_requests_per_batch: 100
+
 # Extraction confidence filter threshold.
 confidence_threshold: 0.7
 
