@@ -6,25 +6,22 @@ EverCurrent solves the critical information loss problem in hardware engineering
 a missed Slack thread about a spec change can cost weeks, dollars, and physical
 waste. The system ingests team communication, extracts structured atoms of
 information, scores them against each engineer's context, and generates
-personalized daily digests - so every team member sees exactly what matters to
+personalized daily digests — so every team member sees exactly what matters to
 them.
 
 ## Architecture
 
-EverCurrent is a five-layer pipeline that transforms raw Slack messages into
-persona-specific daily digests:
+EverCurrent is an async pipeline that transforms raw Slack messages into
+persona-specific daily digests via the Anthropic Message Batches API:
 
 ![EverCurrent Architecture](docs/_static/architecture.svg)
 
-### Scoring Dimensions
-
-| Dimension             | Weight | Signal                                          |
-|-----------------------|--------|--------------------------------------------------|
-| Workstream proximity  | 0.30   | Persona's affinity to atom's workstream(s)       |
-| Role-type alignment   | 0.20   | Role archetype x atom type matrix (5x8)          |
-| Phase alignment       | 0.20   | Graduated distance scoring across 5 phases       |
-| Urgency               | 0.15   | Atom urgency: critical/high/medium/low           |
-| Social signal         | 0.15   | Collaborator graph overlap, participant matching  |
+**Key principles:**
+- **Anthropic-only** with Message Batches API (50% cost savings)
+- **tool_use** for structured output — no instructor dependency
+- **Async-only** — no sync code paths
+- **Delta processing** — Postgres stores bundles; only new bundles are extracted
+- **Config-driven** — all prompts in `config/prompts.yml`, all constants in `config/pipeline.yml`
 
 ## Quick Start
 
@@ -32,53 +29,73 @@ persona-specific daily digests:
 
 - Python 3.13+
 - [uv](https://docs.astral.sh/uv/) package manager
-- Node.js 18+ (for frontend)
+- Docker + Docker Compose (for Neo4j, Postgres)
+- Node.js 22+ (for frontend)
 
-### Backend
+### Docker Compose (recommended)
 
 ```bash
-# Install dependencies
-uv sync
+# Set your API key
+export ANTHROPIC_API_KEY=sk-ant-...
+
+# Start everything: backend, frontend, Neo4j, Postgres
+make serve-all
+
+# Or manually:
+docker compose up --build
+```
+
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:8000
+- Neo4j Browser: http://localhost:7474
+- Postgres: localhost:5433
+
+### Local Development
+
+```bash
+# Install all dependencies
+uv sync --all-groups
+
+# Copy .env.sample to .env and set ANTHROPIC_API_KEY
+cp .env.sample .env
 
 # Run quality gates
 bash scripts/quality-gates.sh
 
 # Start the API server
-uv run uvicorn evercurrent.app:app --reload --port 8000
+PYTHONPATH=src uv run uvicorn evercurrent.app:app --reload --port 8000
+
+# Start the frontend
+cd frontend && npm run dev
 ```
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Open http://localhost:5173 to see the digest UI.
 
 ## API Endpoints
 
-| Method | Path                    | Description                              |
-|--------|-------------------------|------------------------------------------|
-| GET    | `/health`               | Application health status                |
-| POST   | `/pipeline/run`         | Trigger extraction-to-digest pipeline    |
-| GET    | `/digest/{persona_id}`  | Retrieve personalized digest             |
+| Method | Path                    | Description                                    |
+|--------|-------------------------|------------------------------------------------|
+| GET    | `/health`               | Application health status                      |
+| POST   | `/pipeline/run`         | Start extraction pipeline (returns immediately) |
+| GET    | `/pipeline/status`      | Poll pipeline progress (batch counts)          |
+| GET    | `/digest/{persona_id}`  | Retrieve personalized digest (cached)          |
 
-The digest endpoint accepts an optional `phase_override` query parameter
-(format: `workstream:phase`) to demonstrate phase sensitivity.
+The pipeline runs asynchronously. Poll `/pipeline/status` for real-time
+batch progress:
 
 ```bash
-# Fetch Maya Chen's digest
-curl http://localhost:8000/digest/U001
+# Start the pipeline
+curl -X POST http://localhost:8000/pipeline/run
 
-# Fetch with phase override (thermal moved to DVT)
-curl "http://localhost:8000/digest/U001?phase_override=thermal:DVT"
+# Poll for progress
+curl http://localhost:8000/pipeline/status
+# {"state":"running","stage":"extraction_stage1","batch_id":"msgbatch_...","progress":{"total":10,"succeeded":6,"processing":4,"errored":0}}
+
+# Fetch Maya Chen's digest (instant from cache after pipeline completes)
+curl http://localhost:8000/digest/U001
 ```
 
 ## Demo Personas
 
-Three personas demonstrate differential relevance - the same data produces
+Three personas demonstrate differential relevance — the same data produces
 meaningfully different digests for each:
 
 | Persona         | ID   | Role                      | Top Workstreams                    |
@@ -87,63 +104,32 @@ meaningfully different digests for each:
 | Elena Vasquez   | U007 | Supply Chain Manager       | supply-chain (1.0), chassis (0.5) |
 | Ryan Torres     | U010 | Engineering Manager        | chassis (0.8), drivetrain (0.8)   |
 
-**What to look for:**
-
-- **Maya** sees chassis spec changes and thermal risks prominently
-- **Elena** sees supply-chain decisions and vendor lead-time risks, even when
-  they originate in channels she doesn't follow
-- **Ryan** sees cross-team blockers and decisions that affect multiple workstreams
-- **Phase toggle**: switching thermal from EVT to DVT shifts atom rankings
-  visibly (at least 2 items change position)
+Persona switching in the frontend is **instant** — all 3 digests are preloaded
+on startup from Neo4j cache.
 
 ## Quality Gates
 
-Eight gates enforced on every commit via `scripts/quality-gates.sh`:
+Seven gates enforced via `scripts/quality-gates.sh`:
 
 | Gate                          | Tool              | Threshold           |
 |-------------------------------|-------------------|---------------------|
 | Linting                       | ruff check        | Zero violations     |
 | Formatting                    | ruff format       | Zero violations     |
-| Type checking                 | ty check          | Zero errors         |
-| Tests + coverage              | pytest + pytest-cov | >= 90%            |
+| Tests + coverage              | pytest + pytest-cov | >= 80%            |
 | Cyclomatic complexity         | radon cc          | <= 8 per function   |
 | Maintainability index         | radon mi          | A rating            |
 | Docstring coverage            | interrogate       | >= 95%              |
 | Dead code detection           | vulture           | min-confidence 80   |
 
-Current stats: **531 tests, 99% coverage, all gates passing.**
-
-## Evaluation Criteria
-
-Three success criteria from the design document (section 10.1):
-
-### Criterion 1: Differential Relevance (7 tests)
-
-Same atoms, meaningfully different digests. Maya ranks chassis/thermal highest,
-Elena ranks supply-chain highest, Ryan ranks blockers and cross-team risks
-highest. Top-ranked atoms differ across personas.
-
-### Criterion 2: Buried Signal Surfacing (5 tests)
-
-Three planted cross-workstream signals surface for the correct personas:
-1. Magnesium housing decision (chassis) surfaces for Elena (supply-chain)
-2. Thermal interface root cause surfaces for Maya
-3. FPGA lead time risk (firmware) surfaces for Elena (supply-chain)
-
-### Criterion 3: Phase Sensitivity (5 tests)
-
-Toggling a workstream's phase produces visible scoring changes. EVT atoms score
-higher in EVT phase, DVT atoms score higher in DVT phase, and at least 2 items
-change rank position on phase toggle.
+Current stats: **494 tests (490 unit + 4 integration), all gates passing.**
 
 ## Project Structure
 
 ```
 evercurrent/
 ├── src/evercurrent/
-│   ├── app.py                     # FastAPI application
-│   ├── pipeline.py                # Orchestrator (sync + async)
-│   ├── fixtures.py                # In-memory fixture data store
+│   ├── app.py                     # FastAPI app (async, precook digests)
+│   ├── pipeline.py                # Pipeline orchestrator (async-only)
 │   ├── models/                    # Pydantic models
 │   │   ├── atom.py                #   Atom, AtomSource, AtomWorkstreams
 │   │   ├── digest.py              #   DigestSection
@@ -151,109 +137,98 @@ evercurrent/
 │   │   └── responses.py           #   Coarse/Enrichment/Validation responses
 │   ├── dataset/                   # Synthetic Slack dataset
 │   │   ├── messages.py            #   Loads from data/slack_messages.json
-│   │   └── schema.py              #   Message schema validation
+│   │   └── schema.py              #   Message schema, team roster
+│   ├── db/                        # Postgres persistence (async SQLAlchemy)
+│   │   ├── models.py              #   Message, ThreadBundle, BundleMembership, Atom, BatchLog
+│   │   ├── repository.py          #   persist_bundle, persist_atoms, get_processed_bundle_ts
+│   │   ├── session.py             #   Async session factory
+│   │   └── llm_logger.py          #   LLM request/response body logging
 │   ├── ingestion/                 # Layer 1: Message ingestion
-│   │   ├── loader.py              #   Channel message loader
-│   │   ├── threads.py             #   Thread grouping
-│   │   ├── context_window.py      #   Context window builder
-│   │   └── continuations.py       #   Continuation detection
+│   │   ├── threads.py             #   Thread grouping (Pass 1)
+│   │   ├── continuations.py       #   Semantic + structural continuation detection (Pass 2)
+│   │   ├── embeddings.py          #   Embedder protocol, FAISS cosine similarity
+│   │   ├── vectorstore.py         #   FAISS IndexFlatIP persistent cache
+│   │   ├── cached_embedder.py     #   CachedEmbedder (FAISS dedup)
+│   │   └── context_window.py      #   Context window assembly + compression
 │   ├── extraction/                # Layer 2: Two-stage atom extraction
-│   │   ├── prompt.py              #   Coarse + enrichment prompts
-│   │   ├── runner.py              #   Two-stage runner (sync + async)
+│   │   ├── batch_runner.py        #   Anthropic Batch API with tool_use
+│   │   ├── runner.py              #   AsyncExtractionRunner (per-request fallback)
+│   │   ├── prompt.py              #   Loads from config/prompts.yml
 │   │   ├── filter.py              #   Confidence filtering
-│   │   └── validation.py          #   Two-pass validation
+│   │   └── validation.py          #   Rate-limited async validation
 │   ├── context/                   # Layer 3: Context backbone
-│   │   ├── roster.py              #   Team roster
+│   │   ├── personas.py            #   Three demo personas
 │   │   ├── workstreams.py         #   Workstream registry
-│   │   ├── phases.py              #   Per-workstream phase vectors
-│   │   └── personas.py            #   Three demo personas
+│   │   └── phases.py              #   Per-workstream phase vectors
 │   ├── scoring/                   # Layer 4: Relevance scoring
+│   │   ├── composite.py           #   Weighted 5-dimension composite
 │   │   ├── workstream_proximity.py
 │   │   ├── role_alignment.py      #   5x8 role-type matrix
 │   │   ├── phase_alignment.py     #   Graduated distance scoring
-│   │   ├── urgency.py             #   Uniform spacing (0.25 intervals)
-│   │   ├── social_signal.py       #   4-level differentiated scoring
-│   │   └── composite.py           #   Weighted composite + ranking
+│   │   ├── urgency.py             #   Uniform spacing
+│   │   └── social_signal.py       #   Collaborator graph scoring
 │   ├── generation/                # Layer 5: Digest generation
-│   │   ├── prompt.py              #   Briefing tone system prompt
-│   │   ├── runner.py              #   DigestGenerator (sync + async)
-│   │   └── assembler.py           #   DigestAssembler orchestrator
-│   ├── llm/                       # Model-agnostic LLM client harness
-│   │   ├── types.py               #   LLMClient + AsyncLLMClient protocols
-│   │   ├── anthropic.py           #   Anthropic Claude adapter
-│   │   ├── openai.py              #   OpenAI adapter
-│   │   ├── google.py              #   Google Gemini adapter
-│   │   └── factory.py             #   Provider factory
-│   ├── config/                    # YAML-based configuration
-│   │   └── loader.py              #   Config loader with caching
-│   └── graph/                     # Knowledge graph (placeholder)
-│       └── client.py              #   Neo4j client
-├── config/                        # YAML configuration files
-│   ├── pipeline.yml               #   Model, tokens, CORS, thresholds
-│   ├── scoring.yml                #   Weights, matrices, calibrated values
+│   │   ├── prompt.py              #   Loads from config/prompts.yml
+│   │   ├── runner.py              #   AsyncDigestGenerator
+│   │   └── assembler.py           #   AsyncDigestAssembler orchestrator
+│   ├── llm/                       # Anthropic LLM client (async-only)
+│   │   ├── types.py               #   AsyncLLMClient protocol
+│   │   ├── anthropic.py           #   AsyncAnthropicAdapter (tool_use)
+│   │   └── factory.py             #   create_async_llm_client()
+│   ├── config/                    # Config loader
+│   │   └── loader.py              #   YAML loader + .env + env overrides
+│   └── graph/                     # Neo4j knowledge graph
+│       └── client.py              #   GraphClient (async, atom persistence)
+├── config/                        # YAML configuration
+│   ├── pipeline.yml               #   Model, tokens, thresholds, concurrency
+│   ├── prompts.yml                #   All LLM prompts (editable without code)
+│   ├── scoring.yml                #   Scoring weights and matrices
 │   ├── personas.yml               #   Demo persona definitions
 │   ├── phases.yml                 #   Per-workstream phase defaults
 │   └── workstreams.yml            #   Channel/component mappings
 ├── data/
 │   └── slack_messages.json        # Slack-API-shaped fixture (307 messages)
-├── tests/                         # 531 tests, 99% coverage
-│   ├── test_evaluation/           #   Eval criteria 1-3 (17 tests)
-│   ├── test_scoring/              #   Scoring dimensions + calibration
-│   ├── test_generation/           #   Prompt, runner, assembler
-│   ├── test_extraction/           #   Two-stage, runner, filter, validation
-│   ├── test_ingestion/            #   Loader, threads, context windows
-│   ├── test_context/              #   Roster, workstreams, phases, personas
-│   ├── test_dataset/              #   Fixture, schema, buried signals
-│   ├── test_config/               #   YAML config loader
-│   ├── test_llm/                  #   All LLM adapters + factory
-│   ├── test_graph/                #   Neo4j client
-│   └── test_models/               #   Atom, digest, persona, responses
-├── frontend/
-│   └── src/
-│       ├── App.tsx                #   Main app with state management
-│       ├── api/client.ts          #   API client
-│       ├── components/
-│       │   ├── PersonaSelector.tsx #   Tab-based persona switcher
-│       │   ├── DigestDisplay.tsx   #   Four-section digest renderer
-│       │   ├── PhaseToggle.tsx     #   Phase override demo panel
-│       │   └── PipelineRunner.tsx  #   Pipeline trigger + progress
-│       └── types/                 #   TypeScript interfaces
+├── docker-compose.yml             # Backend + Frontend + Neo4j + Postgres
+├── backend.Dockerfile             # Multi-stage Python build
+├── frontend/                      # React frontend
+│   ├── src/
+│   │   ├── App.tsx                #   Preloads digests, instant persona switch
+│   │   ├── api/client.ts          #   API client with PipelineStatus polling
+│   │   └── components/
+│   │       ├── PipelineRunner.tsx  #   Real batch progress bar
+│   │       ├── PersonaSelector.tsx #   3 demo personas
+│   │       ├── DigestDisplay.tsx   #   Four-section digest renderer
+│   │       └── PhaseToggle.tsx     #   Phase override demo panel
+│   ├── Dockerfile                 #   Multi-stage nginx build
+│   └── nginx.conf                 #   Reverse proxy + 600s timeout
+├── alembic/                       # Postgres migrations (async)
 ├── scripts/
-│   └── quality-gates.sh           #   Eight quality gates
-├── docs/                          #   Sphinx documentation
-│   ├── design-document.rst        #   Full technical design document
-│   ├── next-steps.rst             #   Follow-on work and scaling plan
-│   └── api/                       #   Auto-generated API reference
-├── vulture_whitelist.py           #   Dead code false positive whitelist
-├── Makefile                       #   Build automation targets
-└── pyproject.toml                 #   Project config (uv, ruff, pytest, radon)
+│   ├── quality-gates.sh           #   7 quality gates
+│   ├── smoke-test.sh              #   E2E 3-window smoke test
+│   └── smoke_test_runner.py       #   Smoke test Python runner
+├── tests/                         # 494 tests
+│   ├── test_integration/          #   FAISS + Postgres roundtrip tests
+│   ├── test_db/                   #   SQLAlchemy model + repository tests
+│   ├── test_extraction/           #   Batch runner, rate limits, validation
+│   ├── test_ingestion/            #   Threads, continuations, embeddings, vectorstore
+│   ├── test_scoring/              #   5 scoring dimensions + calibration
+│   ├── test_generation/           #   Async digest generation
+│   └── ...                        #   Config, endpoints, graph, models, etc.
+├── RETRO_1.md                     # V2 retrospective (lessons learned)
+└── pyproject.toml                 # Project config (uv, ruff, pytest, radon)
 ```
-
-## Design Decisions
-
-- **Phase is per-workstream, not project-wide** (ADR-004): Chassis can be in DVT
-  while thermal is still in late EVT. The scoring engine checks all persona
-  workstream phases, not just the atom's originating workstream.
-- **Relevance is relational, not intrinsic**: The same spec change atom is
-  critical to the chassis engineer and irrelevant to the firmware developer.
-  Scoring is always (atom, persona) pairs.
-- **Briefing tone, not newsletter**: Digests read like a competent chief of
-  staff's briefing - terse, specific, no editorializing. The moment the digest
-  adds opinions, it loses engineering team trust.
-- **Critical threshold overflow**: Atoms scoring above 0.85 always appear in the
-  digest, even beyond the top-N limit, ensuring urgent items are never dropped.
-- **Cross-workstream affected tags**: Atoms carry both originating and affected
-  workstream lists, enabling buried signal surfacing across team boundaries.
 
 ## Tech Stack
 
-| Component   | Technology                                          |
-|-------------|-----------------------------------------------------|
-| Backend     | Python 3.13, FastAPI, Pydantic v2, uvicorn          |
-| LLM         | Model-agnostic (Anthropic, OpenAI, Google) via instructor |
-| Frontend    | React 19, TypeScript, Tailwind CSS, Vite            |
-| Testing     | pytest, pytest-cov, pytest-asyncio                  |
-| Linting     | ruff (lint + format), ty (type check)               |
-| Metrics     | radon (complexity), interrogate (docstrings), vulture (dead code) |
-| Docs        | Sphinx, autodoc, napoleon, sphinx-autodoc-typehints |
-| Deps        | uv (package management)                             |
+| Component     | Technology                                            |
+|---------------|-------------------------------------------------------|
+| Backend       | Python 3.13, FastAPI, Pydantic v2, uvicorn           |
+| LLM           | Anthropic Claude (Batch API + tool_use)              |
+| Database      | Postgres 16 (SQLAlchemy async), Neo4j, FAISS         |
+| Frontend      | React, TypeScript, Tailwind CSS, Vite                |
+| Orchestration | Docker Compose                                        |
+| Testing       | pytest, pytest-cov, pytest-asyncio, aiosqlite        |
+| Linting       | ruff (lint + format)                                  |
+| Metrics       | radon (complexity), interrogate (docstrings), vulture |
+| Docs          | Sphinx + furo theme                                   |
+| Deps          | uv (package management), python-dotenv               |
