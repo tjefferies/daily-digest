@@ -1,1 +1,57 @@
-add a new beads issue to create a .rst file that is before the design document and is a guide for a 30 minute deep dive session with EverCurrent covering the solution that I have created. create this issue right away and add it to `issues.sh` but do NOT do NOT do NOT run `issues.sh`! I need the beads history preserved. invoke `loop-dev.txt` after you make this issue
+you are an AI/ML VP at Google with a dual PhD in Math, CS and an MBA from Princeton. You are a master of creating presentations that explain the most complex issues in an approachable, friendly manner. you do NOT patronize, overexplain, or talk to your audience like they are dumb. You are a legend for your presentation skills and wowing the crowd.
+
+create a team of fellow legends and deep reason about this code base, specifically the /Users/travisjefferies/Documents/InterviewPrep/evercurrent/take_home/evercurrent/docs/presentation-guide.rst you made. The guide is something I will print off and reference during the call.
+
+add a new beads issue to create a .rst file that is before the design document in the docs and is the presentation for a 30 minute deep dive session with EverCurrent covering the solution that I have created. The presentation is what will be shown to Ye Wang and team. this presentation must be approachable at a technically rigorous depth while still being coherent and easy to follow for folks who have not been involved in the creation of it. The original assignment is here '/Users/travisjefferies/Documents/InterviewPrep/evercurrent/take_home/EverCurrent Take Home.pdf' and below is my initial meeting transcript with Ye Wang.
+
+---
+### Evercurrent Company Overview
+
+- AI orchestration platform for manufacturing
+- Addresses fragmented tooling and manual coordination challenges
+  - Manufacturing teams use 100+ tools with siloed information
+  - Manual coordination creates exponential complexity as companies scale
+  - AI “coworkers” connect dots instead of valuable engineer time
+- Maintains real-time cross-functional execution view
+- Focuses on tracking changes rather than current state
+  - Can answer “What are top 5 changes affecting schedule in last 7 days?”
+
+### Target Market & Customers
+
+- Working with Lockheed (long procurement cycle expected)
+- Smaller companies: robotics, trauma machinery, consumer electronics
+- Easier entry with smaller organizations
+- Some customers have internal model whitelists
+
+### Technical Architecture
+
+- Fully agentic system built on foundational models
+- Custom-built components:
+  - Orchestration layer
+  - Integration systems
+  - Proactive monitoring
+  - Knowledge graph (most critical component)
+  - Memory and change tracking systems
+- Can deploy proprietary models for performance optimization later
+
+### Role & Team Culture
+
+- Full-stack ownership model
+  - Each engineer owns features end-to-end: brainstorming → implementation → customer interaction → production → bug fixes
+- Emphasis on extreme ownership and agency over specific skill sets
+- Core values: speed, agility, reliability
+- Very collaborative, lean team structure
+- High delivery velocity
+
+### Next Steps
+
+- Ye Wang to connect Travis with teammate for take-home assignment
+- Take-home is open-ended building exercise
+- One week timeline (flexible on time investment)
+- Follow-up meeting to work through solution live
+- Assignment designed to understand Travis’s interests and approach
+
+Chat with meeting transcript: [https://notes.granola.ai/t/26993f36-2541-47d5-a316-2be659537e80](https://notes.granola.ai/t/26993f36-2541-47d5-a316-2be659537e80)
+---
+
+create this issue right away and add it to `issues.sh` but do NOT do NOT do NOT run `issues.sh`! I need the beads history preserved. invoke `loop-dev.txt` after you make this issue

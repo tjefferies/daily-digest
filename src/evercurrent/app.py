@@ -174,6 +174,18 @@ async def _run_pipeline_background() -> None:
         _atom_store.clear()
         _atom_store.extend(result.atoms)
         _digest_cache.clear()
+
+        # If no new atoms extracted (delta dedup skipped all), load from Neo4j
+        atoms_for_digest = list(result.atoms)
+        if not atoms_for_digest:
+            atoms_for_digest = await _load_atoms_from_neo4j()
+            _atom_store.extend(atoms_for_digest)
+
+        logger.info(
+            "Pipeline complete: %d new atoms, %d total for digest",
+            len(result.atoms), len(atoms_for_digest),
+        )
+
         _pipeline_status.update(
             stage="generating_digests",
             stats=result.stats,
@@ -181,9 +193,7 @@ async def _run_pipeline_background() -> None:
             progress={"total": 0, "succeeded": 0, "processing": 0, "errored": 0},
         )
 
-        logger.info("Pipeline complete: %d atoms stored", len(result.atoms))
-
-        await _precook_digests(result.atoms)
+        await _precook_digests(atoms_for_digest)
 
         _pipeline_status.update(
             state="complete",

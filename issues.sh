@@ -1208,3 +1208,10 @@ PRESENTATION=$(bd create \
   --description="Polished .rst guide for 30-min live deep dive with EverCurrent. Technically rigorous yet approachable. 7 sections: Problem, Architecture, Extraction Pipeline, Scoring Engine, Live Demo, Lessons Learned, Connection to EverCurrent." \
   --silent)
 echo "    Presentation Guide:   $PRESENTATION"
+
+VISUAL_PRES=$(bd create \
+  --title="Create visual presentation .rst for live 30-min session with Ye Wang" \
+  --type=task --priority=0 \
+  --description="The 'deck' shown during the call. Sphinx-rendered with architecture SVG, real data examples, tool_use schemas, persona comparisons, V1→V2 story, EverCurrent mapping. Complements the speaker notes in presentation-guide.rst." \
+  --silent)
+echo "    Visual Presentation:  $VISUAL_PRES"

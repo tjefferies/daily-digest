@@ -76,7 +76,7 @@ class AsyncDigestGenerator:
                 response_model=DigestResponse,
             )
         except Exception:
-            logger.warning("Structured digest generation failed")
+            logger.warning("Structured digest generation failed", exc_info=True)
             return []
 
         sections = response.sections
