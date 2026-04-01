@@ -26,6 +26,9 @@ continuations:
 vectorstore:
   path: data/vectorstore.index
 
+# Extraction mode: 'batch' (50% cost savings, slower) or 'async' (faster, higher cost).
+extraction_mode: batch
+
 # Maximum context windows to process per pipeline run (0 = all).
 max_windows: 10
 

@@ -21,6 +21,7 @@ from evercurrent.db.repository import get_processed_bundle_ts, persist_atoms, pe
 from evercurrent.db.session import get_session_factory
 from evercurrent.extraction.batch_runner import BatchExtractionRunner
 from evercurrent.extraction.filter import confidence_filter
+from evercurrent.extraction.runner import AsyncExtractionRunner
 from evercurrent.extraction.validation import async_validate_atoms
 from evercurrent.graph.client import GraphClient
 from evercurrent.ingestion.cached_embedder import CachedEmbedder
@@ -299,10 +300,15 @@ async def _async_run_pipeline_inner(
         len(windows),
     )
 
-    # Layer 2: Extraction (batch API for 50% cost savings, no rate limits)
-    if batch_runner is None:
-        batch_runner = BatchExtractionRunner(Anthropic())
-    raw_atoms = await batch_runner.extract(windows)
+    # Layer 2: Extraction (configurable: batch or async)
+    extraction_mode = get_config()["pipeline"].get("extraction_mode", "batch")
+    if extraction_mode == "batch":
+        if batch_runner is None:
+            batch_runner = BatchExtractionRunner(Anthropic())
+        raw_atoms = await batch_runner.extract(windows)
+    else:
+        runner = AsyncExtractionRunner(client)
+        raw_atoms = await runner.extract(windows)
     logger.info("Extraction: %d raw atoms from %d windows", len(raw_atoms), len(windows))
 
     # Validation (concurrent LLM calls for DECISION/SPEC_CHANGE)
