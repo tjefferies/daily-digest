@@ -7,6 +7,9 @@ import PersonaSelector, {
 import PhaseToggle from './components/PhaseToggle'
 import type { Digest } from './types'
 
+/** Cache of preloaded digests keyed by persona_id. */
+const digestCache: Record<string, Digest> = {}
+
 function App() {
   const [selectedPersona, setSelectedPersona] = useState(
     DEMO_PERSONAS[0].user_id,
@@ -15,14 +18,51 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [phaseOverride, setPhaseOverride] = useState<string | null>(null)
+  const [cacheReady, setCacheReady] = useState(false)
+
+  /** Preload digests for all 3 personas on mount. */
+  useEffect(() => {
+    const preload = async () => {
+      setLoading(true)
+      try {
+        const results = await Promise.allSettled(
+          DEMO_PERSONAS.map((p) => getDigest(p.user_id)),
+        )
+        results.forEach((result, i) => {
+          if (result.status === 'fulfilled') {
+            digestCache[DEMO_PERSONAS[i].user_id] = result.value
+          }
+        })
+        setCacheReady(true)
+        // Show first persona's digest
+        const first = digestCache[DEMO_PERSONAS[0].user_id]
+        if (first) setDigest(first)
+      } catch {
+        // Startup preload failed — will fetch on demand
+      } finally {
+        setLoading(false)
+      }
+    }
+    preload()
+  }, [])
 
   const fetchDigest = useCallback(
     async (personaId: string, override?: string | null) => {
+      // Use cache for default (no override) if available
+      if (!override && digestCache[personaId]) {
+        setDigest(digestCache[personaId])
+        return
+      }
+
       setLoading(true)
       setError(null)
       try {
         const data = await getDigest(personaId, override ?? undefined)
         setDigest(data)
+        // Update cache for default views
+        if (!override) {
+          digestCache[personaId] = data
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load digest')
       } finally {
@@ -32,21 +72,40 @@ function App() {
     [],
   )
 
-  useEffect(() => {
-    fetchDigest(selectedPersona, phaseOverride)
-  }, [selectedPersona, phaseOverride, fetchDigest])
-
   const handlePersonaSelect = (personaId: string) => {
     setSelectedPersona(personaId)
     setPhaseOverride(null)
+    // Instant switch from cache
+    if (digestCache[personaId]) {
+      setDigest(digestCache[personaId])
+    } else {
+      fetchDigest(personaId)
+    }
   }
 
   const handlePhaseApply = (override: string) => {
     setPhaseOverride(override)
+    fetchDigest(selectedPersona, override)
   }
 
   const handlePhaseClear = () => {
     setPhaseOverride(null)
+    fetchDigest(selectedPersona)
+  }
+
+  const handlePipelineComplete = () => {
+    // Invalidate cache and reload all digests
+    Object.keys(digestCache).forEach((k) => delete digestCache[k])
+    setCacheReady(false)
+    DEMO_PERSONAS.forEach((p) => {
+      getDigest(p.user_id).then((data) => {
+        digestCache[p.user_id] = data
+        if (p.user_id === selectedPersona) {
+          setDigest(data)
+        }
+      })
+    })
+    setCacheReady(true)
   }
 
   const currentPersona = DEMO_PERSONAS.find(
@@ -74,14 +133,14 @@ function App() {
           onApply={handlePhaseApply}
           activeOverride={phaseOverride}
           onClear={handlePhaseClear}
-          onPipelineComplete={() => fetchDigest(selectedPersona, phaseOverride)}
+          onPipelineComplete={handlePipelineComplete}
         />
       </div>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <DigestDisplay
           digest={digest}
-          loading={loading}
+          loading={loading && !cacheReady}
           error={error}
           personaName={currentPersona?.name ?? selectedPersona}
         />
