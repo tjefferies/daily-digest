@@ -69,17 +69,12 @@
   <text x="810" y="75" text-anchor="middle" font-size="9" fill="#5d6d7e">4 sections/persona</text>
   <text x="810" y="88" text-anchor="middle" font-size="8" fill="#5d6d7e">headline + context</text>
 
-  <!-- Transformation labels between steps -->
-  <text x="143" y="128" text-anchor="middle" font-size="7" fill="#95a5a6">group_by_thread</text>
-  <text x="143" y="138" text-anchor="middle" font-size="7" fill="#95a5a6">+ continuations</text>
-  <text x="291" y="128" text-anchor="middle" font-size="7" fill="#95a5a6">assemble</text>
-  <text x="291" y="138" text-anchor="middle" font-size="7" fill="#95a5a6">+ compress</text>
-  <text x="439" y="128" text-anchor="middle" font-size="7" fill="#95a5a6">2-stage LLM</text>
-  <text x="439" y="138" text-anchor="middle" font-size="7" fill="#95a5a6">+ validate</text>
-  <text x="587" y="128" text-anchor="middle" font-size="7" fill="#95a5a6">5-dim scoring</text>
-  <text x="587" y="138" text-anchor="middle" font-size="7" fill="#95a5a6">per persona</text>
-  <text x="735" y="128" text-anchor="middle" font-size="7" fill="#95a5a6">LLM generation</text>
-  <text x="735" y="138" text-anchor="middle" font-size="7" fill="#95a5a6">tool_use</text>
+  <!-- Transformation labels above arrows (clear of dotted persistence lines) -->
+  <text x="143" y="34" text-anchor="middle" font-size="7" fill="#7f8c8d">group_by_thread</text>
+  <text x="291" y="34" text-anchor="middle" font-size="7" fill="#7f8c8d">assemble + compress</text>
+  <text x="439" y="34" text-anchor="middle" font-size="7" fill="#7f8c8d">2-stage LLM + validate</text>
+  <text x="587" y="34" text-anchor="middle" font-size="7" fill="#7f8c8d">5-dim scoring</text>
+  <text x="735" y="34" text-anchor="middle" font-size="7" fill="#7f8c8d">LLM generation</text>
 
   <!-- Persistence layer (centered: top row center ~440, bottom row 510px wide, start at 185) -->
   <text x="440" y="170" text-anchor="middle" font-size="10" font-weight="bold" fill="#7f8c8d">PERSISTENCE</text>
