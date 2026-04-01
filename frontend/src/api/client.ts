@@ -32,8 +32,9 @@ export async function getDigest(
   return response.json()
 }
 
-export async function runPipeline(): Promise<{ status: string }> {
-  const response = await fetch(`${BASE_URL}/pipeline/run`, { method: 'POST' })
+export async function runPipeline(fresh: boolean = true): Promise<{ status: string }> {
+  const url = fresh ? `${BASE_URL}/pipeline/run?fresh=true` : `${BASE_URL}/pipeline/run`
+  const response = await fetch(url, { method: 'POST' })
   if (!response.ok) {
     throw new Error(`Failed to run pipeline: ${response.statusText}`)
   }

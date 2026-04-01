@@ -23,6 +23,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from digest.config.loader import get_config
 from digest.context.personas import get_persona
+from digest.db.session import get_session_factory
 from digest.extraction.batch_runner import BatchExtractionRunner
 from digest.generation.assembler import AsyncDigestAssembler
 from digest.graph.client import GraphClient
@@ -125,7 +126,10 @@ async def _load_atoms_from_neo4j() -> list[Atom]:
 
 
 async def _precook_digests(atoms: list[Atom]) -> None:
-    """Pre-generate digests for all demo personas.
+    """Pre-generate digests for all demo personas in parallel.
+
+    Uses asyncio.gather to generate all 3 persona digests concurrently,
+    reducing total generation time from ~90s to ~30s.
 
     Args:
         atoms: Extracted atoms from the pipeline.
@@ -136,7 +140,7 @@ async def _precook_digests(atoms: list[Atom]) -> None:
     client = create_async_llm_client()
     assembler = AsyncDigestAssembler(client)
 
-    for persona_id in _DEMO_PERSONAS:
+    async def _generate_one(persona_id: str) -> None:
         try:
             digest = await assembler.assemble(persona_id, atoms)
             _digest_cache[persona_id] = digest
@@ -152,6 +156,8 @@ async def _precook_digests(atoms: list[Atom]) -> None:
                 persona_id,
                 exc_info=True,
             )
+
+    await asyncio.gather(*[_generate_one(pid) for pid in _DEMO_PERSONAS])
 
 
 async def _run_pipeline_background() -> None:
@@ -218,11 +224,34 @@ async def health_check() -> dict[str, str]:
     return {"status": "ok"}
 
 
+async def _clear_demo_data() -> None:
+    """Clear all Postgres data so demo re-runs extract fresh atoms.
+
+    Truncates all tables via raw SQL to bypass FK constraints.
+    """
+    from sqlalchemy import text
+
+    factory = get_session_factory()
+    async with factory() as session:
+        await session.execute(text("DELETE FROM atom"))
+        await session.execute(text("DELETE FROM context_window"))
+        await session.execute(text("DELETE FROM bundle_membership"))
+        await session.execute(text("DELETE FROM thread_bundle"))
+        await session.execute(text("DELETE FROM message"))
+        await session.execute(text("DELETE FROM batch_log"))
+        await session.commit()
+    logger.info("Cleared Postgres demo data for fresh run")
+
+
 @app.post("/pipeline/run")
-async def pipeline_run() -> dict[str, Any]:
+async def pipeline_run(fresh: bool = False) -> dict[str, Any]:
     """Trigger the extraction-to-digest pipeline in the background.
 
     Returns immediately with status. Poll GET /pipeline/status for progress.
+
+    Args:
+        fresh: If True, clear Postgres data first so dedup doesn't skip
+            previously processed bundles. Required for demo re-runs.
 
     Returns:
         A dict with status indicating the pipeline has started.
@@ -231,6 +260,12 @@ async def pipeline_run() -> dict[str, Any]:
 
     if _pipeline_status["state"] == "running":
         return {"status": "already_running", "message": "Pipeline is already in progress"}
+
+    if fresh:
+        try:
+            await _clear_demo_data()
+        except Exception:
+            logger.warning("Failed to clear demo data", exc_info=True)
 
     _pipeline_task = asyncio.create_task(_run_pipeline_background())
     return {

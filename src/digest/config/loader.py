@@ -83,6 +83,13 @@ def _apply_env_overrides(config: dict[str, Any]) -> None:
     postgres = pipeline.get("postgres", {})
     if dsn := os.environ.get("POSTGRES_DSN"):
         postgres["dsn"] = dsn
+    # Pipeline mode overrides for demo vs production
+    if dataset := os.environ.get("DATASET"):
+        pipeline["dataset"] = dataset
+    if extraction_mode := os.environ.get("EXTRACTION_MODE"):
+        pipeline["extraction_mode"] = extraction_mode
+    if max_concurrency := os.environ.get("MAX_CONCURRENCY"):
+        pipeline["max_concurrency"] = int(max_concurrency)
 
 
 def get_config() -> dict[str, Any]:

@@ -27,9 +27,12 @@ vectorstore:
   path: data/vectorstore.index
 
 # Dataset: 'full' (307 messages) or 'demo' (18 messages, fast extraction).
+# Dataset: 'full' (307 messages) or 'demo' (18 messages, fast extraction).
+# Override with DATASET env var. Docker demo uses 'demo'.
 dataset: full
 
 # Extraction mode: 'batch' (50% cost savings, slower) or 'async' (faster, higher cost).
+# Override with EXTRACTION_MODE env var. Docker demo uses 'async'.
 extraction_mode: batch
 
 # Maximum context windows to process per pipeline run (0 = all).
