@@ -16,6 +16,7 @@ services:
     volumes:
       - ./src:/app/src:ro
       - ./config:/app/config:ro
+      - ./data:/app/data:ro
     depends_on:
       neo4j:
         condition: service_healthy
@@ -53,7 +54,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "5173:3000"
     depends_on:
       backend:
         condition: service_healthy

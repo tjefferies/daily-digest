@@ -119,12 +119,8 @@ serve: ## Start the FastAPI backend (port 8000)
 serve-frontend: ## Start the React frontend dev server (port 5173)
 	cd frontend && npm run dev
 
-serve-all: ## Start FastAPI backend and React frontend together
-	@echo "Starting FastAPI backend (port 8000) and React frontend (port 5173)..."
-	@trap 'kill 0' EXIT; \
-	PYTHONPATH=src uv run uvicorn evercurrent.app:app --reload --reload-dir src --port 8000 & \
-	cd frontend && npm run dev & \
-	wait
+serve-all: ## Start all services via Docker Compose (backend:8000, frontend:5173, neo4j:7474)
+	docker compose up --build
 
 clean: ## Clean build artifacts
 	rm -rf docs/_build dist build .pytest_cache .coverage htmlcov .ruff_cache .ty

@@ -18,6 +18,7 @@ RUN uv sync --frozen --no-dev --no-install-project
 # Copy source code and config
 COPY src/ src/
 COPY config/ config/
+COPY data/ data/
 
 # Install the project itself
 RUN uv sync --frozen --no-dev
@@ -35,6 +36,7 @@ RUN groupadd --gid 1000 appuser && \
 COPY --from=builder /app/.venv /app/.venv
 COPY --from=builder /app/src /app/src
 COPY --from=builder /app/config /app/config
+COPY --from=builder /app/data /app/data
 COPY --from=builder /app/pyproject.toml /app/pyproject.toml
 
 # Set PATH to use the virtual environment

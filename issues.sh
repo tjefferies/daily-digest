@@ -985,3 +985,70 @@ HYBRID_CONTINUATIONS=$(bd create \
   --acceptance="1. Existing regex tests still pass. 2. New semantic similarity tests pass with mock embedder. 3. detect_continuations() wired into pipeline.py. 4. Standalones extracted correctly from messages. 5. Continuations merged back into ThreadBundles before context windowing. 6. Config loads similarity_threshold from pipeline.yml. 7. All quality gates pass." \
   --silent)
 echo "    Hybrid Continuations: $HYBRID_CONTINUATIONS"
+
+# ─── CENTRALIZE LLM MODEL CONFIG ──────────────────────────────────────────────
+CENTRALIZE_MODEL=$(bd create \
+  --title="Centralize LLM model config: single pipeline.yml setting propagates to all extraction calls" \
+  --type=task \
+  --priority=2 \
+  --description="Currently the model name is read from pipeline.yml in runner.py at module level, but other places (validation, digest assembly) may instantiate their own model references. Ensure there is ONE canonical model setting in pipeline.yml that propagates to every LLM call in the pipeline — Stage 1 coarse, Stage 2 enrichment, validation, and digest generation. No hardcoded model strings anywhere in source code." \
+  --design="1. Audit all files that reference a model name string or read from config independently. 2. Ensure every LLM call site reads model from the single pipeline.yml 'model' key. 3. Remove any hardcoded model strings. 4. Verify with grep that no model string literals remain in src/." \
+  --acceptance="1. Changing pipeline.yml model value changes the model used in ALL LLM calls. 2. No hardcoded model strings in src/. 3. All existing tests pass. 4. All quality gates pass." \
+  --silent)
+echo "    Centralize Model:     $CENTRALIZE_MODEL"
+
+# ─── DOCKER COMPOSE + PERSISTENT STORAGE PIPELINE ─────────────────────────────
+
+DOCKER_COMPOSE=$(bd create \
+  --title="Docker Compose: serve-all via docker, Neo4j persistent volume, port forwarding" \
+  --type=task \
+  --priority=1 \
+  --description="Update make serve-all to run docker compose up instead of spawning processes directly. Create docker-compose.yml with services for FastAPI backend, React frontend, and Neo4j. Port forward so app accessible at localhost:5173 (frontend) and localhost:8000 (backend). Add named volume for Neo4j data persistence across container restarts." \
+  --design="1. Create docker-compose.yml with 3 services: backend, frontend, neo4j. 2. Frontend on 5173, backend on 8000, Neo4j bolt on 7687/browser on 7474. 3. Named volume for Neo4j data. 4. Update Makefile serve-all to docker compose up. 5. Add Dockerfiles. 6. Pass ANTHROPIC_API_KEY via environment." \
+  --acceptance="1. make serve-all starts all services via docker compose. 2. App accessible at localhost:5173. 3. Neo4j data persists across down/up cycles. 4. ANTHROPIC_API_KEY propagates to backend." \
+  --silent)
+echo "    Docker Compose:       $DOCKER_COMPOSE"
+
+NEO4J_WRITE=$(bd create \
+  --title="Write pipeline extraction results to Neo4j via graph/client.py" \
+  --type=feature \
+  --priority=1 \
+  --description="Wire graph/client.py into the pipeline to persist extracted atoms to Neo4j after extraction/validation/filtering. Enables graph-based queries instead of in-memory atom store." \
+  --design="1. After confidence_filter, call graph client to write atoms. 2. Store atom properties as nodes, source as relationships. 3. Both sync/async paths write to Neo4j. 4. Graceful degradation if Neo4j unreachable." \
+  --acceptance="1. Pipeline writes atoms to Neo4j. 2. Atoms queryable in Neo4j browser. 3. Pipeline doesn't crash if Neo4j unreachable. 4. All tests pass." \
+  --silent)
+echo "    Neo4j Write:          $NEO4J_WRITE"
+bd dep add "$NEO4J_WRITE" "$DOCKER_COMPOSE"
+
+NEO4J_DEDUP=$(bd create \
+  --title="Neo4j dedup: skip messages/threads already processed in pipeline" \
+  --type=feature \
+  --priority=2 \
+  --description="Check Neo4j before processing and skip threads that already have extracted atoms. Prevents duplicate LLM calls and duplicate atoms on re-runs." \
+  --design="1. Query Neo4j for existing thread_ts before context windowing. 2. Filter out already-processed ThreadBundles. 3. Log skipped vs processed counts. 4. Add threads_skipped to PipelineResult stats." \
+  --acceptance="1. Re-run doesn't reprocess extracted threads. 2. New threads processed normally. 3. Stats show skip count. 4. All tests/gates pass." \
+  --silent)
+echo "    Neo4j Dedup:          $NEO4J_DEDUP"
+bd dep add "$NEO4J_DEDUP" "$NEO4J_WRITE"
+
+FAISS_STORE=$(bd create \
+  --title="FAISS vectorstore: persist thread/atom embeddings across pipeline runs" \
+  --type=feature \
+  --priority=1 \
+  --description="Add persistent FAISS vectorstore for embeddings. Store to disk, load on startup, mount as Docker volume. Eliminates recomputation across runs." \
+  --design="1. Create vectorstore.py with FAISS index wrapper. 2. Save/load from configurable path. 3. Text hash → embedding mapping. 4. Integrate with Embedder protocol. 5. Add faiss-cpu to optional deps. 6. Docker volume mount." \
+  --acceptance="1. Embeddings persist to disk. 2. Loaded on next run. 3. Docker volume keeps data. 4. All tests/gates pass." \
+  --silent)
+echo "    FAISS Store:          $FAISS_STORE"
+bd dep add "$FAISS_STORE" "$DOCKER_COMPOSE"
+
+FAISS_DEDUP=$(bd create \
+  --title="FAISS dedup: skip atoms/messages that already have stored embeddings" \
+  --type=feature \
+  --priority=2 \
+  --description="Check FAISS before computing embeddings, skip texts with existing vectors. Only embed new/unseen texts, store results. Eliminates redundant embedding computation on re-runs." \
+  --design="1. Check FAISS for existing embeddings before model.encode(). 2. Only compute for new texts. 3. Store new embeddings after computing. 4. Log cache hit/miss. 5. Add embeddings_cached/computed stats." \
+  --acceptance="1. Re-run doesn't recompute existing embeddings. 2. New texts embedded normally. 3. Stats show cache counts. 4. All tests/gates pass." \
+  --silent)
+echo "    FAISS Dedup:          $FAISS_DEDUP"
+bd dep add "$FAISS_DEDUP" "$FAISS_STORE"
