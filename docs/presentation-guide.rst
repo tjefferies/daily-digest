@@ -369,7 +369,7 @@ Appendix: Quick Reference
    * - Source LOC
      - ~5,500
    * - Tests
-     - 494 (490 unit + 4 integration)
+     - 511 (490 unit + 21 integration)
    * - Synthetic dataset
      - 307 messages, 8 channels, 20 engineers
    * - Demo personas

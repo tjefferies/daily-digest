@@ -11,6 +11,7 @@ personalized daily digests.
    :maxdepth: 2
    :caption: Contents
 
+   presentation
    presentation-guide
    design-document
    next-steps
