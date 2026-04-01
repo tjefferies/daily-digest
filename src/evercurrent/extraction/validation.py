@@ -49,12 +49,19 @@ def _demote_atom(atom: Atom, reason: str) -> Atom:
     )
 
 
+_VALIDATION_CONCURRENCY = _pipeline_cfg.get("validation_max_concurrency", 5)
+_VALIDATION_CHUNK_DELAY = _pipeline_cfg.get("validation_delay_between_chunks", 1.0)
+
+
 async def async_validate_atoms(
     atoms: list[Atom],
     client: AsyncLLMClient,
     context_text: str,
 ) -> list[Atom]:
-    """Validate DECISION and SPEC_CHANGE atoms concurrently with async LLM calls.
+    """Validate DECISION and SPEC_CHANGE atoms with rate-limited async LLM calls.
+
+    Uses a semaphore to limit concurrency and a delay between chunks
+    to stay within API rate limits.
 
     Args:
         atoms: List of extracted Atom objects.
@@ -67,13 +74,31 @@ async def async_validate_atoms(
     if not atoms:
         return []
 
-    async def _maybe_validate(atom: Atom) -> Atom:
-        if atom.type in _VALIDATED_TYPES:
-            return await _async_validate_single(atom, client, context_text)
-        return atom
+    semaphore = asyncio.Semaphore(_VALIDATION_CONCURRENCY)
 
-    tasks = [_maybe_validate(a) for a in atoms]
-    return list(await asyncio.gather(*tasks))
+    async def _maybe_validate(atom: Atom) -> Atom:
+        if atom.type not in _VALIDATED_TYPES:
+            return atom
+        async with semaphore:
+            return await _async_validate_single(atom, client, context_text)
+
+    # Process in chunks to respect rate limits
+    chunk_size = _VALIDATION_CONCURRENCY
+    results: list[Atom] = []
+    for i in range(0, len(atoms), chunk_size):
+        chunk = atoms[i : i + chunk_size]
+        tasks = [_maybe_validate(a) for a in chunk]
+        chunk_results = await asyncio.gather(*tasks)
+        results.extend(chunk_results)
+        if i + chunk_size < len(atoms):
+            await asyncio.sleep(_VALIDATION_CHUNK_DELAY)
+
+    logger.info(
+        "Validation: %d atoms checked, %d chunks",
+        len(atoms),
+        (len(atoms) + chunk_size - 1) // chunk_size,
+    )
+    return results
 
 
 async def _async_validate_single(

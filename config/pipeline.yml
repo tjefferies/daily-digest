@@ -38,6 +38,10 @@ max_concurrency: 2
 # Maximum requests per batch API call (splits larger batches).
 max_requests_per_batch: 100
 
+# Validation rate limiting.
+validation_max_concurrency: 5
+validation_delay_between_chunks: 1.0
+
 # Extraction confidence filter threshold.
 confidence_threshold: 0.7
 
