@@ -1,7 +1,7 @@
 .. _presentation-guide:
 
 =====================================================================
-Daily Digest Tool Deep Dive: 30-Minute Presentation Guide
+30-Minute Presentation Guide
 =====================================================================
 
 .. note::
