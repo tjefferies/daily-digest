@@ -1,0 +1,27 @@
+[
+  {
+    "atom_id": "dd5e5172-cbe5-485e-b0c1-993b69944106",
+    "type": "DECISION",
+    "summary": "Test decision",
+    "detail": "Detail text",
+    "source": {
+      "channel": "#test",
+      "thread_ts": "1000.0001",
+      "message_range": [
+        0,
+        1
+      ],
+      "key_participants": [
+        "U001"
+      ]
+    },
+    "workstreams": {
+      "originating": "chassis",
+      "affected": []
+    },
+    "urgency": "medium",
+    "confidence": 0.9,
+    "implicit_decision": false,
+    "phase_relevance": []
+  }
+]

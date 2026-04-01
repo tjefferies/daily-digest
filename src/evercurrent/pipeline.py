@@ -190,6 +190,68 @@ async def _postgres_persist(
         logger.warning("Postgres persistence failed", exc_info=True)
 
 
+def _dump_intermediate(filename: str, data: list) -> None:
+    """Write intermediate pipeline results to a JSON file.
+
+    Args:
+        filename: Output filename in data/ directory.
+        data: List of dicts/models to serialize.
+    """
+    import json
+
+    outpath = Path("data") / filename
+    outpath.parent.mkdir(parents=True, exist_ok=True)
+    serialized = [
+        d.model_dump(mode="json") if hasattr(d, "model_dump") else d
+        for d in data
+    ]
+    outpath.write_text(json.dumps(serialized, indent=2, default=str))
+    logger.info("Wrote %d items → %s", len(serialized), outpath)
+
+
+async def _validate_atoms_by_source(
+    raw_atoms: list[Atom],
+    windows: list,
+    client: AsyncLLMClient,
+) -> list[Atom]:
+    """Validate atoms against their own source windows.
+
+    Args:
+        raw_atoms: All extracted atoms.
+        windows: Context windows for source text lookup.
+        client: Async LLM client for validation calls.
+
+    Returns:
+        Validated atom list with demoted confidence for invalid atoms.
+    """
+    window_text_by_ts = {w.thread_ts: w.thread_text for w in windows}
+    atoms_by_source: dict[str, list[Atom]] = {}
+    for atom in raw_atoms:
+        atoms_by_source.setdefault(atom.source.thread_ts, []).append(atom)
+
+    validatable = sum(
+        1 for a in raw_atoms if a.type in {"DECISION", "SPEC_CHANGE"}
+    )
+    logger.info(
+        "Validation: %d atoms, %d source threads, %d DECISION/SPEC_CHANGE",
+        len(raw_atoms), len(atoms_by_source), validatable,
+    )
+
+    validated: list[Atom] = []
+    done = 0
+    for ts, group in atoms_by_source.items():
+        context = window_text_by_ts.get(ts, "")
+        if context:
+            group = await async_validate_atoms(group, client, context)
+        validated.extend(group)
+        done += len(group)
+        logger.info("Validated %d/%d atoms (thread %s)", done, len(raw_atoms), ts[:15])
+
+    demoted = sum(1 for a in validated if a.confidence < 0.5)
+    logger.info("Validation done: %d atoms, %d demoted", len(validated), demoted)
+    return validated
+
+
 async def _get_processed_threads(graph: GraphClient) -> set[str]:
     """Query Neo4j for already-processed thread_ts values.
 
@@ -310,26 +372,28 @@ async def _async_run_pipeline_inner(
         runner = AsyncExtractionRunner(client)
         raw_atoms = await runner.extract(windows)
     logger.info("Extraction: %d raw atoms from %d windows", len(raw_atoms), len(windows))
+    _dump_intermediate("step2_raw_atoms.json", raw_atoms)
 
-    # Validation (concurrent LLM calls for DECISION/SPEC_CHANGE)
-    validated = raw_atoms
-    for window in windows:
-        validated = await async_validate_atoms(validated, client, window.thread_text)
+    # Validation: each atom against its own source window only
+    validated = await _validate_atoms_by_source(raw_atoms, windows, client)
+    _dump_intermediate("step3_validated_atoms.json", validated)
 
-    # Confidence filter (CPU-bound)
+    # Confidence filter
     filter_result = confidence_filter(validated)
     atoms = filter_result.passed
     logger.info(
         "Filter: %d passed, %d filtered",
-        filter_result.passed_count,
-        filter_result.filtered_count,
+        filter_result.passed_count, filter_result.filtered_count,
     )
+    _dump_intermediate("step4_filtered_atoms.json", atoms)
 
-    # Persist bundles and atoms to Postgres (delta cache)
+    # Persist
     await _postgres_persist(bundles, atoms)
-
-    # Persist to Neo4j (graceful degradation if unavailable)
     await _persist_to_neo4j(graph, atoms)
+    logger.info(
+        "═══ PIPELINE COMPLETE: %d windows → %d extracted → %d passed ═══",
+        len(windows), len(raw_atoms), len(atoms),
+    )
 
     return PipelineResult(
         atoms=atoms,
