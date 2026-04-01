@@ -161,7 +161,7 @@ class TestPipelineResult:
 class TestAsyncRunPipeline:
     """Tests for the async_run_pipeline orchestrator."""
 
-    @patch("evercurrent.pipeline.AsyncExtractionRunner")
+    @patch("evercurrent.pipeline.BatchExtractionRunner")
     @patch("evercurrent.pipeline.async_validate_atoms")
     @patch("evercurrent.pipeline.confidence_filter")
     async def test_returns_pipeline_result(
@@ -188,7 +188,7 @@ class TestAsyncRunPipeline:
         assert len(result.atoms) == 1
         assert result.atoms[0].summary == "Test decision"
 
-    @patch("evercurrent.pipeline.AsyncExtractionRunner")
+    @patch("evercurrent.pipeline.BatchExtractionRunner")
     @patch("evercurrent.pipeline.async_validate_atoms")
     @patch("evercurrent.pipeline.confidence_filter")
     async def test_tracks_stats(
@@ -214,7 +214,7 @@ class TestAsyncRunPipeline:
         assert result.stats["atoms_extracted"] == 1
         assert result.stats["atoms_after_filter"] == 1
 
-    @patch("evercurrent.pipeline.AsyncExtractionRunner")
+    @patch("evercurrent.pipeline.BatchExtractionRunner")
     @patch("evercurrent.pipeline.async_validate_atoms")
     @patch("evercurrent.pipeline.confidence_filter")
     async def test_empty_extraction_returns_empty(
@@ -245,7 +245,7 @@ class TestNeo4jPersistence:
 
     @pytest.mark.asyncio
     @patch("evercurrent.pipeline.GraphClient")
-    @patch("evercurrent.pipeline.AsyncExtractionRunner")
+    @patch("evercurrent.pipeline.BatchExtractionRunner")
     @patch("evercurrent.pipeline.async_validate_atoms")
     @patch("evercurrent.pipeline.confidence_filter")
     async def test_async_pipeline_persists_atoms_to_neo4j(
@@ -282,7 +282,7 @@ class TestNeo4jPersistence:
 
     @pytest.mark.asyncio
     @patch("evercurrent.pipeline.GraphClient")
-    @patch("evercurrent.pipeline.AsyncExtractionRunner")
+    @patch("evercurrent.pipeline.BatchExtractionRunner")
     @patch("evercurrent.pipeline.async_validate_atoms")
     @patch("evercurrent.pipeline.confidence_filter")
     async def test_async_pipeline_graceful_neo4j_failure(
@@ -320,7 +320,7 @@ class TestNeo4jDedup:
 
     @pytest.mark.asyncio
     @patch("evercurrent.pipeline.GraphClient")
-    @patch("evercurrent.pipeline.AsyncExtractionRunner")
+    @patch("evercurrent.pipeline.BatchExtractionRunner")
     @patch("evercurrent.pipeline.async_validate_atoms")
     @patch("evercurrent.pipeline.confidence_filter")
     async def test_skips_already_processed_threads(
@@ -354,7 +354,7 @@ class TestNeo4jDedup:
 
     @pytest.mark.asyncio
     @patch("evercurrent.pipeline.GraphClient")
-    @patch("evercurrent.pipeline.AsyncExtractionRunner")
+    @patch("evercurrent.pipeline.BatchExtractionRunner")
     @patch("evercurrent.pipeline.async_validate_atoms")
     @patch("evercurrent.pipeline.confidence_filter")
     async def test_dedup_failure_processes_all_threads(

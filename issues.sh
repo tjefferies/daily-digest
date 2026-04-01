@@ -1074,3 +1074,14 @@ DIGEST_NEO4J=$(bd create \
   --acceptance="1. GET /digest returns Neo4j atoms when available. 2. Works without /pipeline/run if Neo4j has data. 3. Graceful fallback if Neo4j down. 4. Frontend displays correctly. 5. All tests pass." \
   --silent)
 echo "    Digest from Neo4j:    $DIGEST_NEO4J"
+
+# ─── MESSAGE BATCHES API ──────────────────────────────────────────────────────
+BATCH_API=$(bd create \
+  --title="Use Anthropic Message Batches API for extraction and validation LLM calls" \
+  --type=feature \
+  --priority=1 \
+  --description="Replace per-window individual LLM calls with Anthropic Message Batches API. Submit all Stage 1, Stage 2, and validation prompts as batches. 50% cost savings, no rate limiting, higher throughput for full 116-window runs." \
+  --design="1. Batch client wrapper in llm/batch.py. 2. Collect all prompts per stage, submit as batch. 3. Poll with exponential backoff. 4. Parse results with instructor response_model. 5. Fallback to individual calls if batch unavailable. 6. Track batch vs individual call stats." \
+  --acceptance="1. Pipeline uses batch API for all LLM calls. 2. No rate limiting on full run. 3. 50% cost reduction. 4. Graceful fallback. 5. All tests/gates pass." \
+  --silent)
+echo "    Batch API:            $BATCH_API"

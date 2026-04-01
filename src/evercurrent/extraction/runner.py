@@ -18,8 +18,10 @@ from uuid import uuid4
 
 from evercurrent.config.loader import get_config
 from evercurrent.extraction.prompt import build_coarse_prompt, build_enrichment_prompt
-from evercurrent.models.atom import Atom, AtomSource
+from evercurrent.models.atom import Atom, AtomSource, AtomType
 from evercurrent.models.responses import CoarseExtractionResponse, EnrichmentResponse
+
+_VALID_TYPES: set[str] = set(AtomType.__args__)  # type: ignore[attr-defined]
 
 if TYPE_CHECKING:
     from evercurrent.ingestion.context_window import ContextWindow
@@ -41,9 +43,13 @@ def _merge_atom(raw: dict, enrichment: EnrichmentResponse, window: ContextWindow
     source_data = dict(raw.get("source", {}))
     source_data["channel"] = window.channel
     source_data["thread_ts"] = window.thread_ts
+    raw_type = raw.get("type", "STATUS_UPDATE")
+    atom_type = raw_type if raw_type in _VALID_TYPES else "STATUS_UPDATE"
+    if raw_type != atom_type:
+        logger.warning("Unknown atom type %r, defaulting to STATUS_UPDATE", raw_type)
     return Atom(
         atom_id=uuid4(),
-        type=raw["type"],
+        type=atom_type,
         summary=raw["summary"],
         detail=raw["detail"],
         source=AtomSource(**source_data),
@@ -143,7 +149,7 @@ class ExtractionRunner:
         return atoms
 
 
-_DEFAULT_CONCURRENCY = 10
+_DEFAULT_CONCURRENCY = 2
 
 
 class AsyncExtractionRunner:

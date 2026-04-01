@@ -13,10 +13,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from anthropic import Anthropic
+
 from evercurrent.config.loader import get_config
 from evercurrent.dataset.messages import load_messages
+from evercurrent.extraction.batch_runner import BatchExtractionRunner
 from evercurrent.extraction.filter import confidence_filter
-from evercurrent.extraction.runner import AsyncExtractionRunner, ExtractionRunner
+from evercurrent.extraction.runner import ExtractionRunner
 from evercurrent.extraction.validation import async_validate_atoms, validate_atoms
 from evercurrent.graph.client import GraphClient
 from evercurrent.ingestion.cached_embedder import CachedEmbedder
@@ -299,6 +302,10 @@ async def _async_run_pipeline_inner(
         logger.info("Dedup: skipped %d already-processed threads", threads_skipped)
 
     windows = assemble_context_windows(bundles)
+    max_windows = get_config()["pipeline"].get("max_windows", 0)
+    if max_windows > 0 and len(windows) > max_windows:
+        logger.info("Capping windows: %d → %d", len(windows), max_windows)
+        windows = windows[:max_windows]
     logger.info(
         "Ingestion: %d messages → %d threads (%d skipped, %d continuations) → %d windows",
         len(messages),
@@ -308,9 +315,9 @@ async def _async_run_pipeline_inner(
         len(windows),
     )
 
-    # Layer 2: Extraction (concurrent LLM calls)
-    runner = AsyncExtractionRunner(client)
-    raw_atoms = await runner.extract(windows)
+    # Layer 2: Extraction (batch API for 50% cost savings, no rate limits)
+    batch_runner = BatchExtractionRunner(Anthropic())
+    raw_atoms = await batch_runner.extract(windows)
     logger.info("Extraction: %d raw atoms from %d windows", len(raw_atoms), len(windows))
 
     # Validation (concurrent LLM calls for DECISION/SPEC_CHANGE)

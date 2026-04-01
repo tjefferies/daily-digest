@@ -26,6 +26,9 @@ continuations:
 vectorstore:
   path: data/vectorstore.index
 
+# Maximum context windows to process per pipeline run (0 = all).
+max_windows: 10
+
 # Extraction confidence filter threshold.
 confidence_threshold: 0.7
 
