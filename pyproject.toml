@@ -17,6 +17,9 @@ dependencies = [
     "neo4j>=5.28",
     "instructor>=1.7",
     "faiss-cpu>=1.13",
+    "sqlalchemy[asyncio]>=2.0",
+    "asyncpg>=0.31.0",
+    "alembic>=1.18.4",
 ]
 
 [project.optional-dependencies]

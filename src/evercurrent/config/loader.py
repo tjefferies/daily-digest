@@ -75,6 +75,9 @@ def _apply_env_overrides(config: dict[str, Any]) -> None:
         neo4j["user"] = user
     if password := os.environ.get("NEO4J_PASSWORD"):
         neo4j["password"] = password
+    postgres = pipeline.get("postgres", {})
+    if dsn := os.environ.get("POSTGRES_DSN"):
+        postgres["dsn"] = dsn
 
 
 def get_config() -> dict[str, Any]:

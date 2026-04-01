@@ -35,6 +35,10 @@ max_concurrency: 2
 # Extraction confidence filter threshold.
 confidence_threshold: 0.7
 
+# Postgres connection (bundle/atom persistence).
+postgres:
+  dsn: postgresql+asyncpg://evercurrent:evercurrent_dev@localhost:5432/evercurrent
+
 # Neo4j knowledge graph connection.
 neo4j:
   uri: bolt://localhost:7687
