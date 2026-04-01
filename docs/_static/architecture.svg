@@ -39,7 +39,7 @@
   </defs>
 
   <!-- Title -->
-  <text x="450" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">EverCurrent V2 Architecture</text>
+  <text x="450" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">EverCurrent Architecture</text>
   <text x="450" y="50" text-anchor="middle" font-size="11" fill="#7f8c8d">Anthropic-only | Batch API + tool_use | Async-only | Delta Processing | YAML-driven config</text>
 
   <!-- ============ FRONTEND ============ -->
@@ -193,9 +193,11 @@
   <text x="780" y="700" text-anchor="middle" font-size="9" fill="#148f77">Elena Vasquez (Supply)</text>
   <text x="780" y="710" text-anchor="middle" font-size="9" fill="#148f77">Ryan Torres (EM)</text>
 
-  <!-- Dashed arrow: Pipeline -> Anthropic -->
-  <line x1="250" y1="500" x2="250" y2="650" stroke="#e67e22" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#arrowOrange)"/>
-  <text x="260" y="580" font-size="8" fill="#e67e22" transform="rotate(-90 260,580)">Batch API calls</text>
+  <!-- Dashed arrow: Pipeline -> Anthropic (between Postgres and Neo4j) -->
+  <line x1="310" y1="500" x2="310" y2="625" stroke="#e67e22" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <line x1="310" y1="625" x2="250" y2="625" stroke="#e67e22" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <line x1="250" y1="625" x2="250" y2="650" stroke="#e67e22" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#arrowOrange)"/>
+  <text x="310" y="525" text-anchor="middle" font-size="7" fill="#e67e22">Batch API</text>
 
   <!-- Data flow summary -->
   <rect x="50" y="730" width="800" height="35" rx="6" fill="#fafafa" stroke="#bdc3c7" stroke-width="1"/>
