@@ -5,6 +5,8 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
+import pytest
+
 from evercurrent.models.atom import Atom, AtomSource, AtomWorkstreams
 from evercurrent.pipeline import PipelineResult, async_run_pipeline, run_pipeline
 
@@ -236,3 +238,78 @@ class TestAsyncRunPipeline:
 
         assert result.atoms == []
         assert result.stats["atoms_extracted"] == 0
+
+
+class TestNeo4jPersistence:
+    """Tests for Neo4j atom persistence in async pipeline."""
+
+    @pytest.mark.asyncio
+    @patch("evercurrent.pipeline.GraphClient")
+    @patch("evercurrent.pipeline.AsyncExtractionRunner")
+    @patch("evercurrent.pipeline.async_validate_atoms")
+    @patch("evercurrent.pipeline.confidence_filter")
+    async def test_async_pipeline_persists_atoms_to_neo4j(
+        self,
+        mock_filter: MagicMock,
+        mock_validate: MagicMock,
+        mock_runner_cls: MagicMock,
+        mock_graph_cls: MagicMock,
+    ) -> None:
+        """async_run_pipeline calls GraphClient.persist_atoms with filtered atoms."""
+        atom = _make_atom()
+        mock_runner = AsyncMock()
+        mock_runner.extract.return_value = [atom]
+        mock_runner_cls.return_value = mock_runner
+        mock_validate.return_value = [atom]
+
+        from evercurrent.extraction.filter import FilterResult
+
+        mock_filter.return_value = FilterResult(passed=[atom], filtered=[])
+
+        mock_graph = AsyncMock()
+        mock_graph_cls.return_value = mock_graph
+
+        mock_client = AsyncMock()
+        result = await async_run_pipeline(mock_client)
+
+        assert len(result.atoms) == 1
+        mock_graph.ensure_schema.assert_called_once()
+        mock_graph.persist_atoms.assert_called_once()
+        persisted = mock_graph.persist_atoms.call_args[0][0]
+        assert len(persisted) == 1
+        assert persisted[0].summary == "Test decision"
+        mock_graph.close.assert_called_once()
+
+    @pytest.mark.asyncio
+    @patch("evercurrent.pipeline.GraphClient")
+    @patch("evercurrent.pipeline.AsyncExtractionRunner")
+    @patch("evercurrent.pipeline.async_validate_atoms")
+    @patch("evercurrent.pipeline.confidence_filter")
+    async def test_async_pipeline_graceful_neo4j_failure(
+        self,
+        mock_filter: MagicMock,
+        mock_validate: MagicMock,
+        mock_runner_cls: MagicMock,
+        mock_graph_cls: MagicMock,
+    ) -> None:
+        """Pipeline does not crash when Neo4j is unreachable."""
+        atom = _make_atom()
+        mock_runner = AsyncMock()
+        mock_runner.extract.return_value = [atom]
+        mock_runner_cls.return_value = mock_runner
+        mock_validate.return_value = [atom]
+
+        from evercurrent.extraction.filter import FilterResult
+
+        mock_filter.return_value = FilterResult(passed=[atom], filtered=[])
+
+        mock_graph = AsyncMock()
+        mock_graph.persist_atoms.side_effect = Exception("Connection refused")
+        mock_graph_cls.return_value = mock_graph
+
+        mock_client = AsyncMock()
+        result = await async_run_pipeline(mock_client)
+
+        # Pipeline still returns atoms even when Neo4j fails
+        assert len(result.atoms) == 1
+        assert result.atoms[0].summary == "Test decision"

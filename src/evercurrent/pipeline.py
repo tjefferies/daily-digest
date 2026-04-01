@@ -12,10 +12,12 @@ import logging
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
+from evercurrent.config.loader import get_config
 from evercurrent.dataset.messages import load_messages
 from evercurrent.extraction.filter import confidence_filter
 from evercurrent.extraction.runner import AsyncExtractionRunner, ExtractionRunner
 from evercurrent.extraction.validation import async_validate_atoms, validate_atoms
+from evercurrent.graph.client import GraphClient
 from evercurrent.ingestion.context_window import assemble_context_windows
 from evercurrent.ingestion.continuations import detect_continuations
 from evercurrent.ingestion.threads import group_by_thread
@@ -146,6 +148,27 @@ def run_pipeline(
     )
 
 
+async def _persist_to_neo4j(atoms: list[Atom]) -> None:
+    """Persist atoms to Neo4j, logging errors without raising.
+
+    Args:
+        atoms: Validated atoms to persist.
+    """
+    neo4j_cfg = get_config()["pipeline"]["neo4j"]
+    graph = GraphClient(
+        uri=neo4j_cfg["uri"],
+        user=neo4j_cfg["user"],
+        password=neo4j_cfg["password"],
+    )
+    try:
+        await graph.ensure_schema()
+        await graph.persist_atoms(atoms)
+    except Exception:
+        logger.warning("Neo4j persistence failed, atoms not stored", exc_info=True)
+    finally:
+        await graph.close()
+
+
 async def async_run_pipeline(
     client: AsyncLLMClient,
     embedder: Embedder | None = None,
@@ -199,6 +222,9 @@ async def async_run_pipeline(
         filter_result.passed_count,
         filter_result.filtered_count,
     )
+
+    # Persist to Neo4j (graceful degradation if unavailable)
+    await _persist_to_neo4j(atoms)
 
     return PipelineResult(
         atoms=atoms,
