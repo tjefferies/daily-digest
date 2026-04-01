@@ -2,6 +2,20 @@ import type { Digest } from '../types'
 
 const BASE_URL = '/api'
 
+export interface PipelineStatus {
+  state: 'idle' | 'running' | 'complete' | 'failed'
+  stage: string
+  batch_id: string
+  progress: {
+    total: number
+    succeeded: number
+    processing: number
+    errored: number
+  }
+  stats: Record<string, number>
+  error: string | null
+}
+
 export async function getDigest(
   personaId: string,
   phaseOverride?: string,
@@ -22,6 +36,14 @@ export async function runPipeline(): Promise<{ status: string }> {
   const response = await fetch(`${BASE_URL}/pipeline/run`, { method: 'POST' })
   if (!response.ok) {
     throw new Error(`Failed to run pipeline: ${response.statusText}`)
+  }
+  return response.json()
+}
+
+export async function getPipelineStatus(): Promise<PipelineStatus> {
+  const response = await fetch(`${BASE_URL}/pipeline/status`)
+  if (!response.ok) {
+    throw new Error(`Failed to fetch pipeline status: ${response.statusText}`)
   }
   return response.json()
 }
