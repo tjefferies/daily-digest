@@ -1,6 +1,6 @@
 """Persistent FAISS vector store for caching text embeddings.
 
-Stores text → embedding mappings in a FAISS IndexFlatL2 with a
+Stores text → embedding mappings in a FAISS IndexFlatIP with a
 parallel key mapping for O(1) lookup by text content. Persists
 the FAISS index and key map to disk as two files (.index + .keys).
 """
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 class VectorStore:
-    """Persistent embedding cache backed by FAISS IndexFlatL2.
+    """Persistent embedding cache backed by FAISS IndexFlatIP.
 
     Maps text content to embedding vectors via a FAISS index.
     Supports save/load for persistence across pipeline runs.
@@ -37,7 +37,7 @@ class VectorStore:
             dim: Dimensionality of embedding vectors.
         """
         self._dim = dim
-        self._index: faiss.IndexFlatL2 = faiss.IndexFlatL2(dim)
+        self._index: faiss.IndexFlatIP = faiss.IndexFlatIP(dim)
         self._keys: list[str] = []
         self._key_to_idx: dict[str, int] = {}
 
@@ -49,10 +49,11 @@ class VectorStore:
             vector: The embedding vector.
         """
         vec = np.array([vector], dtype=np.float32)
+        faiss.normalize_L2(vec)
         if text in self._key_to_idx:
             idx = self._key_to_idx[text]
             self._index.reconstruct(idx)
-            # FAISS IndexFlatL2 doesn't support in-place update,
+            # FAISS IndexFlatIP doesn't support in-place update,
             # so we rebuild the index without the old entry.
             self._rebuild_without(idx)
         self._key_to_idx[text] = self._index.ntotal

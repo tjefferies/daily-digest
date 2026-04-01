@@ -8,8 +8,10 @@ inference.
 
 from __future__ import annotations
 
-import math
 from typing import Protocol, runtime_checkable
+
+import faiss  # type: ignore[import-untyped]
+import numpy as np
 
 
 @runtime_checkable
@@ -34,7 +36,11 @@ class Embedder(Protocol):
 
 
 def cosine_similarity(vec_a: list[float], vec_b: list[float]) -> float:
-    """Compute cosine similarity between two vectors.
+    """Compute cosine similarity using FAISS inner product on normalized vectors.
+
+    Normalizes both vectors then computes inner product via FAISS
+    IndexFlatIP. See https://github.com/facebookresearch/faiss/wiki/
+    MetricType-and-distances#how-can-i-index-vectors-for-cosine-similarity
 
     Args:
         vec_a: First embedding vector.
@@ -44,12 +50,18 @@ def cosine_similarity(vec_a: list[float], vec_b: list[float]) -> float:
         Cosine similarity in [-1.0, 1.0]. Returns 0.0 if either
         vector has zero magnitude.
     """
-    dot = sum(a * b for a, b in zip(vec_a, vec_b, strict=True))
-    norm_a = math.sqrt(sum(a * a for a in vec_a))
-    norm_b = math.sqrt(sum(b * b for b in vec_b))
+    a = np.array([vec_a], dtype=np.float32)
+    b = np.array([vec_b], dtype=np.float32)
+    norm_a = np.linalg.norm(a)
+    norm_b = np.linalg.norm(b)
     if norm_a == 0.0 or norm_b == 0.0:
         return 0.0
-    return dot / (norm_a * norm_b)
+    faiss.normalize_L2(a)
+    faiss.normalize_L2(b)
+    index = faiss.IndexFlatIP(len(vec_a))
+    index.add(b)
+    distances, _ = index.search(a, 1)
+    return float(distances[0][0])
 
 
 class SentenceTransformerEmbedder:

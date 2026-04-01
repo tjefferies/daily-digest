@@ -90,7 +90,7 @@ class TestCachedEmbedder:
         result = cached.embed(["cached", "new_text"])
 
         assert len(result) == 2
-        assert result[0] == [9.0, 0.0, 0.0]  # from store
+        assert result[0][0] > 0.9  # normalized from [9,0,0] → [1,0,0]
         assert inner.call_count == 1
         assert inner.texts_embedded == ["new_text"]
 
