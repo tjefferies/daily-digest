@@ -75,7 +75,7 @@ The prototype is designed for a small robotics hardware company and makes many s
        (PVT), Mass Production (MP)).
      - **High**: phase representation
    * - A6
-     - No PLM/ERP connectors. Phase status is manually configured.
+     - No Product Lifecycle Management (PLM) / Enterprise Resource Planning (ERP) connectors. Phase status is manually configured.
      - Medium: context backbone
    * - A7
      - Digest is read-only. Prototype processes all messages; production filters to prior 24h.

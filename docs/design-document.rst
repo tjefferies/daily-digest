@@ -74,7 +74,7 @@ message; it is a relationship between a message and a reader.**
      - Phase representation, scoring.
      - **High**
    * - A6
-     - No PLM/ERP connectors for the prototype. Phase status is manually
+     - No Product Lifecycle Management (PLM) / Enterprise Resource Planning (ERP) connectors for the prototype. Phase status is manually
        configured.
      - Context backbone population.
      - Medium
@@ -249,7 +249,7 @@ re-running the scoring engine.
 
 IndexFlatIP with L2-normalized vectors for cosine similarity.
 ``CachedEmbedder`` wraps sentence-transformers (all-MiniLM-L6-v2)
-with a persistent FAISS cache. Two sources are embedded: thread texts
+with a persistent Fcebook AI Similarity Search (FAISS) cache. Two sources are embedded: thread texts
 (for bundle representation) and standalone messages (for continuation
 detection). The cache persists to ``data/vectorstore.index`` +
 ``data/vectorstore.keys`` across pipeline runs.
