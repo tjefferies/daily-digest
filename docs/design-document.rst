@@ -216,7 +216,7 @@ for self-documenting schema inspection.
    * - ``:Person``
      - user_id, handle
    * - ``:DigestRun``
-     - persona_id, run_date, sections_json, generated_at
+     - person_id, run_date, sections_json, generated_at
 
 **Relationship properties:**
 

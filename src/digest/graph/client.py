@@ -36,7 +36,7 @@ _SCHEMA_STATEMENTS: list[LiteralString] = [
     "CREATE CONSTRAINT person_id IF NOT EXISTS"
     " FOR (p:Person) REQUIRE p.user_id IS UNIQUE",
     "CREATE INDEX digestrun_lookup IF NOT EXISTS"
-    " FOR (dr:DigestRun) ON (dr.persona_id, dr.run_date)",
+    " FOR (dr:DigestRun) ON (dr.person_id, dr.run_date)",
 ]
 
 _PERSIST_ATOM_CYPHER = """\
@@ -129,14 +129,14 @@ ORDER BY created_at DESC
 
 _PERSIST_DIGEST_RUN_CYPHER = """\
 MERGE (p:Person {user_id: $persona_id})
-MERGE (dr:DigestRun {persona_id: $persona_id, run_date: date($run_date)})
+MERGE (dr:DigestRun {person_id: $persona_id, run_date: date($run_date)})
 SET dr.sections_json = $sections_json,
     dr.generated_at = datetime($generated_at)
 MERGE (p)-[:HAS_DIGEST]->(dr)
 """
 
 _PERSIST_DIGEST_INCLUDES_CYPHER = """\
-MATCH (dr:DigestRun {persona_id: $persona_id, run_date: date($run_date)})
+MATCH (dr:DigestRun {person_id: $persona_id, run_date: date($run_date)})
 MATCH (a:Atom {atom_id: $atom_id})
 MERGE (dr)-[r:INCLUDES]->(a)
 SET r.score = $score
