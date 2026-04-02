@@ -1,5 +1,22 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { Digest, DigestSection, SectionType } from '../types'
+
+/** Format a relative time string like "2 hours, 15 minutes ago". */
+function formatRelativeTime(isoTimestamp: string): string {
+  const diff = Date.now() - new Date(isoTimestamp).getTime()
+  if (diff < 60_000) return 'just now'
+
+  const minutes = Math.floor(diff / 60_000) % 60
+  const hours = Math.floor(diff / 3_600_000) % 24
+  const days = Math.floor(diff / 86_400_000)
+
+  const parts: string[] = []
+  if (days > 0) parts.push(`${days} day${days !== 1 ? 's' : ''}`)
+  if (hours > 0) parts.push(`${hours} hour${hours !== 1 ? 's' : ''}`)
+  if (minutes > 0) parts.push(`${minutes} minute${minutes !== 1 ? 's' : ''}`)
+
+  return parts.length > 0 ? `${parts.join(', ')} ago` : 'just now'
+}
 
 /** Visual config per section type: colors, icons, and emphasis. */
 const SECTION_STYLES: Record<
@@ -128,6 +145,11 @@ export default function DigestDisplay({
     return null
   }
 
+  const relativeTime = useMemo(
+    () => (digest?.generated_at ? formatRelativeTime(digest.generated_at) : null),
+    [digest?.generated_at],
+  )
+
   return (
     <div className="space-y-4">
       <div className="flex items-baseline gap-2">
@@ -138,6 +160,9 @@ export default function DigestDisplay({
         {digest.generated_at && (
           <span className="text-xs text-gray-400">
             {new Date(digest.generated_at).toLocaleString()}
+            {relativeTime && (
+              <span className="ml-1.5 text-gray-300">({relativeTime})</span>
+            )}
           </span>
         )}
       </div>
