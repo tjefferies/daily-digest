@@ -214,7 +214,9 @@ for self-documenting schema inspection.
    * - ``:Workstream``
      - name
    * - ``:Person``
-     - user_id
+     - user_id, handle
+   * - ``:DigestRun``
+     - persona_id, run_date, sections_json, generated_at
 
 **Relationship properties:**
 
@@ -232,13 +234,15 @@ for self-documenting schema inspection.
      - (none)
    * - ``:INVOLVES``
      - (none)
-   * - ``:DIGEST``
-     - score, created_at
+   * - ``:HAS_DIGEST``
+     - (none)
+   * - ``:INCLUDES``
+     - score
 
-The ``:DIGEST`` relationship connects ``:Person`` to ``:Atom`` with the
-composite relevance score and pipeline run timestamp. This persists
-scored digest results so historical digests are queryable without
-re-running the scoring engine.
+The digest model follows the path
+``:Person`` -[``:HAS_DIGEST``]-> ``:DigestRun`` -[``:INCLUDES`` {score}]-> ``:Atom``.
+``:DigestRun`` stores the rendered sections JSON so historical digests
+are served instantly from Neo4j without LLM calls on restart.
 
 3.2.3 FAISS
 ^^^^^^^^^^^^^
