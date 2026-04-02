@@ -53,6 +53,14 @@ export async function getPipelineStatus(): Promise<PipelineStatus> {
   return response.json()
 }
 
+export async function getDigestDates(): Promise<string[]> {
+  const response = await fetch(`${BASE_URL}/digest/dates`)
+  if (!response.ok) {
+    throw new Error(`Failed to fetch digest dates: ${response.statusText}`)
+  }
+  return response.json()
+}
+
 export async function healthCheck(): Promise<{ status: string }> {
   const response = await fetch(`${BASE_URL}/health`)
   if (!response.ok) {

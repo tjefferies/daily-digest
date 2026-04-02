@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { getDigest } from './api/client'
+import { getDigest, getDigestDates } from './api/client'
 import DateSelector from './components/DateSelector'
 import DigestDisplay from './components/DigestDisplay'
 import PersonaSelector, {
@@ -19,26 +19,27 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [phaseOverride, setPhaseOverride] = useState<string | null>(null)
-  const [dateFilter, setDateFilter] = useState<string | null>('2026-04-02')
+  const [dateFilter, setDateFilter] = useState<string | null>(null)
+  const [availableDates, setAvailableDates] = useState<string[]>([])
   const [cacheReady, setCacheReady] = useState(false)
 
-  /** Preload digests for all 3 personas on mount. */
+  /** Fetch available dates + preload digests on mount. */
   useEffect(() => {
     const preload = async () => {
       setLoading(true)
       try {
-        const results = await Promise.allSettled(
-          DEMO_PERSONAS.map((p) => getDigest(p.user_id)),
-        )
-        results.forEach((result, i) => {
-          if (result.status === 'fulfilled') {
-            digestCache[DEMO_PERSONAS[i].user_id] = result.value
-          }
-        })
+        // Fetch available dates from Neo4j
+        const dates = await getDigestDates()
+        setAvailableDates(dates)
+        const defaultDate = dates.length > 0 ? dates[0] : null
+        setDateFilter(defaultDate)
+
+        // Preload digests for first persona with default date
+        const personaId = DEMO_PERSONAS[0].user_id
+        const data = await getDigest(personaId, undefined, defaultDate ?? undefined)
+        digestCache[personaId] = data
+        setDigest(data)
         setCacheReady(true)
-        // Show first persona's digest
-        const first = digestCache[DEMO_PERSONAS[0].user_id]
-        if (first) setDigest(first)
       } catch {
         // Startup preload failed - will fetch on demand
       } finally {
@@ -138,6 +139,7 @@ function App() {
 
         <div className="flex items-center gap-4 px-4 pt-2">
           <DateSelector
+            dates={availableDates}
             selectedDate={dateFilter}
             onSelect={handleDateSelect}
           />

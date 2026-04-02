@@ -432,6 +432,33 @@ async def _load_digest_from_graph(
         await graph.close()
 
 
+@app.get("/digest/dates")
+async def get_digest_dates() -> list[str]:
+    """Return available DigestRun dates from Neo4j, most recent first.
+
+    Returns:
+        List of ISO date strings (e.g. ["2026-04-02", "2026-04-01", ...]).
+    """
+    neo4j_cfg = get_config()["pipeline"]["neo4j"]
+    graph = GraphClient(
+        uri=neo4j_cfg["uri"],
+        user=neo4j_cfg["user"],
+        password=neo4j_cfg["password"],
+    )
+    try:
+        async with graph._driver.session() as session:
+            result = await session.run(
+                "MATCH (dr:DigestRun) "
+                "RETURN DISTINCT dr.run_date AS d ORDER BY d DESC",
+            )
+            return [str(r["d"]) for r in await result.data()]
+    except Exception:
+        logger.warning("Failed to load digest dates", exc_info=True)
+        return []
+    finally:
+        await graph.close()
+
+
 @app.get("/digest/{persona_id}")
 async def get_digest(
     persona_id: str,
