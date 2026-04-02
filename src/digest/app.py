@@ -437,11 +437,16 @@ async def get_digest(
                 detail=f"Invalid phase_override: {phase_override!r}. Expected 'workstream:phase'",
             )
 
-    # Date filter: use :DIGEST edges from Neo4j
+    # Date filter: use :DIGEST edges from Neo4j (never fall through to cache)
     if date is not None:
         result = await _load_digest_from_graph(persona_id, date)
         if result:
             return result
+        return {
+            "persona_id": persona_id,
+            "generated_at": f"{date}T00:00:00+00:00",
+            "sections": [],
+        }
 
     # Return cached digest if available (no override)
     if phase_override is None and persona_id in _digest_cache:
