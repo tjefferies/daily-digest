@@ -216,7 +216,7 @@ for self-documenting schema inspection.
    * - ``:Person``
      - user_id, handle
    * - ``:DigestRun``
-     - person_id, run_date, sections_json, generated_at
+     - user_id, run_date, sections_json, generated_at
 
 **Relationship properties:**
 
@@ -240,9 +240,9 @@ for self-documenting schema inspection.
      - score
 
 The digest model follows the path
-``:Person`` -[``:HAS_DIGEST``]-> ``:DigestRun`` -[``:INCLUDES`` {score}]-> ``:Atom``.
-``:DigestRun`` stores the rendered sections JSON so historical digests
-are served instantly from Neo4j without LLM calls on restart.
+``(:Person)`` -[``:HAS_DIGEST``]-> ``(:DigestRun)`` -[``:INCLUDES`` {score}]-> ``(:Atom)``.
+``(:DigestRun)`` stores the rendered sections JSON so historical digests
+are served instantly from Neo4j without LLM calls on restart and has redundant properties for indexed lookup.
 
 3.2.3 FAISS
 ^^^^^^^^^^^^^
