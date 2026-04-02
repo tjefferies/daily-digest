@@ -18,6 +18,9 @@
     <linearGradient id="redGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#f8d7da"/><stop offset="100%" stop-color="#f1948a"/>
     </linearGradient>
+    <linearGradient id="slateGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#eaecee"/><stop offset="100%" stop-color="#d5d8dc"/>
+    </linearGradient>
     <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%">
       <feDropShadow dx="0" dy="3" stdDeviation="4" flood-opacity="0.14"/>
     </filter>
@@ -67,39 +70,39 @@
   <text x="400" y="440" text-anchor="middle" font-size="9" fill="#2d6a3f">User ID: U001</text>
 
   <!-- Node 0 (top, -90°): Workstream Affinities  cx=400 cy=170 -->
-  <rect x="305" y="125" width="190" height="90" rx="8" fill="url(#blueGrad)" stroke="#2980b9" stroke-width="1.5" filter="url(#shadow)"/>
-  <text x="400" y="148" text-anchor="middle" font-size="11" font-weight="bold" fill="#1a4a6e">Workstream Affinities</text>
-  <text x="400" y="166" text-anchor="middle" font-size="9" fill="#2c6690">chassis: 1.0  |  thermal: 0.85</text>
-  <text x="400" y="181" text-anchor="middle" font-size="9" fill="#2c6690">drivetrain: 0.4  |  supply-chain: 0.3</text>
-  <text x="400" y="197" text-anchor="middle" font-size="8" fill="#5499c7">weighted topic interest vector</text>
+  <rect x="305" y="125" width="190" height="90" rx="8" fill="url(#slateGrad)" stroke="#7f8c8d" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="400" y="148" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Workstream Affinities</text>
+  <text x="400" y="166" text-anchor="middle" font-size="9" fill="#5d6d7e">chassis: 1.0  |  thermal: 0.85</text>
+  <text x="400" y="181" text-anchor="middle" font-size="9" fill="#5d6d7e">drivetrain: 0.4  |  supply-chain: 0.3</text>
+  <text x="400" y="197" text-anchor="middle" font-size="8" fill="#7f8c8d">weighted topic interest vector</text>
 
   <!-- Node 1 (upper-right, -18°): Phase Context  cx=628 cy=336 -->
-  <rect x="533" y="291" width="190" height="90" rx="8" fill="url(#orangeGrad)" stroke="#e67e22" stroke-width="1.5" filter="url(#shadow)"/>
-  <text x="628" y="314" text-anchor="middle" font-size="11" font-weight="bold" fill="#7d4e00">Phase Context</text>
-  <text x="628" y="332" text-anchor="middle" font-size="9" fill="#9a6b1e">chassis: DVT  |  thermal: EVT</text>
-  <text x="628" y="347" text-anchor="middle" font-size="9" fill="#9a6b1e">drivetrain: DVT</text>
-  <text x="628" y="363" text-anchor="middle" font-size="8" fill="#9a6b1e">per-workstream, not per-project</text>
+  <rect x="533" y="291" width="190" height="90" rx="8" fill="url(#slateGrad)" stroke="#7f8c8d" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="628" y="314" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Phase Context</text>
+  <text x="628" y="332" text-anchor="middle" font-size="9" fill="#5d6d7e">chassis: DVT  |  thermal: EVT</text>
+  <text x="628" y="347" text-anchor="middle" font-size="9" fill="#5d6d7e">drivetrain: DVT</text>
+  <text x="628" y="363" text-anchor="middle" font-size="8" fill="#7f8c8d">per-workstream, not per-project</text>
 
   <!-- Node 2 (lower-right, 54°): Digest Preferences  cx=541 cy=604 -->
-  <rect x="446" y="559" width="190" height="90" rx="8" fill="url(#tealGrad)" stroke="#1abc9c" stroke-width="1.5" filter="url(#shadow)"/>
-  <text x="541" y="582" text-anchor="middle" font-size="11" font-weight="bold" fill="#0e6655">Digest Preferences</text>
-  <text x="541" y="600" text-anchor="middle" font-size="9" fill="#148f77">max_items: 25</text>
-  <text x="541" y="615" text-anchor="middle" font-size="9" fill="#148f77">critical_threshold: 0.85</text>
-  <text x="541" y="630" text-anchor="middle" font-size="8" fill="#148f77">include_broader_context: true</text>
+  <rect x="446" y="559" width="190" height="90" rx="8" fill="url(#slateGrad)" stroke="#7f8c8d" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="541" y="582" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Digest Preferences</text>
+  <text x="541" y="600" text-anchor="middle" font-size="9" fill="#5d6d7e">max_items: 25</text>
+  <text x="541" y="615" text-anchor="middle" font-size="9" fill="#5d6d7e">critical_threshold: 0.85</text>
+  <text x="541" y="630" text-anchor="middle" font-size="8" fill="#7f8c8d">include_broader_context: true</text>
 
   <!-- Node 3 (lower-left, 126°): Collaborator Graph  cx=259 cy=604 -->
-  <rect x="164" y="559" width="190" height="90" rx="8" fill="url(#redGrad)" stroke="#c0392b" stroke-width="1.5" filter="url(#shadow)"/>
-  <text x="259" y="582" text-anchor="middle" font-size="11" font-weight="bold" fill="#7b241c">Collaborator Graph</text>
-  <text x="259" y="602" text-anchor="middle" font-size="9" fill="#943126">U003, U008, U013, U020</text>
-  <text x="259" y="619" text-anchor="middle" font-size="9" fill="#943126">cross-team signal amplifiers</text>
-  <text x="259" y="636" text-anchor="middle" font-size="8" fill="#943126">shared workstream adjacency</text>
+  <rect x="164" y="559" width="190" height="90" rx="8" fill="url(#slateGrad)" stroke="#7f8c8d" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="259" y="582" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Collaborator Graph</text>
+  <text x="259" y="602" text-anchor="middle" font-size="9" fill="#5d6d7e">U003, U008, U013, U020</text>
+  <text x="259" y="619" text-anchor="middle" font-size="9" fill="#5d6d7e">cross-team signal amplifiers</text>
+  <text x="259" y="636" text-anchor="middle" font-size="8" fill="#7f8c8d">shared workstream adjacency</text>
 
   <!-- Node 4 (upper-left, 198°): Scoring Weights  cx=172 cy=336 -->
-  <rect x="77" y="291" width="190" height="90" rx="8" fill="url(#purpleGrad)" stroke="#8e44ad" stroke-width="1.5" filter="url(#shadow)"/>
-  <text x="172" y="314" text-anchor="middle" font-size="11" font-weight="bold" fill="#512e5f">Scoring Weights</text>
-  <text x="172" y="332" text-anchor="middle" font-size="9" fill="#6c3483">workstream: 0.30  |  role: 0.20</text>
-  <text x="172" y="347" text-anchor="middle" font-size="9" fill="#6c3483">phase: 0.20  |  urgency: 0.15</text>
-  <text x="172" y="363" text-anchor="middle" font-size="8" fill="#6c3483">social: 0.15  |  persona-specific</text>
+  <rect x="77" y="291" width="190" height="90" rx="8" fill="url(#slateGrad)" stroke="#7f8c8d" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="172" y="314" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Scoring Weights</text>
+  <text x="172" y="332" text-anchor="middle" font-size="9" fill="#5d6d7e">workstream: 0.30  |  role: 0.20</text>
+  <text x="172" y="347" text-anchor="middle" font-size="9" fill="#5d6d7e">phase: 0.20  |  urgency: 0.15</text>
+  <text x="172" y="363" text-anchor="middle" font-size="8" fill="#7f8c8d">social: 0.15  |  persona-specific</text>
 
   <!-- Footer -->
   <text x="400" y="778" text-anchor="middle" font-size="10" fill="#5d6d7e">3 demo personas: Maya Chen (ME)  |  Elena Vasquez (Supply Chain)  |  Ryan Torres (EM)</text>
