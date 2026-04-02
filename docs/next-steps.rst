@@ -85,7 +85,27 @@ This is a fundamentally different architecture than inferring phase
 from message patterns. Direct PLM integration provides the spec
 baseline and phase ground truth that inference cannot.
 
-Priority 3: Scheduled Pipeline
+Priority 3: Security Hardening
+-------------------------------
+
+**User value:** The digest pipeline handles proprietary engineering
+discussions. Hardening the stack protects intellectual property and
+satisfies enterprise security review gates before production deployment.
+
+**Technical approach:**
+
+- **Docker images:** run as non-root, switch to distroless/slim bases,
+  scan with Trivy or Snyk in CI, pin image digests, mount
+  application filesystems read-only
+- **API layer:** add authentication (API key or OAuth), rate limiting,
+  strict input validation, lock CORS to known origins, terminate TLS
+  at the reverse proxy
+- **Persistence:** encrypt connections to Neo4j and Postgres (TLS),
+  inject credentials via vault or environment (never hardcoded),
+  restrict container network exposure to only required ports,
+  encrypt backups at rest
+
+Priority 4: Scheduled Pipeline
 -------------------------------
 
 **User value:** Digests appear in engineers' inboxes every morning without
@@ -101,7 +121,7 @@ anyone pressing a button. The tool becomes a habit, not a novelty.
 - Deliver via Slack DM, email, or both (user preference)
 - Include a "digest ready" notification in a shared channel
 
-Priority 4: Feedback Loop
+Priority 5: Feedback Loop
 ---------------------------
 
 **User value:** The digest gets smarter over time. Items the engineer
@@ -120,7 +140,7 @@ ignores stop appearing; items they click through get boosted.
 - A/B testing framework: random assignment to scoring variants, measure
   engagement rate per variant
 
-Priority 5: Evaluation Framework
+Priority 6: Evaluation Framework
 ----------------------------------
 
 **User value:** Confidence that the system is actually catching the
@@ -138,7 +158,7 @@ important things and not hallucinating.
 - Automated regression tests: any code change that drops precision below
   baseline fails CI
 
-Priority 6: Multi-Team Support
+Priority 7: Multi-Team Support
 -------------------------------
 
 **User value:** Generalize from one robotics team to any Slack workspace.
@@ -155,7 +175,7 @@ Daily Digest Tool becomes a product, not a bespoke tool.
 - Self-service onboarding: 3 to 4 question flow generates initial persona
 - Multi-tenant Postgres schema with workspace isolation
 
-Priority 7: Configuration UI
+Priority 8: Configuration UI
 -------------------------------
 
 **User value:** Non-technical users can tune the system without editing

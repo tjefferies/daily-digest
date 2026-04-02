@@ -150,7 +150,8 @@ RETURN dr.sections_json AS sections_json,
 """
 
 _LOAD_DIGEST_ATOMS_CYPHER = """\
-MATCH (dr:DigestRun {persona_id: $persona_id, run_date: date($target_date)})
+MATCH (p:Person {user_id: $persona_id})
+      -[:HAS_DIGEST]->(dr:DigestRun {run_date: date($target_date)})
       -[r:INCLUDES]->(a:Atom)
 OPTIONAL MATCH (a)-[:ORIGINATES_IN]->(ws_orig:Workstream)
 OPTIONAL MATCH (a)-[:AFFECTS]->(ws_aff:Workstream)
@@ -396,9 +397,10 @@ class GraphClient:
                 target_date=target_date,
             )
             record = await result.single()
-        if record and record.get("sections_json"):
+        sections = record.get("sections_json") if record else None
+        if sections and sections != "[]":
             return {
-                "sections_json": record["sections_json"],
+                "sections_json": sections,
                 "generated_at": record["latest_atom_at"],
             }
         return None

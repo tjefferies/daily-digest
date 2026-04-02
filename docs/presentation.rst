@@ -281,6 +281,30 @@ Generation Pipeline
      Your browser does not support the video tag.
    </video>
 
+What the pipeline does (``scripts/run-all-pipelines.sh``):
+
+1. **Tear down** — stop services, wipe Neo4j + Postgres volumes (clean slate).
+2. **Start infrastructure** — Neo4j and Postgres containers, wait for healthy.
+3. **Schema migration** — Alembic applies Postgres schema (context windows, bundles, atoms, batch logs).
+4. **Full dataset extraction** — ingest ``slack_messages.json`` (307 messages), batch mode
+   (50% cost savings via Anthropic Batch API). LLM extracts atoms; self-critique demotes
+   hallucinated or overstated atoms.
+5. **Demo dataset extraction** — ingest ``demo_messages.json`` (18 messages), async mode (faster).
+   Same extraction + demotion pipeline.
+6. **Neo4j verification** — confirm atom counts, graph structure
+   (``:Atom``, ``:Channel``, ``:Workstream``, ``:Person``, edges).
+7. **Postgres verification** — confirm row counts across all tables
+   (message, thread_bundle, context_window, atom, batch_log).
+8. **Full stack build & launch** — Docker Compose builds backend + frontend images,
+   starts all 4 containers (Neo4j, Postgres, backend, frontend).
+
+Key points:
+
+- **Self-critique demotion:** the LLM flags atoms with fabricated details, overstated
+  conclusions, or wrong scope — these get demoted, not deleted.
+- **Batch vs async:** batch = 50% cost savings for bulk; async = faster for small datasets.
+- **End result:** full stack at ``localhost:5173`` with date dropdown across 5 days of digests.
+
 Frontend
 ~~~~~~~~~~~~~~~~~~~~
 

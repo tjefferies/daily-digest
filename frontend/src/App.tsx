@@ -19,7 +19,7 @@ function App() {
   const [error, setError] = useState<string | null>(null)
   const [dateFilter, setDateFilter] = useState<string | null>(null)
   const [availableDates, setAvailableDates] = useState<string[]>([])
-  const [cacheReady, setCacheReady] = useState(false)
+
 
   /** Fetch available dates + preload digests on mount. */
   useEffect(() => {
@@ -37,7 +37,7 @@ function App() {
         const data = await getDigest(personaId, undefined, defaultDate ?? undefined)
         digestCache[personaId] = data
         setDigest(data)
-        setCacheReady(true)
+
       } catch {
         // Startup preload failed - will fetch on demand
       } finally {
@@ -117,7 +117,7 @@ function App() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         <DigestDisplay
           digest={digest}
-          loading={loading && !cacheReady}
+          loading={loading}
           error={error}
           personaName={currentPersona?.name ?? selectedPersona}
         />
