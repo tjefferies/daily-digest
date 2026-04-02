@@ -128,12 +128,12 @@
   <!-- Delta Processing Row -->
   <rect x="50" y="358" width="270" height="40" rx="6" fill="#fef9e7" stroke="#f39c12" stroke-width="1" filter="url(#shadow)"/>
   <text x="185" y="375" text-anchor="middle" font-size="10" font-weight="bold" fill="#7d6608">Delta Processing</text>
-  <text x="185" y="389" text-anchor="middle" font-size="8" fill="#9a7d0a">Check Postgres for existing bundles -> skip unchanged -> 0 LLM calls on re-run</text>
+  <text x="185" y="389" text-anchor="middle" font-size="8" fill="#9a7d0a">Skip unchanged bundles -> 0 LLM calls on re-run</text>
 
   <!-- Config-Driven -->
   <rect x="340" y="358" width="270" height="40" rx="6" fill="#fef9e7" stroke="#f39c12" stroke-width="1" filter="url(#shadow)"/>
   <text x="475" y="375" text-anchor="middle" font-size="10" font-weight="bold" fill="#7d6608">YAML Config</text>
-  <text x="475" y="389" text-anchor="middle" font-size="8" fill="#9a7d0a">pipeline.yml | prompts.yml | personas.yml | scoring.yml | phases.yml</text>
+  <text x="475" y="389" text-anchor="middle" font-size="8" fill="#9a7d0a">pipeline | prompts | personas | scoring | phases</text>
 
   <!-- Intermediate Output -->
   <rect x="630" y="358" width="230" height="40" rx="6" fill="#fef9e7" stroke="#f39c12" stroke-width="1" filter="url(#shadow)"/>
@@ -193,7 +193,7 @@
   <text x="580" y="703" text-anchor="middle" font-size="9" fill="#9a6b1e">Fixture data for demo</text>
 
   <!-- Personas -->
-  <rect x="710" y="650" width="140" height="60" rx="8" fill="url(#tealGrad)" stroke="#1abc9c" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="710" y="650" width="140" height="68" rx="8" fill="url(#tealGrad)" stroke="#1abc9c" stroke-width="1.5" filter="url(#shadow)"/>
   <text x="780" y="673" text-anchor="middle" font-size="13" font-weight="bold" fill="#0e6655">3 Personas</text>
   <text x="780" y="690" text-anchor="middle" font-size="9" fill="#148f77">Maya Chen (ME Lead)</text>
   <text x="780" y="700" text-anchor="middle" font-size="9" fill="#148f77">Elena Vasquez (Supply)</text>
