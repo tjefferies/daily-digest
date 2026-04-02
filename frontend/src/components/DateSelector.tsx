@@ -4,7 +4,12 @@ interface DateSelectorProps {
 }
 
 const DATE_OPTIONS = [
-  { value: '2026-04-02', label: '2026-04-02' },
+  { value: '2026-04-02', label: '2026-04-02 (demo)' },
+  { value: '2026-04-01', label: '2026-04-01' },
+  { value: '2026-03-31', label: '2026-03-31' },
+  { value: '2026-03-30', label: '2026-03-30' },
+  { value: '2026-03-29', label: '2026-03-29' },
+  { value: '2026-03-28', label: '2026-03-28' },
 ]
 
 export default function DateSelector({
