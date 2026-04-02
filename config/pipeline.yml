@@ -53,7 +53,7 @@ confidence_threshold: 0.7
 
 # Postgres connection (bundle/atom persistence).
 postgres:
-  dsn: postgresql+asyncpg://evercurrent:evercurrent_dev@localhost:5432/evercurrent
+  dsn: postgresql+asyncpg://evercurrent:evercurrent_dev@localhost:5433/evercurrent
 
 # Neo4j knowledge graph connection.
 neo4j:

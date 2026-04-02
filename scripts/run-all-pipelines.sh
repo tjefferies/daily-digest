@@ -49,6 +49,7 @@ echo "  This takes 5-15 minutes depending on Anthropic batch scheduling."
 echo ""
 
 DATASET=full EXTRACTION_MODE=batch PYTHONPATH=src \
+  POSTGRES_DSN="postgresql+asyncpg://evercurrent:evercurrent_dev@localhost:5433/evercurrent" \
   uv run python3 -c "
 import asyncio
 from digest.llm.factory import create_async_llm_client
@@ -71,6 +72,7 @@ echo "  Mode: async extraction (faster, ~1-3 minutes)"
 echo ""
 
 DATASET=demo EXTRACTION_MODE=async MAX_CONCURRENCY=5 PYTHONPATH=src \
+  POSTGRES_DSN="postgresql+asyncpg://evercurrent:evercurrent_dev@localhost:5433/evercurrent" \
   uv run python3 -c "
 import asyncio
 from digest.llm.factory import create_async_llm_client
@@ -126,7 +128,9 @@ echo ""
 # ─── Step 6: Verify Postgres ────────────────────────────────────────────────
 echo "▶ Step 6: Verifying Postgres..."
 
-PYTHONPATH=src uv run python3 -c "
+PYTHONPATH=src \
+  POSTGRES_DSN="postgresql+asyncpg://evercurrent:evercurrent_dev@localhost:5433/evercurrent" \
+  uv run python3 -c "
 import asyncio
 from digest.db.session import get_session_factory
 from sqlalchemy import text
