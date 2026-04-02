@@ -226,12 +226,13 @@ def _dump_intermediate(filename: str, data: list) -> None:
     """Write intermediate pipeline results to a JSON file.
 
     Args:
-        filename: Output filename in data/ directory.
+        filename: Output filename in the system temp directory.
         data: List of dicts/models to serialize.
     """
     import json
+    import tempfile
 
-    outpath = Path("/tmp") / "digest" / filename  # noqa: S108
+    outpath = Path(tempfile.gettempdir()) / "digest" / filename
     outpath.parent.mkdir(parents=True, exist_ok=True)
     serialized = [d.model_dump(mode="json") if hasattr(d, "model_dump") else d for d in data]
     outpath.write_text(json.dumps(serialized, indent=2, default=str))
