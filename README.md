@@ -1,3 +1,15 @@
+[![Quality Gate](https://github.com/tjefferies/daily-digest/actions/workflows/quality-gate.yml/badge.svg?branch=main)](https://github.com/tjefferies/daily-digest/actions/workflows/quality-gate.yml)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org)
+[![Coverage](https://img.shields.io/badge/coverage-%E2%89%A580%25-brightgreen.svg)](scripts/quality-gates.sh)
+[![Docstrings](https://img.shields.io/badge/docstrings-%E2%89%A595%25-brightgreen.svg)](scripts/quality-gates.sh)
+[![Ruff](https://img.shields.io/badge/lint-ruff-blue.svg)](https://docs.astral.sh/ruff/)
+[![ty](https://img.shields.io/badge/types-ty-blue.svg)](https://docs.astral.sh/ty/)
+[![Semgrep](https://img.shields.io/badge/security-semgrep-purple.svg)](https://semgrep.dev)
+[![Bandit](https://img.shields.io/badge/security-bandit-purple.svg)](https://bandit.readthedocs.io)
+[![Maintainability](https://img.shields.io/badge/maintainability-A-brightgreen.svg)](scripts/quality-gates.sh)
+[![Docs](https://img.shields.io/badge/docs-Sphinx-blue.svg)](https://tjefferies.github.io/daily-digest/)
+
 # Daily Digest Tool
 
 Context-aware daily digest tool for robotics hardware teams.
