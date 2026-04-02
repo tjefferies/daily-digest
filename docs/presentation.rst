@@ -286,6 +286,13 @@ Live Demo
 
    .. code-block:: cypher
 
+      // Digest model: Person → DigestRun → Atom
+      MATCH (p:Person)-[:HAS_DIGEST]->(dr:DigestRun)
+            -[r:INCLUDES]->(a:Atom)
+      RETURN p.user_id, dr.run_date, a.summary, r.score
+      ORDER BY r.score DESC LIMIT 10
+
+      // Atom → Workstream graph
       MATCH (a:Atom)-[:ORIGINATES_IN]->(w:Workstream)
       RETURN a.summary, w.name LIMIT 10
 
@@ -332,6 +339,10 @@ Pipeline Costs
      - O(P x max_items)
      - P (~3)
      - One LLM call/persona
+   * - Neo4j persist
+     - O(P x A)
+     - 0
+     - :DigestRun + :INCLUDES edges
 
 LLM Call Budget
 ~~~~~~~~~~~~~~~~
