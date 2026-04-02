@@ -98,6 +98,23 @@ RETURN a.atom_id AS atom_id, a.type AS type, a.summary AS summary,
 ORDER BY created_at DESC
 """
 
+_LOAD_ATOMS_BY_DATE_CYPHER = """\
+MATCH (a:Atom)
+WHERE date(a.created_at) = date($target_date)
+OPTIONAL MATCH (a)-[:ORIGINATES_IN]->(ws_orig:Workstream)
+OPTIONAL MATCH (a)-[:AFFECTS]->(ws_aff:Workstream)
+OPTIONAL MATCH (a)-[:INVOLVES]->(p:Participant)
+RETURN a.atom_id AS atom_id, a.type AS type, a.summary AS summary,
+       a.detail AS detail, a.urgency AS urgency, a.confidence AS confidence,
+       a.implicit_decision AS implicit_decision, a.phase_relevance AS phase_relevance,
+       a.channel AS channel, a.thread_ts AS thread_ts,
+       a.created_at AS created_at,
+       ws_orig.name AS originating,
+       collect(DISTINCT ws_aff.name) AS affected,
+       collect(DISTINCT p.handle) AS participants
+ORDER BY created_at DESC
+"""
+
 _PROCESSED_THREAD_TS_CYPHER = """\
 MATCH (a:Atom)
 WHERE a.thread_ts IS NOT NULL
@@ -235,6 +252,49 @@ class GraphClient:
                 ),
             )
         logger.info("Loaded %d atoms from graph", len(atoms))
+        return atoms
+
+    async def load_atoms_by_date(self, target_date: str) -> list[Atom]:
+        """Load atoms from Neo4j filtered by creation date.
+
+        Args:
+            target_date: ISO date string (e.g. "2026-04-01").
+
+        Returns:
+            List of Atom objects created on that date.
+        """
+        async with self._driver.session() as session:
+            result = await session.run(
+                _LOAD_ATOMS_BY_DATE_CYPHER,
+                target_date=target_date,
+            )
+            records = await result.data()
+
+        atoms: list[Atom] = []
+        for r in records:
+            atoms.append(
+                Atom(
+                    atom_id=r["atom_id"],
+                    type=r["type"],
+                    summary=r["summary"],
+                    detail=r["detail"] or "",
+                    source=AtomSource(
+                        channel=r["channel"] or "",
+                        thread_ts=r["thread_ts"] or "",
+                        message_range=[0, 0],
+                        key_participants=r["participants"],
+                    ),
+                    workstreams=AtomWorkstreams(
+                        originating=r["originating"] or "",
+                        affected=[a for a in r["affected"] if a],
+                    ),
+                    urgency=r["urgency"],
+                    confidence=r["confidence"],
+                    implicit_decision=r.get("implicit_decision", False),
+                    phase_relevance=r.get("phase_relevance", []),
+                ),
+            )
+        logger.info("Loaded %d atoms from graph for date %s", len(atoms), target_date)
         return atoms
 
     async def processed_thread_ts(self) -> set[str]:

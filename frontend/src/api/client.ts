@@ -19,10 +19,14 @@ export interface PipelineStatus {
 export async function getDigest(
   personaId: string,
   phaseOverride?: string,
+  date?: string,
 ): Promise<Digest> {
   const params = new URLSearchParams()
   if (phaseOverride) {
     params.set('phase_override', phaseOverride)
+  }
+  if (date) {
+    params.set('date', date)
   }
   const query = params.toString() ? `?${params.toString()}` : ''
   const response = await fetch(`${BASE_URL}/digest/${personaId}${query}`)

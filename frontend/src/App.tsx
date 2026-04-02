@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { getDigest } from './api/client'
+import DateSelector from './components/DateSelector'
 import DigestDisplay from './components/DigestDisplay'
 import PersonaSelector, {
   DEMO_PERSONAS,
@@ -18,6 +19,7 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [phaseOverride, setPhaseOverride] = useState<string | null>(null)
+  const [dateFilter, setDateFilter] = useState<string | null>(null)
   const [cacheReady, setCacheReady] = useState(false)
 
   /** Preload digests for all 3 personas on mount. */
@@ -47,9 +49,9 @@ function App() {
   }, [])
 
   const fetchDigest = useCallback(
-    async (personaId: string, override?: string | null) => {
-      // Use cache for default (no override) if available
-      if (!override && digestCache[personaId]) {
+    async (personaId: string, override?: string | null, date?: string | null) => {
+      // Use cache for default (no override, no date filter) if available
+      if (!override && !date && digestCache[personaId]) {
         setDigest(digestCache[personaId])
         return
       }
@@ -57,10 +59,10 @@ function App() {
       setLoading(true)
       setError(null)
       try {
-        const data = await getDigest(personaId, override ?? undefined)
+        const data = await getDigest(personaId, override ?? undefined, date ?? undefined)
         setDigest(data)
-        // Update cache for default views
-        if (!override) {
+        // Update cache for default views only
+        if (!override && !date) {
           digestCache[personaId] = data
         }
       } catch (err) {
@@ -75,22 +77,27 @@ function App() {
   const handlePersonaSelect = (personaId: string) => {
     setSelectedPersona(personaId)
     setPhaseOverride(null)
-    // Instant switch from cache
-    if (digestCache[personaId]) {
+    if (!dateFilter && digestCache[personaId]) {
       setDigest(digestCache[personaId])
     } else {
-      fetchDigest(personaId)
+      fetchDigest(personaId, null, dateFilter)
     }
   }
 
   const handlePhaseApply = (override: string) => {
     setPhaseOverride(override)
-    fetchDigest(selectedPersona, override)
+    fetchDigest(selectedPersona, override, dateFilter)
   }
 
   const handlePhaseClear = () => {
     setPhaseOverride(null)
-    fetchDigest(selectedPersona)
+    fetchDigest(selectedPersona, null, dateFilter)
+  }
+
+  const handleDateSelect = (date: string | null) => {
+    setDateFilter(date)
+    setPhaseOverride(null)
+    fetchDigest(selectedPersona, null, date)
   }
 
   const handlePipelineComplete = () => {
@@ -128,6 +135,13 @@ function App() {
           selectedId={selectedPersona}
           onSelect={handlePersonaSelect}
         />
+
+        <div className="flex items-center gap-4 px-4 pt-2">
+          <DateSelector
+            selectedDate={dateFilter}
+            onSelect={handleDateSelect}
+          />
+        </div>
 
         <PhaseToggle
           onApply={handlePhaseApply}

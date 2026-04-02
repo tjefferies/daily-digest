@@ -101,8 +101,11 @@ def clear_atom_store() -> None:
     _pipeline_status.update(state="idle", stage="", stats={}, error=None)
 
 
-async def _load_atoms_from_neo4j() -> list[Atom]:
-    """Load atoms from Neo4j, returning empty list on failure.
+async def _load_atoms_from_neo4j(date: str | None = None) -> list[Atom]:
+    """Load atoms from Neo4j, optionally filtered by date.
+
+    Args:
+        date: Optional ISO date string (e.g. "2026-04-01") to filter atoms.
 
     Returns:
         List of Atom objects from the graph, or empty list.
@@ -114,9 +117,12 @@ async def _load_atoms_from_neo4j() -> list[Atom]:
         password=neo4j_cfg["password"],
     )
     try:
-        atoms = await graph.load_all_atoms()
+        if date:
+            atoms = await graph.load_atoms_by_date(date)
+        else:
+            atoms = await graph.load_all_atoms()
         if atoms:
-            logger.info("Loaded %d atoms from Neo4j for digest", len(atoms))
+            logger.info("Loaded %d atoms from Neo4j (date=%s)", len(atoms), date)
         return atoms
     except Exception:
         logger.warning("Failed to load atoms from Neo4j", exc_info=True)
@@ -306,10 +312,38 @@ async def pipeline_status() -> dict[str, Any]:
     }
 
 
+async def _resolve_atoms(date: str | None) -> list[Atom]:
+    """Load atoms for digest generation, optionally filtered by date.
+
+    Args:
+        date: Optional ISO date string to filter by creation date.
+
+    Returns:
+        List of Atom objects.
+    """
+    if date:
+        try:
+            return await _load_atoms_from_neo4j(date=date)
+        except Exception:
+            logger.warning("Neo4j date-filtered query failed", exc_info=True)
+            return []
+
+    atoms = list(_atom_store)
+    if atoms:
+        return atoms
+
+    try:
+        return await _load_atoms_from_neo4j()
+    except Exception:
+        logger.warning("Neo4j fallback failed in digest", exc_info=True)
+        return []
+
+
 @app.get("/digest/{persona_id}")
 async def get_digest(
     persona_id: str,
     phase_override: str | None = None,
+    date: str | None = None,
 ) -> dict[str, Any]:
     """Retrieve the generated digest for a specific persona.
 
@@ -319,6 +353,7 @@ async def get_digest(
     Args:
         persona_id: Slack user ID of the persona.
         phase_override: Optional workstream:phase override (e.g. "chassis:DVT").
+        date: Optional ISO date string (e.g. "2026-04-01") to filter atoms.
 
     Returns:
         A dict with persona_id, generated_at, and sections list.
@@ -338,19 +373,11 @@ async def get_digest(
                 detail=f"Invalid phase_override: {phase_override!r}. Expected 'workstream:phase'",
             )
 
-    # Return cached digest if available (no phase override)
-    if phase_override is None and persona_id in _digest_cache:
+    # Return cached digest if available (no override, no date filter)
+    if phase_override is None and date is None and persona_id in _digest_cache:
         return _digest_cache[persona_id]
 
-    # On-demand generation: try in-memory store first, then Neo4j
-    atoms: list[Atom] = list(_atom_store)
-    if not atoms:
-        try:
-            atoms = await _load_atoms_from_neo4j()
-        except Exception:
-            logger.warning("Neo4j fallback failed in digest", exc_info=True)
-            atoms = []
-
+    atoms = await _resolve_atoms(date)
     if not atoms:
         return {
             "persona_id": persona_id,
@@ -359,7 +386,6 @@ async def get_digest(
             "phase_override": phase_override,
         }
 
-    # Generate on demand (phase override or uncached persona)
     client = create_async_llm_client()
     assembler = AsyncDigestAssembler(client)
     return await assembler.assemble(persona_id, atoms, phase_override)
