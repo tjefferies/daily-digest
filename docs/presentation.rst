@@ -271,10 +271,6 @@ from EVT to DVT, atom rankings change visibly.
 Live Demo
 ---------------------------------------------------------------------------
 
-.. admonition:: Switch to browser
-
-   ``http://localhost:5173``
-
 **Demo flow:**
 
 1. **Three personas.** Maya, Elena, Ryan. Same data, different digests.
