@@ -18,7 +18,7 @@ The Problem
    in a Slack thread on Tuesday. The supply chain lead doesn't see it.
    On Friday, 500 injection-molded parts arrive at the wrong spec.
 
-   **Cost: $40K, 3-week delay, missed DVT milestone.**
+   **Cost: $40K, 3-week delay, missed Design Validation Test (DVT) milestone.**
 
 This isn't a software problem. In hardware engineering, missed information
 is measured in **physical waste and schedule slip**, not in minutes and
@@ -70,7 +70,9 @@ The prototype is designed for a specific operational context and makes many simp
      - People wear multiple hats. Relevance is weighted topic affinities per user, not rigid roles.
      - **High**: persona model, scoring
    * - A5
-     - Different workstreams in different phases simultaneously (Concept, EVT, DVT, PVT, MP).
+     - Different workstreams in different phases simultaneously (Concept,
+       Engineering Validation Test (EVT), DVT, Production Validation Test
+       (PVT), Mass Production (MP)).
      - **High**: phase representation
    * - A6
      - No PLM/ERP connectors. Phase status is manually configured.

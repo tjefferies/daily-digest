@@ -67,7 +67,9 @@ message; it is a relationship between a message and a reader.**
      - **High**
    * - A5
      - Different subsystems are in different phases simultaneously
-       (Concept, EVT, DVT, PVT, MP). Phase is a property of a workstream,
+       (Concept, Engineering Validation Test (EVT), Design Validation
+       Test (DVT), Production Validation Test (PVT), Mass Production
+       (MP)). Phase is a property of a workstream,
        not the project.
      - Phase representation, scoring.
      - **High**
