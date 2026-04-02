@@ -19,6 +19,42 @@ function formatRelativeTime(isoTimestamp: string): string {
   return parts.length > 0 ? `${parts.join(', ')} ago` : 'just now'
 }
 
+/** Map Slack user_id to display name (from dataset roster). */
+const USER_NAMES: Record<string, string> = {
+  U001: 'Maya Chen',
+  U002: 'Alex Rivera',
+  U003: 'Priya Sharma',
+  U004: 'James Okafor',
+  U005: 'Sarah Kim',
+  U006: 'Marcus Johnson',
+  U007: 'Elena Vasquez',
+  U008: 'David Park',
+  U009: 'Aisha Patel',
+  U010: 'Ryan Torres',
+  U011: 'Lisa Wang',
+  U012: 'Carlos Mendez',
+  U013: 'Nina Petrov',
+  U014: "Kevin O'Brien",
+  U015: 'Fatima Al-Hassan',
+  U016: 'Tom Nakamura',
+  U017: 'Deepa Krishnan',
+  U018: 'Michael Zhang',
+  U019: 'Rachel Foster',
+  U020: 'Jorge Castillo',
+}
+
+/** Format a Slack timestamp (epoch seconds) to a readable string. */
+function formatSlackTs(ts: string): string {
+  const epoch = parseFloat(ts) * 1000
+  if (Number.isNaN(epoch)) return ''
+  return new Date(epoch).toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
 /** Visual config per section type: colors, icons, and emphasis. */
 const SECTION_STYLES: Record<
   SectionType,
@@ -81,8 +117,13 @@ function SourceModal({
           {thread.messages.map((msg, i) => (
             <div key={i} className="text-sm">
               <span className="font-medium text-gray-700">
-                {msg.user_id}
+                {USER_NAMES[msg.user_id] ?? msg.user_id}
               </span>
+              {msg.ts && (
+                <span className="ml-2 text-xs text-gray-400">
+                  {formatSlackTs(msg.ts)}
+                </span>
+              )}
               <p className="text-gray-600 mt-0.5 whitespace-pre-wrap">
                 {msg.text}
               </p>

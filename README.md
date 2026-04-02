@@ -89,8 +89,10 @@ cd frontend && npm run dev
 |--------|-------------------------|------------------------------------------------|
 | GET    | `/health`               | Application health status                      |
 | POST   | `/pipeline/run`         | Start extraction pipeline (returns immediately) |
-| GET    | `/pipeline/status`      | Poll pipeline progress (batch counts)          |
-| GET    | `/digest/{persona_id}`  | Retrieve personalized digest (cached)          |
+| GET    | `/pipeline/status`      | Poll pipeline progress and state                |
+| GET    | `/digest/dates`         | Available DigestRun dates from Neo4j            |
+| GET    | `/digest/{persona_id}`  | Personalized digest (cached or LLM-generated)   |
+| GET    | `/source/{atom_id}`     | Source thread messages for a digest item        |
 
 The pipeline runs asynchronously. Poll `/pipeline/status` for real-time
 batch progress:
@@ -105,6 +107,12 @@ curl http://localhost:8000/pipeline/status
 
 # Fetch Maya Chen's digest (instant from cache after pipeline completes)
 curl http://localhost:8000/digest/U001
+
+# Fetch digest for a specific date
+curl http://localhost:8000/digest/U001?date=2026-03-29
+
+# View available dates
+curl http://localhost:8000/digest/dates
 ```
 
 ## Demo Personas
@@ -118,17 +126,18 @@ meaningfully different digests for each:
 | Elena Vasquez   | U007 | Supply Chain Manager       | supply-chain (1.0), chassis (0.5) |
 | Ryan Torres     | U010 | Engineering Manager        | chassis (0.8), drivetrain (0.8)   |
 
-Persona switching in the frontend is instant. All 3 digests are preloaded
-on startup from Neo4j cache.
+Persona and date switching in the frontend is instant. All digests are
+preloaded from Neo4j cache (5 dates × 3 personas = 15 cached digests).
 
 ## Quality Gates
 
-Seven gates enforced via `scripts/quality-gates.sh`:
+Eight gates enforced via `scripts/quality-gates.sh`:
 
 | Gate                          | Tool              | Threshold           |
 |-------------------------------|-------------------|---------------------|
 | Linting                       | ruff check        | Zero violations     |
 | Formatting                    | ruff format       | Zero violations     |
+| Type checking                 | ty                | continue-on-error   |
 | Tests + coverage              | pytest + pytest-cov | >= 80%            |
 | Cyclomatic complexity         | radon cc          | <= 8 per function   |
 | Maintainability index         | radon mi          | A rating            |
@@ -172,6 +181,7 @@ evercurrent/
 │   │   └── validation.py          #   Rate-limited async validation
 │   ├── context/                   # Layer 3: Context backbone
 │   │   ├── personas.py            #   Three demo personas
+│   │   ├── roster.py              #   Team roster + role-archetype lookup
 │   │   ├── workstreams.py         #   Workstream registry
 │   │   └── phases.py              #   Per-workstream phase vectors
 │   ├── scoring/                   # Layer 4: Relevance scoring
@@ -201,23 +211,24 @@ evercurrent/
 │   ├── phases.yml                 #   Per-workstream phase defaults
 │   └── workstreams.yml            #   Channel/component mappings
 ├── data/
-│   └── slack_messages.json        # Slack-API-shaped fixture (307 messages)
+│   ├── slack_messages.json        # Slack-API-shaped fixture (307 messages)
+│   └── demo_messages.json         # Demo fixture (18 messages, 3 threads)
 ├── docker-compose.yml             # Backend + Frontend + Neo4j + Postgres
 ├── backend.Dockerfile             # Multi-stage Python build
 ├── frontend/                      # React frontend
 │   ├── src/
-│   │   ├── App.tsx                #   Preloads digests, instant persona switch
+│   │   ├── App.tsx                #   Preloads digests, instant persona/date switch
 │   │   ├── api/client.ts          #   API client with PipelineStatus polling
 │   │   └── components/
-│   │       ├── PipelineRunner.tsx  #   Real batch progress bar
 │   │       ├── PersonaSelector.tsx #   3 demo personas
-│   │       ├── DigestDisplay.tsx   #   Four-section digest renderer
-│   │       └── PhaseToggle.tsx     #   Phase override demo panel
+│   │       ├── DateSelector.tsx    #   Date dropdown (from Neo4j DigestRun dates)
+│   │       └── DigestDisplay.tsx   #   Four-section digest renderer + source modal
 │   ├── Dockerfile                 #   Multi-stage nginx build
 │   └── nginx.conf                 #   Reverse proxy + 600s timeout
 ├── alembic/                       # Postgres migrations (async)
 ├── scripts/
-│   ├── quality-gates.sh           #   7 quality gates
+│   ├── quality-gates.sh           #   8 quality gates
+│   ├── run-all-pipelines.sh       #   Full pipeline runner (nuke + extract + verify)
 │   ├── smoke-test.sh              #   E2E 3-window smoke test
 │   └── smoke_test_runner.py       #   Smoke test Python runner
 ├── tests/                         # 527 tests
