@@ -72,11 +72,11 @@ export default function PipelineRunner({ onComplete }: PipelineRunnerProps) {
     return stopPolling
   }, [startPolling, stopPolling])
 
-  const handleRun = async () => {
+  const handleRun = async (fresh: boolean = false) => {
     setStarting(true)
     setError(null)
     try {
-      const result = await runPipeline()
+      const result = await runPipeline(fresh)
       if (result.status === 'already_running') {
         // Just start polling
       }
@@ -103,7 +103,7 @@ export default function PipelineRunner({ onComplete }: PipelineRunnerProps) {
     <div className="space-y-2">
       <div className="flex items-center gap-3">
         <button
-          onClick={handleRun}
+          onClick={() => handleRun(false)}
           disabled={isRunning || starting}
           className={`
             text-sm px-3 py-1.5 rounded-md transition-colors
@@ -115,6 +115,21 @@ export default function PipelineRunner({ onComplete }: PipelineRunnerProps) {
           `}
         >
           {starting ? 'Starting...' : isRunning ? 'Running...' : 'Run Pipeline'}
+        </button>
+        <button
+          onClick={() => handleRun(true)}
+          disabled={isRunning || starting}
+          className={`
+            text-sm px-3 py-1.5 rounded-md transition-colors
+            ${
+              isRunning || starting
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'border border-emerald-600 text-emerald-700 hover:bg-emerald-50'
+            }
+          `}
+          title="Clears previous data before running — use for repeat demos"
+        >
+          Fresh Run
         </button>
 
         {isComplete && (
