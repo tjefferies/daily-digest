@@ -173,16 +173,86 @@ LLM, which generates a four-section digest via ``tool_use`` structured output.
 3.2 Persistence
 ~~~~~~~~~~~~~~~
 
-**Postgres** (:5433). BCNF schema: ``message`` to ``bundle_membership`` to
-``thread_bundle`` to ``context_window`` to ``atom``. Plus ``batch_log`` for
-full LLM request/response JSONB bodies. SQLAlchemy async with asyncpg.
+3.2.1 Postgres
+^^^^^^^^^^^^^^
 
-**Neo4j** (:7687). ``:Atom`` to ``:Channel`` / ``:Workstream`` /
-``:Participant`` graph. Used for digest precooking on startup and
-graph-based queries.
+.. image:: _static/postgres-schema.svg
+   :alt: Postgres BCNF schema
+   :width: 100%
 
-**FAISS.** IndexFlatIP with L2-normalized vectors for cosine similarity.
-Persistent embedding cache with sentence-transformers (all-MiniLM-L6-v2).
+Bryce Codd Normal Form (BCNF) schema with 6 tables linked by foreign keys. SQLAlchemy async
+ORM with asyncpg driver. All tables and columns have SQL COMMENTs
+for self-documenting schema inspection.
+
+- **message** — raw Slack messages with JSONB payload
+- **thread_bundle** — thread groupings by root message
+- **bundle_membership** — message-to-bundle mapping with role and confidence
+- **context_window** — assembled LLM input text (1:1 with bundle)
+- **atom** — extracted information atoms with provenance JSONB
+- **batch_log** — full LLM request/response JSONB audit trail
+
+3.2.2 Neo4j
+^^^^^^^^^^^^
+
+.. image:: _static/neo4j-schema.svg
+   :alt: Neo4j graph model
+   :width: 100%
+
+**Node properties:**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
+
+   * - Node
+     - Properties
+   * - ``:Atom``
+     - atom_id, type, summary, detail, urgency, confidence,
+       implicit_decision, phase_relevance, channel, thread_ts, created_at
+   * - ``:Channel``
+     - name
+   * - ``:Workstream``
+     - name
+   * - ``:Person``
+     - user_id
+
+**Relationship properties:**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Relationship
+     - Properties
+   * - ``:EXTRACTED_FROM``
+     - thread_ts
+   * - ``:ORIGINATES_IN``
+     - (none)
+   * - ``:AFFECTS``
+     - (none)
+   * - ``:INVOLVES``
+     - (none)
+   * - ``:DIGEST``
+     - score, created_at
+
+The ``:DIGEST`` relationship connects ``:Person`` to ``:Atom`` with the
+composite relevance score and pipeline run timestamp. This persists
+scored digest results so historical digests are queryable without
+re-running the scoring engine.
+
+3.2.3 FAISS
+^^^^^^^^^^^^^
+
+.. image:: _static/faiss-vectors.svg
+   :alt: FAISS vector storage pipeline
+   :width: 100%
+
+IndexFlatIP with L2-normalized vectors for cosine similarity.
+``CachedEmbedder`` wraps sentence-transformers (all-MiniLM-L6-v2)
+with a persistent FAISS cache. Two sources are embedded: thread texts
+(for bundle representation) and standalone messages (for continuation
+detection). The cache persists to ``data/vectorstore.index`` +
+``data/vectorstore.keys`` across pipeline runs.
 
 3.3 Delta Processing
 ~~~~~~~~~~~~~~~~~~~~

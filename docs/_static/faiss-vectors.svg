@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 280"
+     width="900" height="280"
+     font-family="'Segoe UI', Helvetica, Arial, sans-serif">
+
+  <defs>
+    <!-- Green gradient for Sources and Output -->
+    <linearGradient id="greenGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d4edda"/>
+      <stop offset="100%" stop-color="#c3e6cb"/>
+    </linearGradient>
+    <!-- Slate gradient for processing boxes -->
+    <linearGradient id="slateGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#eaecee"/>
+      <stop offset="100%" stop-color="#d5d8dc"/>
+    </linearGradient>
+    <!-- Drop shadow filter -->
+    <filter id="shadow" x="-2%" y="-2%" width="108%" height="112%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#00000030"/>
+    </filter>
+    <!-- Arrowhead marker -->
+    <marker id="arrow" viewBox="0 0 10 7" refX="10" refY="3.5"
+            markerWidth="10" markerHeight="7" orient="auto-start-reverse">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#7f8c8d"/>
+    </marker>
+    <!-- Arrowhead for dashed -->
+    <marker id="arrowDash" viewBox="0 0 10 7" refX="10" refY="3.5"
+            markerWidth="10" markerHeight="7" orient="auto-start-reverse">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#7f8c8d"/>
+    </marker>
+  </defs>
+
+  <!-- ==================== ARROWS (behind boxes) ==================== -->
+
+  <!-- Arrow: Sources -> CachedEmbedder -->
+  <line x1="148" y1="120" x2="248" y2="120"
+        stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Arrow: CachedEmbedder -> VectorStore -->
+  <line x1="438" y1="120" x2="508" y2="120"
+        stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Dashed arrow: VectorStore -> Persistent Storage -->
+  <line x1="616" y1="170" x2="616" y2="210"
+        stroke="#7f8c8d" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#arrowDash)"/>
+
+  <!-- Arrow: VectorStore -> Output -->
+  <line x1="678" y1="120" x2="738" y2="120"
+        stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- ==================== BOX 1: Sources ==================== -->
+  <g transform="translate(10, 60)">
+    <!-- Thread Texts box -->
+    <rect x="0" y="0" width="135" height="50" rx="6" ry="6"
+          fill="url(#greenGrad)" stroke="#a3cfbb" stroke-width="1" filter="url(#shadow)"/>
+    <text x="67" y="20" text-anchor="middle" font-weight="bold" font-size="11">Thread Texts</text>
+    <text x="67" y="36" text-anchor="middle" font-size="9" fill="#444">Assembled thread text</text>
+    <text x="67" y="47" text-anchor="middle" font-size="9" fill="#444">per bundle</text>
+
+    <!-- Standalone Messages box (stacked below) -->
+    <rect x="0" y="56" width="135" height="50" rx="6" ry="6"
+          fill="url(#greenGrad)" stroke="#a3cfbb" stroke-width="1" filter="url(#shadow)"/>
+    <text x="67" y="76" text-anchor="middle" font-weight="bold" font-size="11">Standalone Messages</text>
+    <text x="67" y="92" text-anchor="middle" font-size="9" fill="#444">Unthreaded messages for</text>
+    <text x="67" y="103" text-anchor="middle" font-size="9" fill="#444">continuation detection</text>
+  </g>
+
+  <!-- ==================== BOX 2: CachedEmbedder ==================== -->
+  <g transform="translate(260, 70)">
+    <rect x="0" y="0" width="175" height="100" rx="6" ry="6"
+          fill="url(#slateGrad)" stroke="#b2bec3" stroke-width="1" filter="url(#shadow)"/>
+    <text x="88" y="22" text-anchor="middle" font-weight="bold" font-size="12">CachedEmbedder</text>
+    <line x1="10" y1="30" x2="165" y2="30" stroke="#b2bec3" stroke-width="0.5"/>
+    <text x="88" y="48" text-anchor="middle" font-size="9" fill="#444">Cache hit: return stored vector</text>
+    <text x="88" y="62" text-anchor="middle" font-size="9" fill="#444">Cache miss: embed via</text>
+    <text x="88" y="75" text-anchor="middle" font-size="9" fill="#444">all-MiniLM-L6-v2</text>
+    <text x="88" y="92" text-anchor="middle" font-size="9.5" fill="#2c3e50" font-weight="600">384-dim vectors</text>
+  </g>
+
+  <!-- ==================== BOX 3: VectorStore ==================== -->
+  <g transform="translate(520, 70)">
+    <rect x="0" y="0" width="155" height="100" rx="6" ry="6"
+          fill="url(#slateGrad)" stroke="#b2bec3" stroke-width="1" filter="url(#shadow)"/>
+    <text x="78" y="22" text-anchor="middle" font-weight="bold" font-size="12">VectorStore</text>
+    <line x1="10" y1="30" x2="145" y2="30" stroke="#b2bec3" stroke-width="0.5"/>
+    <text x="78" y="48" text-anchor="middle" font-size="9" fill="#444">FAISS IndexFlatIP</text>
+    <text x="78" y="62" text-anchor="middle" font-size="9" fill="#444">L2 normalization</text>
+    <text x="78" y="78" text-anchor="middle" font-size="9" fill="#444">cosine similarity</text>
+  </g>
+
+  <!-- ==================== BOX 4: Persistent Storage ==================== -->
+  <g transform="translate(530, 215)">
+    <rect x="0" y="0" width="170" height="55" rx="6" ry="6"
+          fill="url(#slateGrad)" stroke="#b2bec3" stroke-width="1" filter="url(#shadow)"/>
+    <text x="85" y="20" text-anchor="middle" font-weight="bold" font-size="11">Persistent Storage</text>
+    <line x1="10" y1="27" x2="160" y2="27" stroke="#b2bec3" stroke-width="0.5"/>
+    <text x="85" y="40" text-anchor="middle" font-size="9" fill="#444">vectorstore.index</text>
+    <text x="85" y="52" text-anchor="middle" font-size="9" fill="#444">vectorstore.keys</text>
+  </g>
+
+  <!-- Label on dashed arrow -->
+  <text x="632" y="200" text-anchor="start" font-size="8.5" fill="#7f8c8d" font-style="italic">save / load</text>
+
+  <!-- ==================== BOX 5: Output ==================== -->
+  <g transform="translate(750, 70)">
+    <rect x="0" y="0" width="140" height="100" rx="6" ry="6"
+          fill="url(#greenGrad)" stroke="#a3cfbb" stroke-width="1" filter="url(#shadow)"/>
+    <text x="70" y="22" text-anchor="middle" font-weight="bold" font-size="12">Output</text>
+    <line x1="10" y1="30" x2="130" y2="30" stroke="#a3cfbb" stroke-width="0.5"/>
+    <text x="70" y="48" text-anchor="middle" font-size="9" fill="#444">Cosine Similarity Scores</text>
+    <text x="70" y="64" text-anchor="middle" font-size="9.5" fill="#2c3e50" font-weight="600">threshold 0.45</text>
+    <text x="70" y="80" text-anchor="middle" font-size="9" fill="#444">continuation detection</text>
+  </g>
+
+</svg>
