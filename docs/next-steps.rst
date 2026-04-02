@@ -4,7 +4,7 @@ Production Roadmap
 This document outlines the path from working prototype to production
 deployment, prioritized by end-user value.
 
-What We Have Now
+What I Built
 -----------------
 
 A working five-layer pipeline that ingests 307 synthetic Slack messages,
@@ -23,8 +23,8 @@ These should be answered before production scoping. Each answer
 materially changes the architecture.
 
 **IP Classification (Highest Priority).** Can Slack content be processed
-by a cloud LLM API, or is on-prem inference required? Cloud: ~$150–$450/month.
-On-prem: significantly higher infra cost, lower extraction quality.
+by a cloud LLM API, or is on-prem inference required? Cloud: around $150
+to $450/month. On-prem: higher infra cost, lower extraction quality.
 
 **PM Tool Integration.** Does the team use Jira, Linear, or Asana for
 phase-gate tracking? Automated phase detection from ticket status changes
@@ -35,7 +35,7 @@ CAD comments, or PLM systems? If so, the ingestion layer needs a plugin
 architecture.
 
 **User Research.** Concrete failure stories ("I missed X and it cost us Y")
-are the most valuable input for tuning extraction taxonomy and scoring weights.
+are the best input for tuning extraction taxonomy and scoring weights.
 
 Priority 1: Live Slack Integration
 ------------------------------------
@@ -54,7 +54,7 @@ The tool becomes immediately useful instead of a demo.
   (``message_deleted``) by updating or tombstoning atoms
 - Deduplicate on ``(channel_id, message_ts)`` composite key
 - The existing ``SlackMessage`` model and ingestion pipeline require
-  zero changes - only the data source switches from fixture to API
+  zero changes. Only the data source switches from fixture to API.
 
 Priority 2: PLM / ERP Connectors
 ----------------------------------
@@ -66,13 +66,13 @@ This eliminates the biggest accuracy gap in the current scoring model.
 **Technical approach:**
 
 - Poll PLM phase-gate status (Arena, Teamcenter, Windchill) per
-  subsystem - auto-update phase vectors when gates pass, replacing
-  the manual toggle and hardcoded ``config/phases.yml``
+  subsystem. Auto-update phase vectors when gates pass, replacing
+  the manual toggle and hardcoded ``config/phases.yml``.
 - Import spec baselines from PLM BOM to distinguish new
   ``SPEC_CHANGE`` atoms from known revisions (reduces false positives)
 - Cross-reference extracted atoms against open ECOs to surface
   informal decisions not yet formalized and ECOs without Slack discussion
-- Leverage per-subsystem phase granularity (assembly/part-level)
+- Use per-subsystem phase granularity (assembly/part-level)
   for finer scoring precision than workstream-level approximation
 
 This is a fundamentally different architecture than inferring phase
@@ -108,8 +108,8 @@ ignores stop appearing; items they click through get boosted.
   dismissal, pin, forward, dwell time
 - Store feedback events in Postgres
 - Adjust per-user scoring dimension weights via exponential moving average
-  (α = 0.05, slow learning rate)
-- Guardrails: weights cannot deviate more than ±0.15 from role-archetype
+  (alpha = 0.05, slow learning rate)
+- Guardrails: weights cannot deviate more than +/- 0.15 from role-archetype
   defaults to prevent runaway personalization
 - A/B testing framework: random assignment to scoring variants, measure
   engagement rate per variant
@@ -122,12 +122,12 @@ important things and not hallucinating.
 
 **Technical approach:**
 
-- Golden-set annotations: manually label 50–100 atoms from the synthetic
+- Golden-set annotations: manually label 50 to 100 atoms from the synthetic
   dataset as ground truth
 - Measure extraction precision/recall against golden set
 - Track hallucination rate: atoms that fail validation as a percentage
   of total extracted
-- Graded scoring beyond binary valid/invalid - assess whether extracted
+- Graded scoring beyond binary valid/invalid, assessing whether extracted
   details (numbers, names, dates) match source text exactly
 - Automated regression tests: any code change that drops precision below
   baseline fails CI
@@ -146,7 +146,7 @@ Daily Digest Tool becomes a product, not a bespoke tool.
 - Persona auto-detection from Slack metadata: channel membership for
   workstream affinity, message frequency for topic interest, title/team
   for role archetype
-- Self-service onboarding: 3–4 question flow generates initial persona
+- Self-service onboarding: 3 to 4 question flow generates initial persona
 - Multi-tenant Postgres schema with workspace isolation
 
 Priority 7: Configuration UI
@@ -161,7 +161,7 @@ YAML files.
   real-time digest preview
 - Persona manager: CRUD interface for personas, workstream affinity
   heatmap, collaborator graph editor
-- Scoring matrix editor: visual 5×8 role-type grid with impact feedback
+- Scoring matrix editor: visual 5x8 role-type grid with impact feedback
 - Phase context editor per workstream
 
 Deferred

@@ -1,27 +1,29 @@
-# EverCurrent
+# Daily Digest Tool
 
 Context-aware daily digest tool for robotics hardware teams.
 
-EverCurrent solves the critical information loss problem in hardware engineering:
-a missed Slack thread about a spec change can cost weeks, dollars, and physical
-waste. The system ingests team communication, extracts structured atoms of
-information, scores them against each engineer's context, and generates
-personalized daily digests - so every team member sees exactly what matters to
-them.
+In hardware engineering, a missed Slack thread about a spec change can cost
+weeks, dollars, and physical waste. This system ingests team communication,
+extracts structured atoms of information, scores them against each engineer's
+context, and generates personalized daily digests. Every team member sees
+exactly what matters to them.
 
 ## Architecture
 
-EverCurrent is an async pipeline that transforms raw Slack messages into
+Daily Digest Tool is an async pipeline that transforms raw Slack messages into
 persona-specific daily digests via the Anthropic Message Batches API:
 
-![EverCurrent Architecture](docs/_static/architecture.svg)
+![Daily Digest Tool Architecture](docs/_static/architecture.svg)
 
-**Key principles:**
-- **Anthropic-only** with Message Batches API (50% cost savings)
-- **tool_use** for structured output - no instructor dependency
-- **Async-only** - no sync code paths
-- **Delta processing** - Postgres stores bundles; only new bundles are extracted
-- **Config-driven** - all prompts in `config/prompts.yml`, all constants in `config/pipeline.yml`
+**Anthropic-only.** Message Batches API with 50% cost savings.
+
+**tool_use for structured output.** No instructor dependency.
+
+**Async-only.** No sync code paths.
+
+**Delta processing.** Postgres stores bundles; only new bundles are extracted.
+
+**Config-driven.** All prompts in `config/prompts.yml`, all constants in `config/pipeline.yml`.
 
 ## Quick Start
 
@@ -95,7 +97,7 @@ curl http://localhost:8000/digest/U001
 
 ## Demo Personas
 
-Three personas demonstrate differential relevance - the same data produces
+Three personas demonstrate differential relevance. The same data produces
 meaningfully different digests for each:
 
 | Persona         | ID   | Role                      | Top Workstreams                    |
@@ -104,7 +106,7 @@ meaningfully different digests for each:
 | Elena Vasquez   | U007 | Supply Chain Manager       | supply-chain (1.0), chassis (0.5) |
 | Ryan Torres     | U010 | Engineering Manager        | chassis (0.8), drivetrain (0.8)   |
 
-Persona switching in the frontend is **instant** - all 3 digests are preloaded
+Persona switching in the frontend is instant. All 3 digests are preloaded
 on startup from Neo4j cache.
 
 ## Quality Gates

@@ -118,9 +118,9 @@ The status response tracks pipeline stages:
      "error": null
    }
 
-States: ``idle`` → ``running`` → ``complete`` (or ``failed``).
-Stages: ``extraction`` → ``extraction_stage1`` → ``extraction_stage2``
-→ ``validation`` → ``generating_digests`` → ``done``.
+States: ``idle`` to ``running`` to ``complete`` (or ``failed``).
+Stages: ``extraction`` to ``extraction_stage1`` to ``extraction_stage2``
+to ``validation`` to ``generating_digests`` to ``done``.
 
 Fetching Digests
 -----------------
@@ -169,7 +169,7 @@ defaults to ``batch`` for cost-efficient production runs.
 Configuration
 --------------
 
-Key settings in ``config/pipeline.yml``:
+Settings in ``config/pipeline.yml``:
 
 .. list-table::
    :header-rows: 1

@@ -17,7 +17,7 @@ change on a bracket discovers it when 500 injection-molded parts arrive wrong.
 A supply chain lead who misses a component discontinuation notice learns about
 it when the production line stops.
 
-The failure mode this system is designed against: **someone changed a spec,
+The failure mode I am designing against: **someone changed a spec,
 made a decision, or raised a risk in a Slack thread that the affected party
 was not watching, and the downstream impact was not caught for days or weeks.**
 
@@ -27,7 +27,7 @@ where mistakes are physical and often irreversible.
 1.2 Why Existing Solutions Fail
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Slack's built-in features are pull-based - they require the user to know what
+Slack's built-in features are pull-based. They require the user to know what
 to look for. Generic AI summarization tools treat all readers as identical.
 But a summary of #chassis-design that's useful for the mechanical engineer is
 noise for the supply chain lead, who only needs the material change buried in
@@ -51,8 +51,8 @@ message; it is a relationship between a message and a reader.**
      - Pipeline design, cost model, latency.
      - **High**
    * - A2
-     - Team size is 20–30 people, 300–500 messages/day across 8–15 channels.
-       Nightly batch territory, not streaming.
+     - Team size is 20 to 30 people, 300 to 500 messages/day across 8 to
+       15 channels. Nightly batch territory, not streaming.
      - Ingestion architecture, processing budget.
      - **High**
    * - A3
@@ -108,7 +108,7 @@ message; it is a relationship between a message and a reader.**
      - Validation cost model, hallucination risk for non-validated types.
      - Medium
    * - A12
-     - Phase progression is linear (Concept → EVT → DVT → PVT → MP)
+     - Phase progression is linear (Concept to EVT to DVT to PVT to MP)
        with graduated distance scoring. Non-linear progressions (phase
        rollbacks, parallel tracks) are not modeled.
      - Phase alignment scoring dimension.
@@ -133,7 +133,7 @@ persona-specific daily digests. It consists of five layers with defined
 responsibility and interface contracts.
 
 .. image:: _static/architecture.svg
-   :alt: Daily Digest Toolfive-layer pipeline architecture
+   :alt: Daily Digest Tool five-layer pipeline architecture
    :width: 100%
 
 3.1 Data Flow
@@ -146,36 +146,36 @@ responsibility and interface contracts.
 The pipeline is triggered on demand via ``POST /pipeline/run`` (production:
 scheduled daily at 06:00 local time).
 
-**Layer 1 - Ingest.** Messages are loaded, grouped into thread bundles, and
+**Layer 1, Ingest.** Messages are loaded, grouped into thread bundles, and
 checked for semantic continuations using FAISS cosine similarity (threshold
 0.45). Each bundle is assembled into a context window: short threads are
 included in full; long threads are compressed to the root message, top-reacted
 replies, and final 5 messages.
 
-**Layer 2 - Extract.** Each context window passes through a two-stage
+**Layer 2, Extract.** Each context window passes through a two-stage
 Anthropic Batch API pipeline (see Section 4). Stage 1 extracts coarse atoms;
 Stage 2 enriches with metadata. Both use ``tool_use`` for structured output.
 
-**Layer 3 - Validate & Filter.** All ``DECISION`` and ``SPEC_CHANGE`` atoms
+**Layer 3, Validate & Filter.** All ``DECISION`` and ``SPEC_CHANGE`` atoms
 are validated in a single batch against their source context. Invalid atoms
-have confidence halved. A confidence filter (threshold ≥ 0.7) removes
-low-quality atoms.
+have confidence halved. A confidence filter (threshold of 0.7 or above)
+removes low-quality atoms.
 
-**Layer 4 - Score.** Each validated atom is scored for each persona across
+**Layer 4, Score.** Each validated atom is scored for each persona across
 five relevance dimensions (see Section 5). Atoms are ranked by composite
 score, capped at the persona's ``max_items``.
 
-**Layer 5 - Generate.** Scored atoms and persona context are passed to the
+**Layer 5, Generate.** Scored atoms and persona context are passed to the
 LLM, which generates a four-section digest via ``tool_use`` structured output.
 
 3.2 Persistence
 ~~~~~~~~~~~~~~~
 
-**Postgres** (:5433). BCNF schema: ``message`` → ``bundle_membership`` →
-``thread_bundle`` → ``context_window`` → ``atom``. Plus ``batch_log`` for
+**Postgres** (:5433). BCNF schema: ``message`` to ``bundle_membership`` to
+``thread_bundle`` to ``context_window`` to ``atom``. Plus ``batch_log`` for
 full LLM request/response JSONB bodies. SQLAlchemy async with asyncpg.
 
-**Neo4j** (:7687). ``:Atom`` → ``:Channel`` / ``:Workstream`` /
+**Neo4j** (:7687). ``:Atom`` to ``:Channel`` / ``:Workstream`` /
 ``:Participant`` graph. Used for digest precooking on startup and
 graph-based queries.
 
@@ -186,9 +186,9 @@ Persistent embedding cache with sentence-transformers (all-MiniLM-L6-v2).
 ~~~~~~~~~~~~~~~~~~~~
 
 Bundles are persisted to Postgres *before* extraction. On re-run, the pipeline
-queries for existing bundles and only extracts new/changed ones. This means
-zero LLM calls on unchanged data - critical for cost control during
-development and idempotent production runs.
+queries for existing bundles and only extracts new or changed ones. This means
+zero LLM calls on unchanged data, which is the single most important property
+for cost control during development and idempotent production runs.
 
 3.4 Tech Stack
 ~~~~~~~~~~~~~~
@@ -233,15 +233,15 @@ development and idempotent production runs.
 
 Thread reconstruction operates in three passes:
 
-**Pass 1 - Structural grouping.** Group messages by Slack ``thread_ts``.
+**Pass 1, Structural grouping.** Group messages by Slack ``thread_ts``.
 
-**Pass 2 - Implicit threading.** Identify top-level messages that continue
+**Pass 2, Implicit threading.** Identify top-level messages that continue
 earlier conversations using a hybrid approach: structural matching
 (@-mentions, quote blocks, back-references) as a fast path, and semantic
 embedding cosine similarity (threshold 0.45) as a fallback. Channel-aware,
 first-match.
 
-**Pass 3 - Context windowing.** Assemble each conversational unit into a
+**Pass 3, Context windowing.** Assemble each conversational unit into a
 context window within LLM token limits. Long threads are compressed to the
 opener, most-reacted messages, and final 5 messages.
 
@@ -261,7 +261,7 @@ opener, most-reacted messages, and final 5 messages.
      - "Team agreed to switch housing from aluminum to magnesium."
    * - ``SPEC_CHANGE``
      - A modification to an established spec, tolerance, or requirement.
-       Highest-risk type - silently invalidates downstream work.
+       Highest-risk type because it silently invalidates downstream work.
      - "Motor torque updated from 2.5 Nm to 3.1 Nm."
    * - ``ACTION_ITEM``
      - A task assigned to a specific person with an implied deadline.
@@ -287,14 +287,14 @@ opener, most-reacted messages, and final 5 messages.
 
 Extraction uses two stages to reduce cognitive load per LLM call:
 
-- **Stage 1 (Coarse):** Identifies events and returns lightweight atom dicts:
-  ``type``, ``summary``, ``detail``, ``source``. Uses the ``extract_atoms``
-  tool via Anthropic Batch API.
+**Stage 1 (Coarse):** Identifies events and returns lightweight atom dicts:
+``type``, ``summary``, ``detail``, ``source``. Uses the ``extract_atoms``
+tool via Anthropic Batch API.
 
-- **Stage 2 (Enrichment):** For each coarse atom, assigns metadata:
-  ``workstreams``, ``urgency``, ``confidence``, ``implicit_decision``,
-  ``phase_relevance``. Uses the ``enrich_atom`` tool. Both the coarse atom
-  and original thread context are provided.
+**Stage 2 (Enrichment):** For each coarse atom, assigns metadata:
+``workstreams``, ``urgency``, ``confidence``, ``implicit_decision``,
+``phase_relevance``. Uses the ``enrich_atom`` tool. Both the coarse atom
+and original thread context are provided.
 
 Both stages use ``tool_use`` for Pydantic-validated structured output, with
 the Anthropic Message Batches API for 50% cost savings.
@@ -339,12 +339,12 @@ validation requests across all threads are collected into a single batch.
    :alt: Five-dimension composite scoring model
    :width: 100%
 
-5.1 Core Insight
-~~~~~~~~~~~~~~~~
+5.1 Relevance Is Relational
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A message is not inherently important. It is important *to someone* in
-*some context*. The same ``SPEC_CHANGE`` - "motor torque increased from
-2.5 Nm to 3.1 Nm" - is critical for the power systems engineer, important
+*some context*. The same ``SPEC_CHANGE``, "motor torque increased from
+2.5 Nm to 3.1 Nm," is critical for the power systems engineer, important
 for supply chain, contextual for the PM, and irrelevant for the enclosure ME.
 
 5.2 Scoring Dimensions
@@ -358,7 +358,7 @@ Originating workstream scores 1.0; affected workstreams score 0.7;
 affinities scale from there.
 
 **Role-Type Alignment (0.20).** Does this atom type typically matter to this
-role archetype? Encoded as a 5×8 role-type affinity matrix:
+role archetype? Encoded as a 5x8 role-type affinity matrix:
 
 .. code-block:: text
 
@@ -368,12 +368,12 @@ role archetype? Encoded as a 5×8 role-type affinity matrix:
    Supply Chain      0.7      0.9       0.8     0.7     1.0   0.3    0.5     0.4
 
 **Phase Alignment (0.20).** Graduated distance scoring across the linear
-phase order (Concept=0, EVT=1, DVT=2, PVT=3, MP=4). Exact match = 1.0,
-adjacent = 0.75, decreasing with distance. Because different workstreams
+phase order (Concept=0, EVT=1, DVT=2, PVT=3, MP=4). Exact match scores 1.0,
+adjacent scores 0.75, decreasing with distance. Because different workstreams
 occupy different phases (assumption A5), lookup is per-workstream.
 
 **Urgency (0.15).** Atom urgency (low=0.25, medium=0.5, high=0.75,
-critical=1.0). Boosts relevance but doesn't override it - an urgent
+critical=1.0). Boosts relevance but does not override it. An urgent
 firmware atom is still irrelevant to a mechanical engineer.
 
 **Social Signal (0.15).** Was this atom from a conversation involving the
@@ -401,7 +401,7 @@ of rank position.
    :alt: Persona model structure
    :width: 100%
 
-A persona models what a specific person cares about - richer than a role
+A persona models what a specific person cares about. Richer than a role
 label, more stable than a per-query signal.
 
 .. code-block:: json
@@ -429,7 +429,7 @@ label, more stable than a per-query signal.
 
 The phase vector is a first-class entity: a robotics program might have
 chassis in DVT, thermal in late EVT, sensors in EVT, and end-effector in
-Concept - all simultaneously. Phase alignment scoring queries each
+Concept, all simultaneously. Phase alignment scoring queries each
 workstream independently.
 
 For the prototype, three personas are manually defined. Production
@@ -446,17 +446,17 @@ frequency), organizational data (title, team), and self-declaration.
 Four priority-tiered sections, consistent structure across personas but
 different *contents* based on relevance scoring:
 
-**Section 1 - Requires Your Action.** Atoms above the critical threshold
-involving an explicit or inferred action. Intentionally short (0–5 items).
+**Section 1, Requires Your Action.** Atoms above the critical threshold
+involving an explicit or inferred action. Intentionally short (0 to 5 items).
 
-**Section 2 - Decisions & Changes.** ``DECISION`` and ``SPEC_CHANGE`` atoms
+**Section 2, Decisions & Changes.** ``DECISION`` and ``SPEC_CHANGE`` atoms
 from relevant workstreams. This catches the "material change you didn't know
 about" failure mode.
 
-**Section 3 - Progress & Risks.** ``STATUS_UPDATE``, ``TEST_RESULT``,
+**Section 3, Progress & Risks.** ``STATUS_UPDATE``, ``TEST_RESULT``,
 ``BLOCKER``, and ``RISK`` atoms ordered by relevance.
 
-**Section 4 - Broader Context.** Lower-relevance atoms for general team
+**Section 4, Broader Context.** Lower-relevance atoms for general team
 awareness. Optional (controlled by persona preference), capped at 5 items.
 
 7.2 Generation Prompt
@@ -468,8 +468,9 @@ a system prompt defining structure, tone, and formatting.
 **Tone: Briefing, not newsletter.** Terse, specific, actionable. Hardware
 engineers want information density, not narrative flair.
 
-**Format: Scannable.** Each item gets a bold headline, 1–2 sentence context,
-and a source link. 30-second scan of headlines, then drill into details.
+**Format: Scannable.** Each item gets a bold headline, 1 to 2 sentence
+context, and a source link. 30-second scan of headlines, then drill into
+details.
 
 **Judgment: Do not editorialize.** Report what happened and who is affected.
 No opinions, no recommendations. Trust is lost the moment the digest adds
@@ -491,16 +492,16 @@ unsolicited commentary.
      - Architecture
      - Prototype?
    * - Small
-     - 10–30 people, 200–500 msgs/day
+     - 10 to 30 people, 200 to 500 msgs/day
      - On-demand or nightly batch. Postgres + Neo4j + FAISS.
        Anthropic Batch API (one key). Docker Compose. Delta processing.
      - **Yes**
    * - Medium
-     - 50–100 people, 1K–3K msgs/day
+     - 50 to 100 people, 1K to 3K msgs/day
      - Parallelized extraction. Redis cache.
      - No
    * - Large
-     - 100–500 people, 5K–20K msgs/day
+     - 100 to 500 people, 5K to 20K msgs/day
      - Stream processor (Kafka). Searchable atom index. Self-hosted inference.
      - No
 
@@ -509,13 +510,13 @@ unsolicited commentary.
 
 .. code-block:: text
 
-   Extraction pass:    ~150 units × ~2,000 tokens   = 300K input tokens
-   Validation pass:    ~30 high-risk atoms × ~1,500  =  45K input tokens
-   Generation pass:    ~25 personas × ~3,000 tokens  =  75K input tokens
+   Extraction pass:    ~150 units x ~2,000 tokens   = 300K input tokens
+   Validation pass:    ~30 high-risk atoms x ~1,500  =  45K input tokens
+   Generation pass:    ~25 personas x ~3,000 tokens  =  75K input tokens
    Output tokens:      ~150K across all passes
    ─────────────────────────────────────────────────────────────────
    Daily total:        ~420K input + ~150K output (with 50% batch discount)
-   Estimated cost:     ~$3–$8/day ($90–$240/month)
+   Estimated cost:     ~$3 to $8/day ($90 to $240/month)
 
 The tool pays for itself if it prevents a single procurement error per
 quarter.
@@ -561,7 +562,7 @@ PLM/ERP connectors, or production observability.
 The synthetic dataset exhibits: realistic hardware communication patterns,
 deliberate "buried signals" (cross-workstream impacts a naive summary would
 miss), phase diversity (some workstreams in EVT, others in DVT), and thread
-depth variety (2–3 messages to 30–50 message arcs).
+depth variety (2 to 3 messages up to 30 to 50 message arcs).
 
 Buried signal examples:
 
@@ -580,7 +581,7 @@ digests. The ME's digest emphasizes chassis test results; the supply chain
 lead's emphasizes material changes and vendor risks; the EM's emphasizes
 blockers and cross-functional dependencies.
 
-**Signal surfacing.** The digest surfaces "buried signals" - the material
+**Signal surfacing.** The digest surfaces "buried signals." The material
 change should appear in the supply chain lead's digest even though it
 originated in #chassis-design.
 
@@ -590,7 +591,7 @@ readiness and validation results.
 
 Production metrics: time-to-awareness (target: same-day), missed-signal rate
 (target: zero above critical threshold), engagement rate (target: 70%+),
-false positive rate in "Requires Action" (target: <15%).
+false positive rate in "Requires Action" (target: below 15%).
 
 ---------------------------------------------------------------------------
 11. Production Path
@@ -608,14 +609,17 @@ includes provider failover and model evaluation harness capabilities.
 
 These questions should be answered before production scoping:
 
-- **IP classification:** Can Slack content be processed by cloud LLM, or is
-  on-prem required? This is the highest-impact question.
-- **PM tool integration:** Does the team use Jira/Linear for phase tracking?
-  Automated phase detection eliminates manual toggles.
-- **Multi-source ingestion:** Do decisions also occur in email, Google Docs,
-  CAD comments, or PLM systems?
-- **User research:** Concrete "I missed X and it cost us Y" stories are the
-  most valuable input for tuning extraction and scoring.
+**IP classification:** Can Slack content be processed by cloud LLM, or is
+on-prem required? This is the highest-impact question.
+
+**PM tool integration:** Does the team use Jira/Linear for phase tracking?
+Automated phase detection eliminates manual toggles.
+
+**Multi-source ingestion:** Do decisions also occur in email, Google Docs,
+CAD comments, or PLM systems?
+
+**User research:** Concrete "I missed X and it cost us Y" stories are the
+best input for tuning extraction and scoring.
 
 11.3 Live Slack Integration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -624,7 +628,7 @@ Replace the fixture with real Slack API via OAuth bot token. Scopes:
 ``channels:history``, ``channels:read``, ``users:read``. Implement
 incremental ingestion with high-water mark per channel. Handle message edits
 and deletes. Live Slack integration also enables deep-linking digest items
-back to their source messages - each atom's ``source.channel`` and
+back to their source messages. Each atom's ``source.channel`` and
 ``source.thread_ts`` become clickable Slack URLs rather than static
 references.
 
@@ -640,8 +644,8 @@ the workday starts.
 
 Track implicit signals (dismissals, pins, click-throughs, dwell time) to
 adjust per-user scoring weights over time. Exponential moving average with
-slow learning rate (α = 0.05). Guardrails: weights cannot deviate more than
-±0.15 from defaults.
+slow learning rate (alpha = 0.05). Guardrails: weights cannot deviate more than
++/- 0.15 from defaults.
 
 11.6 Multi-Team Support
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -660,20 +664,20 @@ tracking. Graded scoring beyond binary valid/invalid.
 12. Architecture Decision Records
 ---------------------------------------------------------------------------
 
-**ADR-001: Batch over stream.** The target scale (300–500 msgs/day) does
+**ADR-001: Batch over stream.** The target scale (300 to 500 msgs/day) does
 not justify streaming infrastructure. Batch processing with a daily job
-covers the use case. Truly urgent items use Slack's native notifications -
-the digest is for *awareness*, not *alerting*.
+covers the use case. Truly urgent items use Slack's native notifications.
+The digest is for *awareness*, not *alerting*.
 
 **ADR-002: LLM extraction over rule-based NLP.** "Let's just go with
 magnesium" is trivially identified as a material decision by an LLM but
-nearly impossible to catch with rules. Higher per-message cost (~$0.01–$0.03)
-but dramatically better recall for implicit decisions. The value of one caught
-missed decision vastly exceeds the monthly API cost.
+nearly impossible to catch with rules. Higher per-message cost (around $0.01
+to $0.03) but dramatically better recall for implicit decisions. The value
+of one caught missed decision vastly exceeds the monthly API cost.
 
 **ADR-003: Atom granularity.** One atom per discrete information unit, not
 per message or thread. A 30-message thread might contain a test result, a
-decision, and an action item - different personas care about different atoms
+decision, and an action item. Different personas care about different atoms
 from the same thread.
 
 **ADR-004: Phase as vector, not scalar.** Phase is tracked per-workstream
@@ -683,5 +687,5 @@ multi-workstream personas.
 
 **ADR-005: Two-pass validation for high-risk atoms.** ``SPEC_CHANGE`` and
 ``DECISION`` atoms undergo a second LLM pass checking for overstated
-conclusions and fabricated details. ~30% increase in extraction cost,
+conclusions and fabricated details. Roughly 30% increase in extraction cost,
 justified by the cost of hallucinated spec values in hardware.

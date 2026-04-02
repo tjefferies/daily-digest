@@ -1380,3 +1380,27 @@ LIVE_DEMO=$(bd create \
   --description="Live demo: flash demo_messages.json, run async pipeline (extraction_mode: async), display persona digests. Switch from batch API to async extraction for speed. Parallelize _precook_digests(). Add fresh-run dedup bypass. Frontend message flash panel. Target: ≤5 min end-to-end. See beads evercurrent-7pb for full analysis." \
   --silent)
 echo "    Live Demo:            $LIVE_DEMO"
+
+# ─── QUICKSTART GUIDE ────────────────────────────────────────────────────────
+QUICKSTART=$(bd create \
+  --title="Write quickstart.rst: docker-compose, Makefile, pipeline, batch API walkthrough" \
+  --type=task --priority=2 \
+  --description="Create docs/quickstart.rst covering: prerequisites, docker-compose startup, local dev without Docker, Makefile target reference, running the pipeline (POST /pipeline/run + polling), batch API flow (Stage 1/2, extraction_mode config), fetching digests (GET /digest/{persona_id}, demo personas), config/pipeline.yml reference, and troubleshooting. RST format, practical command snippets, curl examples. Add to docs/index.rst toctree. See beads evercurrent-bxe for full spec." \
+  --silent)
+echo "    Quickstart Guide:     $QUICKSTART"
+
+# ─── SCORING-DIMENSIONS SVG COLORS ──────────────────────────────────────────
+SCORING_SVG_COLORS=$(bd create \
+  --title="Scoring-dimensions SVG: slate top-row boxes, blue Composite Score" \
+  --type=task --priority=2 \
+  --description="In docs/_static/scoring-dimensions.svg: 1) Make all top-row pipeline/input boxes a single slate/neutral color, consistent with architecture.svg and data-flow.svg theme. 2) Color the 'Composite Score' box blue, matching the accent color convention across other project SVGs." \
+  --silent)
+echo "    Scoring SVG Colors:   $SCORING_SVG_COLORS"
+
+# ─── PERSONA-MODEL SVG COLORS ───────────────────────────────────────────────
+PERSONA_SVG_COLORS=$(bd create \
+  --title="Persona-model SVG: slate surrounding boxes, preserve Maya Chen color" \
+  --type=task --priority=2 \
+  --description="In docs/_static/persona-model.svg: 1) Make all boxes surrounding 'Maya Chen' a single slate/neutral color, consistent with architecture.svg, data-flow.svg, and scoring-dimensions.svg theme. 2) Preserve the 'Maya Chen' box color as-is." \
+  --silent)
+echo "    Persona SVG Colors:   $PERSONA_SVG_COLORS"

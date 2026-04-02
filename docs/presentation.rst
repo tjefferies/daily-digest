@@ -1,7 +1,7 @@
 .. _presentation:
 
 =====================================================================
-Daily Digest Tool 
+Daily Digest Tool
 =====================================================================
 
 *Context-aware information insurance for hardware engineering teams.*
@@ -21,7 +21,7 @@ The Problem
    **Cost: $40K, 3-week delay, missed DVT milestone.**
 
 This isn't a software problem. In hardware engineering, missed information
-is measured in **physical waste and schedule slip** - not in minutes and
+is measured in **physical waste and schedule slip**, not in minutes and
 keystrokes.
 
 Three things make this hard:
@@ -59,46 +59,46 @@ The prototype is designed for a specific operational context and makes many simp
      - Impact
    * - A1
      - Cloud LLM access available (Anthropic API).
-     - **High** - pipeline design, cost model
+     - **High**: pipeline design, cost model
    * - A2
-     - 20–30 people, 300–500 messages/day across 8–15 channels. Nightly batch, not streaming.
-     - **High** - ingestion architecture
+     - 20 to 30 people, 300 to 500 messages/day across 8 to 15 channels. Nightly batch, not streaming.
+     - **High**: ingestion architecture
    * - A3
      - Threads used inconsistently; some conversations span top-level messages implicitly.
-     - Medium - thread reconstruction logic
+     - Medium: thread reconstruction logic
    * - A4
      - People wear multiple hats. Relevance is weighted topic affinities per user, not rigid roles.
-     - **High** - persona model, scoring
+     - **High**: persona model, scoring
    * - A5
      - Different workstreams in different phases simultaneously (Concept, EVT, DVT, PVT, MP).
-     - **High** - phase representation
+     - **High**: phase representation
    * - A6
      - No PLM/ERP connectors. Phase status is manually configured.
-     - Medium - context backbone
+     - Medium: context backbone
    * - A7
      - Digest is read-only. Prototype processes all messages; production filters to prior 24h.
-     - Low - temporal scope
+     - Low: temporal scope
    * - A8
      - Channels organized by workstream (``#chassis-design``, ``#supply-chain``) plus cross-cutting channels.
-     - Medium - channel mapping
+     - Medium: channel mapping
    * - A9
      - All communication in English. Regex patterns, prompts, and taxonomy are English-only.
-     - Medium - multilingual path requires rewrite
+     - Medium: multilingual path requires rewrite
    * - A10
      - Actionable information is in message text only. Files, images, edits, deletions not processed.
-     - Medium - ingestion scope
+     - Medium: ingestion scope
    * - A11
      - Validation targets only ``DECISION`` and ``SPEC_CHANGE``. Other types pass through on confidence alone.
-     - Medium - validation cost model
+     - Medium: validation cost model
    * - A12
-     - Phase progression is linear (Concept → EVT → DVT → PVT → MP). Rollbacks not modeled.
-     - Medium - phase scoring
+     - Phase progression is linear (Concept to EVT to DVT to PVT to MP). Rollbacks not modeled.
+     - Medium: phase scoring
    * - A13
      - All timestamps UTC. No timezone configuration.
      - Low
    * - A14
      - Neo4j failures are non-critical (soft fail). Postgres failures abort the pipeline.
-     - Medium - fault tolerance hierarchy
+     - Medium: fault tolerance hierarchy
 
 ---------------------------------------------------------------------------
 Architecture
@@ -131,8 +131,8 @@ Data Flow
 
 .. code-block:: text
 
-   307 messages → 116 thread bundles → 116 context windows
-              → 308 atoms → 5-dim scored → 4-section digests per persona
+   307 messages -> 116 thread bundles -> 116 context windows
+              -> 308 atoms -> 5-dim scored -> 4-section digests per persona
 
 ---------------------------------------------------------------------------
 Extraction Pipeline
@@ -144,7 +144,7 @@ Extraction Pipeline
 Two-Stage Extraction
 ~~~~~~~~~~~~~~~~~~~~~
 
-**Stage 1 - Coarse:** "What happened?" via ``extract_atoms`` tool.
+**Stage 1, Coarse:** "What happened?" via ``extract_atoms`` tool.
 
 .. code-block:: json
 
@@ -155,7 +155,7 @@ Two-Stage Extraction
      "source": {"channel": "#chassis-design", "thread_ts": "1711990000.000100"}
    }
 
-**Stage 2 - Enrich:** "Who does it affect?" via ``enrich_atom`` tool.
+**Stage 2, Enrich:** "Who does it affect?" via ``enrich_atom`` tool.
 
 .. code-block:: json
 
@@ -175,7 +175,8 @@ a hallucinated spec value (LLM extracts "3.1 Nm" when the thread said
 "2.1 Nm") leads to physical parts manufactured to the wrong tolerance.
 
 All validation requests collected into a **single batch** across all
-threads. Invalid atoms: confidence halved → pushed below 0.7 filter.
+threads. Invalid atoms have confidence halved, pushing them below the 0.7
+filter.
 
 ---------------------------------------------------------------------------
 Scoring Engine
@@ -192,8 +193,8 @@ Scoring Engine
 Same Atom, Different Scores
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The material change decision - "switching housing from aluminum to
-magnesium AZ91D" - scores differently for each persona:
+The material change decision, "switching housing from aluminum to
+magnesium AZ91D," scores differently for each persona:
 
 .. list-table::
    :header-rows: 1
@@ -262,7 +263,7 @@ Persona Model
 
 The phase vector is **per-workstream, not per-project**. Chassis can be in
 DVT while thermal is in late EVT. When the phase toggle shifts thermal
-from EVT → DVT, atom rankings change visibly.
+from EVT to DVT, atom rankings change visibly.
 
 ---------------------------------------------------------------------------
 Live Demo
@@ -274,16 +275,16 @@ Live Demo
 
 **Demo flow:**
 
-1. **Three personas** - Maya, Elena, Ryan. Same data, different digests.
-   Switch between them - **instant** (preloaded from Neo4j cache).
+1. **Three personas.** Maya, Elena, Ryan. Same data, different digests.
+   Switch between them; preloaded from Neo4j cache, so it's instant.
 
-2. **Run the pipeline** - Click "Run Pipeline". Watch the progress bar
+2. **Run the pipeline.** Click "Run Pipeline". Watch the progress bar
    poll ``/pipeline/status`` every 2s with real Anthropic batch counts.
 
-3. **Phase toggle** - Switch thermal from EVT to DVT. Watch atom
+3. **Phase toggle.** Switch thermal from EVT to DVT. Watch atom
    rankings shift. At least 2 items change position.
 
-4. **Neo4j browser** - ``http://localhost:7474``
+4. **Neo4j browser.** ``http://localhost:7474``
 
    .. code-block:: cypher
 
@@ -313,9 +314,8 @@ Mapping to EverCurrent
    * - Cross-workstream ``affected`` tags
      - Breaking knowledge silos across tools
 
-The hardest problem wasn't the LLM pipeline - it was making relevance
+The hardest problem wasn't the LLM pipeline. It was making relevance
 *relational*. The same information means different things to different
 people depending on their role, their workstreams, and where their project
 is in the development lifecycle. **That's the core of what EverCurrent
 does.**
-
