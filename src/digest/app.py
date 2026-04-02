@@ -159,8 +159,8 @@ async def _precook_digests(atoms: list[Atom]) -> None:
                 persona_id,
                 section_count,
             )
-            # Persist :DIGEST edges to Neo4j
-            await _persist_digest_edges(persona_id, atoms, created_at)
+            # Persist :DigestRun + :INCLUDES edges to Neo4j
+            await _persist_digest_to_neo4j(persona_id, atoms, created_at, digest)
         except Exception:
             logger.warning(
                 "Failed to pre-generate digest for %s",
@@ -171,21 +171,33 @@ async def _precook_digests(atoms: list[Atom]) -> None:
     await asyncio.gather(*[_generate_one(pid) for pid in _DEMO_PERSONAS])
 
 
-async def _persist_digest_edges(
+async def _persist_digest_to_neo4j(
     persona_id: str,
     atoms: list[Atom],
     created_at: str,
+    digest: dict[str, Any],
 ) -> None:
-    """Score atoms for a persona and persist :DIGEST edges to Neo4j.
+    """Persist digest to Neo4j: :DigestRun node + :INCLUDES edges.
+
+    Creates the graph structure:
+    :Person -[:HAS_DIGEST]-> :DigestRun -[:INCLUDES {score}]-> :Atom
 
     Args:
         persona_id: Persona user_id.
-        atoms: Atoms to score.
-        created_at: ISO timestamp for this digest run.
+        atoms: Atoms that were scored.
+        created_at: ISO timestamp for this run.
+        digest: The generated digest dict with sections.
     """
+    import json
+
     persona = get_persona(persona_id)
     if persona is None:
         return
+
+    run_date = created_at[:10]
+    sections_json = json.dumps(digest.get("sections", []))
+    generated_at = digest.get("generated_at", created_at)
+
     scored = score_atoms(atoms, persona)
     scored_pairs = [(str(sa.atom.atom_id), sa.score) for sa in scored]
 
@@ -196,9 +208,14 @@ async def _persist_digest_edges(
         password=neo4j_cfg["password"],
     )
     try:
-        await graph.persist_digest_scores(persona_id, scored_pairs, created_at)
+        await graph.persist_digest_run(
+            persona_id, run_date, sections_json, generated_at,
+        )
+        await graph.persist_digest_includes(persona_id, run_date, scored_pairs)
     except Exception:
-        logger.warning("Failed to persist :DIGEST edges for %s", persona_id, exc_info=True)
+        logger.warning(
+            "Failed to persist digest to Neo4j for %s", persona_id, exc_info=True,
+        )
     finally:
         await graph.close()
 
@@ -370,15 +387,20 @@ async def _load_digest_from_graph(
     persona_id: str,
     target_date: str,
 ) -> dict[str, Any] | None:
-    """Load a pre-scored digest from Neo4j :DIGEST edges.
+    """Load a rendered digest from Neo4j :DigestRun node.
+
+    Falls back to re-generating from :DIGEST scored edges if no
+    rendered version exists.
 
     Args:
         persona_id: Persona user_id.
         target_date: ISO date string to filter by.
 
     Returns:
-        Digest dict with pre-scored sections, or None if no data.
+        Digest dict with sections, or None if no data.
     """
+    import json
+
     neo4j_cfg = get_config()["pipeline"]["neo4j"]
     graph = GraphClient(
         uri=neo4j_cfg["uri"],
@@ -386,12 +408,20 @@ async def _load_digest_from_graph(
         password=neo4j_cfg["password"],
     )
     try:
-        results = await graph.load_digest_by_date(persona_id, target_date)
+        # Try rendered :DigestRun first (no LLM call needed)
+        run = await graph.load_digest_run(persona_id, target_date)
+        if run:
+            return {
+                "persona_id": persona_id,
+                "generated_at": str(run["generated_at"]),
+                "sections": json.loads(run["sections_json"]),
+            }
+
+        # Fallback: re-generate from :INCLUDES scored edges
+        results = await graph.load_digest_atoms(persona_id, target_date)
         if not results:
             return None
-        # Extract atoms (already ordered by score from Neo4j)
         atoms = [atom for atom, _score in results]
-        # Generate digest sections from pre-scored atoms
         client = create_async_llm_client()
         assembler = AsyncDigestAssembler(client)
         return await assembler.assemble(persona_id, atoms)

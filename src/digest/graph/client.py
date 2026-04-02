@@ -32,9 +32,11 @@ _SCHEMA_STATEMENTS: list[LiteralString] = [
     "CREATE INDEX workstream_name IF NOT EXISTS FOR (w:Workstream) ON (w.name)",
     "CREATE INDEX channel_name IF NOT EXISTS FOR (c:Channel) ON (c.name)",
     "CREATE INDEX person_handle IF NOT EXISTS FOR (p:Person) ON (p.handle)",
-    # Person node + DIGEST relationship indexes
-    "CREATE CONSTRAINT person_id IF NOT EXISTS FOR (p:Person) REQUIRE p.user_id IS UNIQUE",
-    "CREATE INDEX digest_created IF NOT EXISTS FOR ()-[d:DIGEST]-() ON (d.created_at)",
+    # Person + DigestRun model
+    "CREATE CONSTRAINT person_id IF NOT EXISTS"
+    " FOR (p:Person) REQUIRE p.user_id IS UNIQUE",
+    "CREATE INDEX digestrun_lookup IF NOT EXISTS"
+    " FOR (dr:DigestRun) ON (dr.persona_id, dr.run_date)",
 ]
 
 _PERSIST_ATOM_CYPHER = """\
@@ -125,30 +127,46 @@ RETURN a.atom_id AS atom_id, a.type AS type, a.summary AS summary,
 ORDER BY created_at DESC
 """
 
-_PERSIST_DIGEST_CYPHER = """\
+_PERSIST_DIGEST_RUN_CYPHER = """\
 MERGE (p:Person {user_id: $persona_id})
-WITH p
-MATCH (a:Atom {atom_id: $atom_id})
-MERGE (p)-[d:DIGEST]->(a)
-SET d.score = $score,
-    d.created_at = datetime($created_at)
+MERGE (dr:DigestRun {persona_id: $persona_id, run_date: date($run_date)})
+SET dr.sections_json = $sections_json,
+    dr.generated_at = datetime($generated_at)
+MERGE (p)-[:HAS_DIGEST]->(dr)
 """
 
-_LOAD_DIGEST_BY_DATE_CYPHER = """\
-MATCH (p:Person {user_id: $persona_id})-[d:DIGEST]->(a:Atom)
-WHERE date(d.created_at) = date($target_date)
+_PERSIST_DIGEST_INCLUDES_CYPHER = """\
+MATCH (dr:DigestRun {persona_id: $persona_id, run_date: date($run_date)})
+MATCH (a:Atom {atom_id: $atom_id})
+MERGE (dr)-[r:INCLUDES]->(a)
+SET r.score = $score
+"""
+
+_LOAD_DIGEST_RUN_CYPHER = """\
+MATCH (p:Person {user_id: $persona_id})-[:HAS_DIGEST]->(dr:DigestRun)
+WHERE dr.run_date = date($target_date)
+RETURN dr.sections_json AS sections_json,
+       dr.generated_at AS generated_at
+LIMIT 1
+"""
+
+_LOAD_DIGEST_ATOMS_CYPHER = """\
+MATCH (dr:DigestRun {persona_id: $persona_id, run_date: date($target_date)})
+      -[r:INCLUDES]->(a:Atom)
 OPTIONAL MATCH (a)-[:ORIGINATES_IN]->(ws_orig:Workstream)
 OPTIONAL MATCH (a)-[:AFFECTS]->(ws_aff:Workstream)
 OPTIONAL MATCH (a)-[:INVOLVES]->(part:Person)
 RETURN a.atom_id AS atom_id, a.type AS type, a.summary AS summary,
-       a.detail AS detail, a.urgency AS urgency, a.confidence AS confidence,
-       a.implicit_decision AS implicit_decision, a.phase_relevance AS phase_relevance,
+       a.detail AS detail, a.urgency AS urgency,
+       a.confidence AS confidence,
+       a.implicit_decision AS implicit_decision,
+       a.phase_relevance AS phase_relevance,
        a.channel AS channel, a.thread_ts AS thread_ts,
-       d.score AS score, d.created_at AS created_at,
+       r.score AS score,
        ws_orig.name AS originating,
        collect(DISTINCT ws_aff.name) AS affected,
        collect(DISTINCT part.handle) AS participants
-ORDER BY d.score DESC
+ORDER BY r.score DESC
 """
 
 _PROCESSED_THREAD_TS_CYPHER = """\
@@ -333,52 +351,105 @@ class GraphClient:
         logger.info("Loaded %d atoms from graph for date %s", len(atoms), target_date)
         return atoms
 
-    async def persist_digest_scores(
+    async def persist_digest_run(
         self,
         persona_id: str,
-        scored_atoms: list[tuple[str, float]],
-        created_at: str,
+        run_date: str,
+        sections_json: str,
+        generated_at: str,
     ) -> None:
-        """Persist :DIGEST relationships from a :Person to scored :Atoms.
+        """Persist rendered digest sections as a :DigestRun node.
 
         Args:
             persona_id: Persona user_id (e.g. "U001").
+            run_date: ISO date string (e.g. "2026-04-02").
+            sections_json: JSON string of rendered DigestSection list.
+            generated_at: ISO timestamp for the digest.
+        """
+        async with self._driver.session() as session:
+            await session.run(
+                _PERSIST_DIGEST_RUN_CYPHER,
+                persona_id=persona_id,
+                run_date=run_date,
+                sections_json=sections_json,
+                generated_at=generated_at,
+            )
+        logger.info("Persisted DigestRun for %s on %s", persona_id, run_date)
+
+    async def load_digest_run(
+        self,
+        persona_id: str,
+        target_date: str,
+    ) -> dict[str, Any] | None:
+        """Load a persisted rendered digest by persona and date.
+
+        Args:
+            persona_id: Persona user_id.
+            target_date: ISO date string.
+
+        Returns:
+            Dict with sections_json and generated_at, or None.
+        """
+        async with self._driver.session() as session:
+            result = await session.run(
+                _LOAD_DIGEST_RUN_CYPHER,
+                persona_id=persona_id,
+                target_date=target_date,
+            )
+            record = await result.single()
+        if record and record.get("sections_json"):
+            return {
+                "sections_json": record["sections_json"],
+                "generated_at": record["generated_at"],
+            }
+        return None
+
+    async def persist_digest_includes(
+        self,
+        persona_id: str,
+        run_date: str,
+        scored_atoms: list[tuple[str, float]],
+    ) -> None:
+        """Persist :INCLUDES edges from :DigestRun to scored :Atoms.
+
+        Args:
+            persona_id: Persona user_id.
+            run_date: ISO date string for the digest run.
             scored_atoms: List of (atom_id, score) tuples.
-            created_at: ISO 8601 timestamp for the digest run.
         """
         async with self._driver.session() as session:
             for atom_id, score in scored_atoms:
                 await session.run(
-                    _PERSIST_DIGEST_CYPHER,
+                    _PERSIST_DIGEST_INCLUDES_CYPHER,
                     persona_id=persona_id,
+                    run_date=run_date,
                     atom_id=atom_id,
                     score=score,
-                    created_at=created_at,
                 )
         logger.info(
-            "Persisted %d :DIGEST edges for %s at %s",
+            "Persisted %d :INCLUDES edges for %s on %s",
             len(scored_atoms),
             persona_id,
-            created_at,
+            run_date,
         )
 
-    async def load_digest_by_date(
+    async def load_digest_atoms(
         self,
         persona_id: str,
         target_date: str,
     ) -> list[tuple[Atom, float]]:
-        """Load scored atoms for a persona filtered by digest date.
+        """Load scored atoms via :DigestRun -[:INCLUDES]-> :Atom.
 
         Args:
             persona_id: Persona user_id.
-            target_date: ISO date string (e.g. "2026-04-01").
+            target_date: ISO date string.
 
         Returns:
             List of (Atom, score) tuples ordered by score descending.
         """
         async with self._driver.session() as session:
             result = await session.run(
-                _LOAD_DIGEST_BY_DATE_CYPHER,
+                _LOAD_DIGEST_ATOMS_CYPHER,
                 persona_id=persona_id,
                 target_date=target_date,
             )
