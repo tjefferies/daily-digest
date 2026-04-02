@@ -11,7 +11,8 @@ A working five-layer pipeline that ingests 307 synthetic Slack messages,
 extracts 308 structured atoms via the Anthropic Message Batches API,
 scores them across five relevance dimensions, and generates personalized
 four-section digests for three demo personas. Persistence: Postgres
-(bundles, atoms, context windows, batch logs), Neo4j (atom graph), FAISS
+(bundles, atoms, context windows, batch logs), Neo4j (atom graph),
+Facebook AI Similarity Search
 (embedding cache). Delta processing ensures re-runs skip unchanged data.
 React frontend with instant persona switching and pipeline progress
 polling. All prompts and constants externalized to YAML config.
@@ -22,16 +23,17 @@ Stakeholder Questions
 These should be answered before production scoping. Each answer
 materially changes the architecture.
 
-**IP Classification (Highest Priority).** Can Slack content be processed
-by a cloud LLM API, or is on-prem inference required? Cloud: around $150
+**Intellectual Property (IP) Classification (Highest Priority).** Can
+Slack content be processed by a cloud LLM API, or
+is on-prem inference required? Cloud: around $150
 to $450/month. On-prem: higher infra cost, lower extraction quality.
 
-**PM Tool Integration.** Does the team use Jira, Linear, or Asana for
+**Project Management Tool Integration.** Does the team use Jira, Linear, or Asana for
 phase-gate tracking? Automated phase detection from ticket status changes
 eliminates the manual phase toggle.
 
 **Multi-Source Ingestion.** Do decisions also occur in email, Google Docs,
-CAD comments, or PLM systems? If so, the ingestion layer needs a plugin
+CAD comments, or Product Lifecycle Management (PLM) systems? If so, the ingestion layer needs a plugin
 architecture.
 
 **User Research.** Concrete failure stories ("I missed X and it cost us Y")
@@ -56,7 +58,7 @@ The tool becomes immediately useful instead of a demo.
 - The existing ``SlackMessage`` model and ingestion pipeline require
   zero changes. Only the data source switches from fixture to API.
 
-Priority 2: PLM / ERP Connectors
+Priority 2: PLM / Enterprise Resource Planning Connectors
 ----------------------------------
 
 **User value:** Phase context and spec baselines come directly from the
@@ -68,10 +70,11 @@ This eliminates the biggest accuracy gap in the current scoring model.
 - Poll PLM phase-gate status (Arena, Teamcenter, Windchill) per
   subsystem. Auto-update phase vectors when gates pass, replacing
   the manual toggle and hardcoded ``config/phases.yml``.
-- Import spec baselines from PLM BOM to distinguish new
+- Import spec baselines from PLM bill of materials to distinguish new
   ``SPEC_CHANGE`` atoms from known revisions (reduces false positives)
-- Cross-reference extracted atoms against open ECOs to surface
-  informal decisions not yet formalized and ECOs without Slack discussion
+- Cross-reference extracted atoms against open Engineering Change
+  Orders (ECOs) to surface informal decisions not yet formalized
+  and ECOs without Slack discussion
 - Use per-subsystem phase granularity (assembly/part-level)
   for finer scoring precision than workstream-level approximation
 
@@ -171,7 +174,8 @@ These are architecturally understood but not prioritized for near-term:
 
 **Multi-Provider LLM.** The ``AsyncLLMClient`` protocol supports
 additional adapters. Re-add when a second provider is needed or when
-on-prem inference is required (vLLM, TGI with open-weight models).
+on-prem inference is required (vLLM, Text Generation Inference with
+open-weight models).
 
 **Real-Time Streaming.** Replace batch ingestion with Slack Events API +
 Kafka for near-real-time atom extraction. Requires infrastructure beyond
