@@ -161,7 +161,7 @@
   <!-- Neo4j -->
   <rect x="330" y="530" width="240" height="80" rx="8" fill="url(#greenGrad)" stroke="#27ae60" stroke-width="1.5" filter="url(#shadow)"/>
   <text x="450" y="552" text-anchor="middle" font-size="12" font-weight="bold" fill="#1a5e2a">Neo4j :7687</text>
-  <text x="450" y="567" text-anchor="middle" font-size="9" fill="#2d6a3f">:Atom -> :Channel | :Workstream | :Participant</text>
+  <text x="450" y="567" text-anchor="middle" font-size="9" fill="#2d6a3f">:Atom -> :Channel | :Workstream | :Person</text>
   <text x="450" y="580" text-anchor="middle" font-size="9" fill="#2d6a3f">EXTRACTED_FROM | ORIGINATES_IN | AFFECTS</text>
   <text x="450" y="593" text-anchor="middle" font-size="9" fill="#2d6a3f">Graph queries for digest fallback + precook</text>
 

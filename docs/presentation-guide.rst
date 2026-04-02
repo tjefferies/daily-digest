@@ -290,7 +290,7 @@ visibly - at least 2 items change position. This is testable and tested.
    shift. This is Evaluation Criterion 3 from the design doc.
 
 5. **Neo4j browser** - Open http://localhost:7474. Show the
-   Atom→Channel→Workstream→Participant graph. Run:
+   Atom→Channel→Workstream→Person graph. Run:
 
    .. code-block:: cypher
 

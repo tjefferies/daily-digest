@@ -31,7 +31,7 @@ _SCHEMA_STATEMENTS: list[LiteralString] = [
     # Entity indexes for relationship traversal
     "CREATE INDEX workstream_name IF NOT EXISTS FOR (w:Workstream) ON (w.name)",
     "CREATE INDEX channel_name IF NOT EXISTS FOR (c:Channel) ON (c.name)",
-    "CREATE INDEX participant_handle IF NOT EXISTS FOR (p:Participant) ON (p.handle)",
+    "CREATE INDEX person_handle IF NOT EXISTS FOR (p:Person) ON (p.handle)",
     # Person node + DIGEST relationship indexes
     "CREATE CONSTRAINT person_id IF NOT EXISTS FOR (p:Person) REQUIRE p.user_id IS UNIQUE",
     "CREATE INDEX digest_created IF NOT EXISTS FOR ()-[d:DIGEST]-() ON (d.created_at)",
@@ -59,7 +59,7 @@ MERGE (ws_aff:Workstream {name: affected_name})
 MERGE (a)-[:AFFECTS]->(ws_aff)
 WITH a
 UNWIND $participants AS handle
-MERGE (p:Participant {handle: handle})
+MERGE (p:Person {handle: handle})
 MERGE (a)-[:INVOLVES]->(p)
 """
 
@@ -96,7 +96,7 @@ _LOAD_ALL_ATOMS_CYPHER = """\
 MATCH (a:Atom)
 OPTIONAL MATCH (a)-[:ORIGINATES_IN]->(ws_orig:Workstream)
 OPTIONAL MATCH (a)-[:AFFECTS]->(ws_aff:Workstream)
-OPTIONAL MATCH (a)-[:INVOLVES]->(p:Participant)
+OPTIONAL MATCH (a)-[:INVOLVES]->(p:Person)
 RETURN a.atom_id AS atom_id, a.type AS type, a.summary AS summary,
        a.detail AS detail, a.urgency AS urgency, a.confidence AS confidence,
        a.implicit_decision AS implicit_decision, a.phase_relevance AS phase_relevance,
@@ -113,7 +113,7 @@ MATCH (a:Atom)
 WHERE date(a.created_at) = date($target_date)
 OPTIONAL MATCH (a)-[:ORIGINATES_IN]->(ws_orig:Workstream)
 OPTIONAL MATCH (a)-[:AFFECTS]->(ws_aff:Workstream)
-OPTIONAL MATCH (a)-[:INVOLVES]->(p:Participant)
+OPTIONAL MATCH (a)-[:INVOLVES]->(p:Person)
 RETURN a.atom_id AS atom_id, a.type AS type, a.summary AS summary,
        a.detail AS detail, a.urgency AS urgency, a.confidence AS confidence,
        a.implicit_decision AS implicit_decision, a.phase_relevance AS phase_relevance,
@@ -139,7 +139,7 @@ MATCH (p:Person {user_id: $persona_id})-[d:DIGEST]->(a:Atom)
 WHERE date(d.created_at) = date($target_date)
 OPTIONAL MATCH (a)-[:ORIGINATES_IN]->(ws_orig:Workstream)
 OPTIONAL MATCH (a)-[:AFFECTS]->(ws_aff:Workstream)
-OPTIONAL MATCH (a)-[:INVOLVES]->(part:Participant)
+OPTIONAL MATCH (a)-[:INVOLVES]->(part:Person)
 RETURN a.atom_id AS atom_id, a.type AS type, a.summary AS summary,
        a.detail AS detail, a.urgency AS urgency, a.confidence AS confidence,
        a.implicit_decision AS implicit_decision, a.phase_relevance AS phase_relevance,
@@ -200,7 +200,7 @@ class GraphClient:
         """Persist a list of atoms to the knowledge graph.
 
         Uses MERGE for idempotent upserts. Creates node and
-        relationship structure: Atom -> Channel, Workstream, Participant.
+        relationship structure: Atom -> Channel, Workstream, Person.
 
         Args:
             atoms: Atoms to persist. Empty list is a no-op.
