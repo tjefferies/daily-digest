@@ -1,11 +1,8 @@
-"""Two-stage extraction runner: coarse extract → enrich (sync and async).
+"""Two-stage async extraction runner: coarse extract then enrich.
 
 Stage 1 identifies events (type, summary, detail, source) using a focused
 prompt. Stage 2 enriches each event with metadata (workstreams, urgency,
 confidence, implicit_decision, phase_relevance) in a separate LLM call.
-
-This two-stage approach replaces the monolithic single-prompt extraction,
-reducing cognitive load per LLM call and improving extraction quality.
 """
 
 from __future__ import annotations

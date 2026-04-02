@@ -1,8 +1,8 @@
-"""Digest generation runner: per-persona LLM digest generation (sync and async).
+"""Digest generation runner: per-persona async LLM digest generation.
 
-Takes ranked ScoredAtoms from Layer 4, clusters by workstream, and
-passes them through the LLM API using instructor for structured output
-to produce DigestSection objects with the generation prompt defining
+Takes ranked ScoredAtoms from Layer 4 and passes them through the
+LLM client's structured output API (native Anthropic tool_use) to
+produce DigestSection objects, with the generation prompt defining
 tone, format, and structure.
 """
 

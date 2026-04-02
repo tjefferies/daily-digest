@@ -1,4 +1,4 @@
-"""Tests for per-persona digest generation runner (sync and async)."""
+"""Tests for per-persona async digest generation runner."""
 
 from __future__ import annotations
 

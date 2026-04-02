@@ -1,8 +1,9 @@
-"""Dimension 2: role-type alignment matrix (weight 0.20).
+"""Dimension 2: role-type alignment matrix.
 
-Scores how well an atom type aligns with the persona's role archetype.
-Engineers care most about SPEC_CHANGE and TEST_RESULT; managers about
-BLOCKER and STATUS_UPDATE; supply chain about RISK and ACTION_ITEM.
+Scores how well an atom type aligns with the persona's role archetype
+using a configured alignment matrix. For example, engineers score
+highest on SPEC_CHANGE and TEST_RESULT; managers on BLOCKER and
+STATUS_UPDATE; supply chain on RISK and SPEC_CHANGE.
 """
 
 from __future__ import annotations

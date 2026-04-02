@@ -36,7 +36,7 @@ def _msg(ts: str, text: str, thread_ts: str | None = None) -> SlackMessage:
 
 @pytest.mark.integration
 class TestContextWindowRoundTrip:
-    """Verify message → bundle → context_window → atom path in Postgres."""
+    """Verify message → bundle → context_window → atom path in SQLite."""
 
     @pytest.fixture
     async def session(self):

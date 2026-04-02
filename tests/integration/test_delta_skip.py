@@ -108,7 +108,7 @@ class TestDeltaSkipsBundles:
         assert len(new_bundles) == 0
 
     async def test_new_bundle_is_not_skipped(self, db) -> None:  # noqa: ANN001
-        """A new bundle not in Postgres IS included for extraction."""
+        """A new bundle not in the database IS included for extraction."""
         # Persist 2 bundles
         existing_bundles = [
             ThreadBundle(

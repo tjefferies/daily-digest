@@ -1,8 +1,9 @@
 """SQLAlchemy async ORM models for the Daily Digest Tool BCNF schema.
 
 Maps the Postgres tables for messages, thread bundles, bundle
-memberships, and atoms. Uses JSONB for raw message payloads and
-atom source provenance. All operations are async via asyncpg.
+memberships, context windows, atoms, and batch logs. Uses JSONB
+for raw message payloads and atom source provenance. All operations
+are async via asyncpg.
 """
 
 from __future__ import annotations

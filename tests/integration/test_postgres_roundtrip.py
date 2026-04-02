@@ -1,6 +1,7 @@
-"""Integration test: Postgres bundle+atom round-trip.
+"""Integration test: bundle+atom round-trip using in-memory SQLite.
 
-Requires: docker compose up postgres
+Verifies persist and query operations for bundles and atoms
+without requiring a running Postgres instance.
 """
 
 from __future__ import annotations
@@ -29,7 +30,7 @@ def _msg(ts: str, text: str = "test", thread_ts: str | None = None) -> SlackMess
 
 @pytest.mark.integration
 class TestPostgresRoundTrip:
-    """Write bundles and atoms to Postgres, read back."""
+    """Write bundles and atoms to in-memory SQLite, read back."""
 
     @pytest.fixture
     async def session(self):
@@ -52,7 +53,7 @@ class TestPostgresRoundTrip:
         await engine.dispose()
 
     async def test_persist_and_query_bundle(self, session) -> None:  # noqa: ANN001
-        """Bundle persisted to Postgres is found by get_processed_bundle_ts."""
+        """Bundle persisted to SQLite is found by get_processed_bundle_ts."""
         root = _msg("1000.001", "root message")
         reply = _msg("1000.002", "reply", thread_ts="1000.001")
         bundle = ThreadBundle(root_message=root, replies=[reply])

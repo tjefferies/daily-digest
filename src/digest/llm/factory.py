@@ -1,7 +1,6 @@
 """Factory for creating Anthropic async LLM client instances.
 
 Instantiates the AsyncAnthropicAdapter for use by the pipeline.
-Anthropic-only - multi-provider support deferred to Next Steps.
 """
 
 from __future__ import annotations

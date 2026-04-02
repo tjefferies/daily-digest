@@ -1,9 +1,10 @@
-"""Pipeline orchestrator: wires Ingestion → Extraction → Filter → Validation.
+"""Pipeline orchestrator: wires Ingestion → Extraction → Validation → Filter.
 
-Runs the full extraction pipeline from synthetic data through LLM
-extraction, confidence filtering, and two-pass validation. Returns
-a PipelineResult containing validated atoms ready for scoring.
-Provides both sync (run_pipeline) and async (async_run_pipeline) variants.
+Runs the full extraction pipeline from fixture data through LLM
+extraction, validation, and confidence filtering. Deduplicates
+against Postgres and Neo4j, then persists validated atoms to both
+stores. Returns a PipelineResult containing filtered atoms ready
+for scoring.
 """
 
 from __future__ import annotations

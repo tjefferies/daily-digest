@@ -1,6 +1,6 @@
-"""Digest assembler: orchestrates the full pipeline for one persona (sync and async).
+"""Digest assembler: orchestrates the full pipeline for one persona.
 
-Wires together context lookup, phase override, scoring, and digest
+Wires together context lookup, phase override, scoring, and async digest
 generation into a single assemble() call used by the /digest endpoint.
 """
 

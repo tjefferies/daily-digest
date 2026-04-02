@@ -1,4 +1,4 @@
-"""Tests for digest assembly and GET /digest endpoint (sync and async)."""
+"""Tests for async digest assembly and GET /digest endpoint."""
 
 from __future__ import annotations
 

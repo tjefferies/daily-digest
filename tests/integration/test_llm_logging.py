@@ -1,4 +1,4 @@
-"""Integration test: LLM request/response logging to Postgres.
+"""Integration test: LLM request/response logging using in-memory SQLite.
 
 Proves that:
 1. log_llm_request writes a row with the full request body
@@ -17,7 +17,7 @@ from digest.db.models import Base, BatchLog
 
 @pytest.mark.integration
 class TestLLMRequestResponseLogging:
-    """Verify LLM request/response bodies are logged to Postgres."""
+    """Verify LLM request/response bodies are logged via in-memory SQLite."""
 
     @pytest.fixture(autouse=True)
     async def db(self):

@@ -1,7 +1,6 @@
-"""Dimension 4: urgency pass-through scoring (weight 0.15).
+"""Dimension 4: urgency pass-through scoring.
 
-Maps atom urgency directly to a score. Critical items always surface;
-low items get lower base scores.
+Maps atom urgency level to a configured score via lookup table.
 """
 
 from __future__ import annotations

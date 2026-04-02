@@ -66,8 +66,13 @@ def load_config(config_dir: str | None = None) -> dict[str, Any]:
 def _apply_env_overrides(config: dict[str, Any]) -> None:
     """Override config values from environment variables.
 
-    Supports NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD for Docker deployments
-    where the Neo4j hostname differs from localhost.
+    Supports the following environment variable overrides:
+        - NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD: Neo4j connection settings
+          for Docker deployments where the hostname differs from localhost.
+        - POSTGRES_DSN: PostgreSQL connection string.
+        - DATASET: Pipeline dataset selector (e.g. 'full' or 'demo').
+        - EXTRACTION_MODE: Pipeline extraction mode override.
+        - MAX_CONCURRENCY: Maximum pipeline concurrency (integer).
 
     Args:
         config: Mutable config dict to update in place.

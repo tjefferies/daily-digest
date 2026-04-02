@@ -1,7 +1,8 @@
 """Database layer: async SQLAlchemy models and session factory.
 
 Provides the Postgres persistence layer for messages, thread bundles,
-bundle memberships, and atoms. All operations are async via asyncpg.
+bundle memberships, context windows, atoms, and batch logs.
+All operations are async via asyncpg.
 """
 
 from digest.db.models import (

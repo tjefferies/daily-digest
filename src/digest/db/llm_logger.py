@@ -1,12 +1,12 @@
 """Async LLM request/response logger for Postgres.
 
-Logs the full JSON request and response bodies for every LLM call
-(batch or individual async) to the batch_log table. Enables
-debugging, cost tracking, and replay. Graceful degradation -
-logging failures never crash the pipeline.
+Logs the full JSON request and response bodies for LLM batch calls
+to the batch_log table. Enables debugging, cost tracking, and
+replay. Graceful degradation - logging failures never crash the
+pipeline.
 
-Deduplication: a (batch_id, stage) pair is logged once. Duplicate
-submissions are silently ignored.
+Deduplication: a batch_id is logged once. Duplicate submissions
+are silently ignored.
 """
 
 from __future__ import annotations
@@ -75,7 +75,7 @@ async def log_llm_response(
 
     Args:
         batch_id: Anthropic batch ID or unique request ID.
-        status: Final status (ended, canceled, succeeded, failed).
+        status: Final status (ended, completed, canceled, etc.).
         response_body: Full JSON response body from Anthropic.
     """
     try:

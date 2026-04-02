@@ -1,8 +1,8 @@
 """LLM client protocol and response types.
 
-Defines the provider-agnostic interface that all LLM adapters must
-satisfy, plus the normalized response type. Includes structured output
-support via tool_use for typed Pydantic model responses.
+Defines the async interface that the Anthropic LLM adapter satisfies,
+plus the normalized response type. Includes structured output support
+via tool_use for typed Pydantic model responses.
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ class LLMResponse:
 
 
 class AsyncLLMClient(Protocol):
-    """Protocol defining the async model-agnostic LLM client interface.
+    """Protocol defining the async LLM client interface.
 
     Any class implementing async create_message and create_structured_message
     can be used as an async LLM client for concurrent pipeline execution.
@@ -73,6 +73,6 @@ class AsyncLLMClient(Protocol):
             response_model: Pydantic model class for structured output.
 
         Returns:
-            Instance of the response_model, validated by instructor.
+            Instance of the response_model, validated from tool_use input.
         """
         ...

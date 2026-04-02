@@ -1,8 +1,8 @@
 """In-memory fixture store for prototype data loading.
 
-Loads synthetic JSON fixture files from a directory at startup and
-provides typed accessor functions for all pipeline layers. This is the
-single data source for the prototype - no database needed (section 9.2).
+Loads synthetic JSON fixture files from a directory and provides
+typed accessor functions for pipeline layers. Fixture data is also
+persisted to Postgres and Neo4j during pipeline runs.
 """
 
 import json

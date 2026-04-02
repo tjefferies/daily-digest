@@ -1,9 +1,9 @@
-"""Dimension 3: phase alignment via graduated distance scoring (weight 0.20).
+"""Dimension 3: phase alignment via graduated distance scoring.
 
 Scores how close an atom's phase_relevance is to the persona's
-current workstream phases. Uses phase distance (Concept → EVT →
-DVT → PVT → MP) to produce graduated scores instead of binary
-overlap/no-overlap, ensuring proportional weight influence.
+current workstream phases. Uses phase distance (Concept -> EVT ->
+DVT -> PVT -> MP) to produce graduated scores instead of binary
+overlap/no-overlap.
 """
 
 from __future__ import annotations

@@ -18,8 +18,9 @@ from digest.models.persona import RoleArchetype  # noqa: TC001 (runtime Pydantic
 class RosterEntry(BaseModel):
     """A team member with role-archetype classification.
 
-    Extends the raw dataset TeamMember with a role_archetype field
-    used by the Layer 4 role-type alignment scoring matrix.
+    Mirrors the core fields of the dataset TeamMember and adds a
+    role_archetype field used by the Layer 4 role-type alignment
+    scoring matrix.
 
     Attributes:
         user_id: Slack user ID.
@@ -131,9 +132,8 @@ _DEFAULT_ARCHETYPE: RoleArchetype = _scoring_cfg["default_archetype"]
 def _infer_archetype(title: str) -> RoleArchetype:
     """Infer role archetype from job title.
 
-    Uses exact match on known management/leadership titles,
-    defaulting to IC Engineer for all technical individual
-    contributor roles.
+    Uses exact match against a configured title-to-archetype mapping,
+    defaulting to IC Engineer for unrecognized titles.
 
     Args:
         title: The job title string.

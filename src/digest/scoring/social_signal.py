@@ -1,4 +1,4 @@
-"""Dimension 5: social signal scoring via collaborator graph (weight 0.15).
+"""Dimension 5: social signal scoring via collaborator graph.
 
 Scores how connected the atom's key participants are to the persona.
 If a close collaborator produced the atom, it scores higher.
@@ -29,8 +29,9 @@ def score_social_signal(atom: Atom, persona: Persona) -> float:
         persona: The persona to score against.
 
     Returns:
-        Float in [0, 1]. 1.0 if any key participant is a collaborator.
-        0.3 baseline for unknown participants.
+        Float in [0, 1]. 1.0 if the persona is a participant, configured
+        collaborator_overlap score if a collaborator is present, or
+        configured unknown_participants score otherwise.
     """
     if not atom.source.key_participants:
         return _NO_PARTICIPANTS

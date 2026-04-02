@@ -1,8 +1,8 @@
-"""Dimension 1: workstream proximity scoring (weight 0.30).
+"""Dimension 1: workstream proximity scoring.
 
 Score = max(persona.workstream_affinities[ws] for ws in all atom workstreams).
-Cross-workstream affected tags make this powerful - a spec change that
-affects your workstream scores high even from a channel you don't follow.
+Cross-workstream affected tags mean a spec change that affects your
+workstream scores high even from a channel you don't follow.
 """
 
 from __future__ import annotations

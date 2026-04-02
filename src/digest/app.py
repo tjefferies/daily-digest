@@ -2,7 +2,8 @@
 
 Configures the main application with CORS middleware for local
 frontend development and provides the digest pipeline endpoints.
-Wires the full 5-layer pipeline: Ingestion → Extraction → Scoring → Generation.
+Wires extraction (Ingestion → Extraction → Validation → Filter)
+with scoring and generation to produce per-persona digests.
 
 After pipeline/run, pre-generates digests for all 3 demo personas
 so the frontend loads instantly without additional LLM calls.
@@ -571,8 +572,7 @@ async def get_source_thread(atom_id: str) -> dict[str, Any]:
     thread_msgs = [
         {"user_id": m.user_id, "text": m.text, "ts": m.message_ts}
         for m in all_messages
-        if m.channel == channel
-        and (m.message_ts == thread_ts or m.thread_ts == thread_ts)
+        if m.channel == channel and (m.message_ts == thread_ts or m.thread_ts == thread_ts)
     ]
     thread_msgs.sort(key=lambda m: m["ts"])
 
