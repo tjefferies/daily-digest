@@ -29,6 +29,7 @@ from digest.generation.assembler import AsyncDigestAssembler
 from digest.graph.client import GraphClient
 from digest.llm.factory import create_async_llm_client
 from digest.pipeline import async_run_pipeline
+from digest.scoring.composite import score_atoms
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
@@ -132,10 +133,11 @@ async def _load_atoms_from_neo4j(date: str | None = None) -> list[Atom]:
 
 
 async def _precook_digests(atoms: list[Atom]) -> None:
-    """Pre-generate digests for all demo personas in parallel.
+    """Pre-generate digests and persist :DIGEST edges to Neo4j.
 
-    Uses asyncio.gather to generate all 3 persona digests concurrently,
-    reducing total generation time from ~90s to ~30s.
+    Uses asyncio.gather to generate all 3 persona digests concurrently.
+    Also scores atoms per persona and persists :DIGEST relationships
+    with score and created_at properties to Neo4j.
 
     Args:
         atoms: Extracted atoms from the pipeline.
@@ -145,6 +147,7 @@ async def _precook_digests(atoms: list[Atom]) -> None:
 
     client = create_async_llm_client()
     assembler = AsyncDigestAssembler(client)
+    created_at = datetime.now(tz=UTC).isoformat()
 
     async def _generate_one(persona_id: str) -> None:
         try:
@@ -156,6 +159,8 @@ async def _precook_digests(atoms: list[Atom]) -> None:
                 persona_id,
                 section_count,
             )
+            # Persist :DIGEST edges to Neo4j
+            await _persist_digest_edges(persona_id, atoms, created_at)
         except Exception:
             logger.warning(
                 "Failed to pre-generate digest for %s",
@@ -164,6 +169,38 @@ async def _precook_digests(atoms: list[Atom]) -> None:
             )
 
     await asyncio.gather(*[_generate_one(pid) for pid in _DEMO_PERSONAS])
+
+
+async def _persist_digest_edges(
+    persona_id: str,
+    atoms: list[Atom],
+    created_at: str,
+) -> None:
+    """Score atoms for a persona and persist :DIGEST edges to Neo4j.
+
+    Args:
+        persona_id: Persona user_id.
+        atoms: Atoms to score.
+        created_at: ISO timestamp for this digest run.
+    """
+    persona = get_persona(persona_id)
+    if persona is None:
+        return
+    scored = score_atoms(atoms, persona)
+    scored_pairs = [(str(sa.atom.atom_id), sa.score) for sa in scored]
+
+    neo4j_cfg = get_config()["pipeline"]["neo4j"]
+    graph = GraphClient(
+        uri=neo4j_cfg["uri"],
+        user=neo4j_cfg["user"],
+        password=neo4j_cfg["password"],
+    )
+    try:
+        await graph.persist_digest_scores(persona_id, scored_pairs, created_at)
+    except Exception:
+        logger.warning("Failed to persist :DIGEST edges for %s", persona_id, exc_info=True)
+    finally:
+        await graph.close()
 
 
 async def _run_pipeline_background() -> None:
@@ -312,22 +349,12 @@ async def pipeline_status() -> dict[str, Any]:
     }
 
 
-async def _resolve_atoms(date: str | None) -> list[Atom]:
-    """Load atoms for digest generation, optionally filtered by date.
-
-    Args:
-        date: Optional ISO date string to filter by creation date.
+async def _resolve_atoms() -> list[Atom]:
+    """Load atoms for digest generation from in-memory store or Neo4j.
 
     Returns:
         List of Atom objects.
     """
-    if date:
-        try:
-            return await _load_atoms_from_neo4j(date=date)
-        except Exception:
-            logger.warning("Neo4j date-filtered query failed", exc_info=True)
-            return []
-
     atoms = list(_atom_store)
     if atoms:
         return atoms
@@ -339,6 +366,42 @@ async def _resolve_atoms(date: str | None) -> list[Atom]:
         return []
 
 
+async def _load_digest_from_graph(
+    persona_id: str,
+    target_date: str,
+) -> dict[str, Any] | None:
+    """Load a pre-scored digest from Neo4j :DIGEST edges.
+
+    Args:
+        persona_id: Persona user_id.
+        target_date: ISO date string to filter by.
+
+    Returns:
+        Digest dict with pre-scored sections, or None if no data.
+    """
+    neo4j_cfg = get_config()["pipeline"]["neo4j"]
+    graph = GraphClient(
+        uri=neo4j_cfg["uri"],
+        user=neo4j_cfg["user"],
+        password=neo4j_cfg["password"],
+    )
+    try:
+        results = await graph.load_digest_by_date(persona_id, target_date)
+        if not results:
+            return None
+        # Extract atoms (already ordered by score from Neo4j)
+        atoms = [atom for atom, _score in results]
+        # Generate digest sections from pre-scored atoms
+        client = create_async_llm_client()
+        assembler = AsyncDigestAssembler(client)
+        return await assembler.assemble(persona_id, atoms)
+    except Exception:
+        logger.warning("Failed to load digest from graph", exc_info=True)
+        return None
+    finally:
+        await graph.close()
+
+
 @app.get("/digest/{persona_id}")
 async def get_digest(
     persona_id: str,
@@ -347,13 +410,14 @@ async def get_digest(
 ) -> dict[str, Any]:
     """Retrieve the generated digest for a specific persona.
 
-    Serves from pre-generated cache when available. Falls back to
-    on-demand generation from in-memory atoms or Neo4j.
+    Serves from pre-generated cache when available. For date-filtered
+    queries, loads pre-scored atoms from Neo4j :DIGEST edges.
 
     Args:
         persona_id: Slack user ID of the persona.
         phase_override: Optional workstream:phase override (e.g. "chassis:DVT").
-        date: Optional ISO date string (e.g. "2026-04-01") to filter atoms.
+        date: Optional ISO date string (e.g. "2026-04-01") to filter by
+            :DIGEST edge created_at.
 
     Returns:
         A dict with persona_id, generated_at, and sections list.
@@ -373,11 +437,17 @@ async def get_digest(
                 detail=f"Invalid phase_override: {phase_override!r}. Expected 'workstream:phase'",
             )
 
-    # Return cached digest if available (no override, no date filter)
-    if phase_override is None and date is None and persona_id in _digest_cache:
+    # Date filter: use :DIGEST edges from Neo4j
+    if date is not None:
+        result = await _load_digest_from_graph(persona_id, date)
+        if result:
+            return result
+
+    # Return cached digest if available (no override)
+    if phase_override is None and persona_id in _digest_cache:
         return _digest_cache[persona_id]
 
-    atoms = await _resolve_atoms(date)
+    atoms = await _resolve_atoms()
     if not atoms:
         return {
             "persona_id": persona_id,

@@ -32,6 +32,9 @@ _SCHEMA_STATEMENTS: list[LiteralString] = [
     "CREATE INDEX workstream_name IF NOT EXISTS FOR (w:Workstream) ON (w.name)",
     "CREATE INDEX channel_name IF NOT EXISTS FOR (c:Channel) ON (c.name)",
     "CREATE INDEX participant_handle IF NOT EXISTS FOR (p:Participant) ON (p.handle)",
+    # Person node + DIGEST relationship indexes
+    "CREATE CONSTRAINT person_id IF NOT EXISTS FOR (p:Person) REQUIRE p.user_id IS UNIQUE",
+    "CREATE INDEX digest_created IF NOT EXISTS FOR ()-[d:DIGEST]-() ON (d.created_at)",
 ]
 
 _PERSIST_ATOM_CYPHER = """\
@@ -120,6 +123,32 @@ RETURN a.atom_id AS atom_id, a.type AS type, a.summary AS summary,
        collect(DISTINCT ws_aff.name) AS affected,
        collect(DISTINCT p.handle) AS participants
 ORDER BY created_at DESC
+"""
+
+_PERSIST_DIGEST_CYPHER = """\
+MERGE (p:Person {user_id: $persona_id})
+WITH p
+MATCH (a:Atom {atom_id: $atom_id})
+MERGE (p)-[d:DIGEST]->(a)
+SET d.score = $score,
+    d.created_at = datetime($created_at)
+"""
+
+_LOAD_DIGEST_BY_DATE_CYPHER = """\
+MATCH (p:Person {user_id: $persona_id})-[d:DIGEST]->(a:Atom)
+WHERE date(d.created_at) = date($target_date)
+OPTIONAL MATCH (a)-[:ORIGINATES_IN]->(ws_orig:Workstream)
+OPTIONAL MATCH (a)-[:AFFECTS]->(ws_aff:Workstream)
+OPTIONAL MATCH (a)-[:INVOLVES]->(part:Participant)
+RETURN a.atom_id AS atom_id, a.type AS type, a.summary AS summary,
+       a.detail AS detail, a.urgency AS urgency, a.confidence AS confidence,
+       a.implicit_decision AS implicit_decision, a.phase_relevance AS phase_relevance,
+       a.channel AS channel, a.thread_ts AS thread_ts,
+       d.score AS score, d.created_at AS created_at,
+       ws_orig.name AS originating,
+       collect(DISTINCT ws_aff.name) AS affected,
+       collect(DISTINCT part.handle) AS participants
+ORDER BY d.score DESC
 """
 
 _PROCESSED_THREAD_TS_CYPHER = """\
@@ -303,6 +332,88 @@ class GraphClient:
             )
         logger.info("Loaded %d atoms from graph for date %s", len(atoms), target_date)
         return atoms
+
+    async def persist_digest_scores(
+        self,
+        persona_id: str,
+        scored_atoms: list[tuple[str, float]],
+        created_at: str,
+    ) -> None:
+        """Persist :DIGEST relationships from a :Person to scored :Atoms.
+
+        Args:
+            persona_id: Persona user_id (e.g. "U001").
+            scored_atoms: List of (atom_id, score) tuples.
+            created_at: ISO 8601 timestamp for the digest run.
+        """
+        async with self._driver.session() as session:
+            for atom_id, score in scored_atoms:
+                await session.run(
+                    _PERSIST_DIGEST_CYPHER,
+                    persona_id=persona_id,
+                    atom_id=atom_id,
+                    score=score,
+                    created_at=created_at,
+                )
+        logger.info(
+            "Persisted %d :DIGEST edges for %s at %s",
+            len(scored_atoms),
+            persona_id,
+            created_at,
+        )
+
+    async def load_digest_by_date(
+        self,
+        persona_id: str,
+        target_date: str,
+    ) -> list[tuple[Atom, float]]:
+        """Load scored atoms for a persona filtered by digest date.
+
+        Args:
+            persona_id: Persona user_id.
+            target_date: ISO date string (e.g. "2026-04-01").
+
+        Returns:
+            List of (Atom, score) tuples ordered by score descending.
+        """
+        async with self._driver.session() as session:
+            result = await session.run(
+                _LOAD_DIGEST_BY_DATE_CYPHER,
+                persona_id=persona_id,
+                target_date=target_date,
+            )
+            records = await result.data()
+
+        atoms_with_scores: list[tuple[Atom, float]] = []
+        for r in records:
+            atom = Atom(
+                atom_id=r["atom_id"],
+                type=r["type"],
+                summary=r["summary"],
+                detail=r["detail"] or "",
+                source=AtomSource(
+                    channel=r["channel"] or "",
+                    thread_ts=r["thread_ts"] or "",
+                    message_range=[0, 0],
+                    key_participants=r["participants"],
+                ),
+                workstreams=AtomWorkstreams(
+                    originating=r["originating"] or "",
+                    affected=[a for a in r["affected"] if a],
+                ),
+                urgency=r["urgency"],
+                confidence=r["confidence"],
+                implicit_decision=r.get("implicit_decision", False),
+                phase_relevance=r.get("phase_relevance", []),
+            )
+            atoms_with_scores.append((atom, r["score"]))
+        logger.info(
+            "Loaded %d digest atoms for %s on %s",
+            len(atoms_with_scores),
+            persona_id,
+            target_date,
+        )
+        return atoms_with_scores
 
     async def processed_thread_ts(self) -> set[str]:
         """Return the set of thread_ts values that already have atoms.
