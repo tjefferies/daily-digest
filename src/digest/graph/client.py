@@ -22,9 +22,16 @@ logger = logging.getLogger(__name__)
 
 # Schema DDL executed once on startup.
 _SCHEMA_STATEMENTS: list[LiteralString] = [
+    # Atom indexes
     "CREATE CONSTRAINT atom_id IF NOT EXISTS FOR (a:Atom) REQUIRE a.atom_id IS UNIQUE",
     "CREATE INDEX atom_type IF NOT EXISTS FOR (a:Atom) ON (a.type)",
     "CREATE INDEX atom_created IF NOT EXISTS FOR (a:Atom) ON (a.created_at)",
+    "CREATE INDEX atom_thread_ts IF NOT EXISTS FOR (a:Atom) ON (a.thread_ts)",
+    "CREATE INDEX atom_urgency IF NOT EXISTS FOR (a:Atom) ON (a.urgency)",
+    # Entity indexes for relationship traversal
+    "CREATE INDEX workstream_name IF NOT EXISTS FOR (w:Workstream) ON (w.name)",
+    "CREATE INDEX channel_name IF NOT EXISTS FOR (c:Channel) ON (c.name)",
+    "CREATE INDEX participant_handle IF NOT EXISTS FOR (p:Participant) ON (p.handle)",
 ]
 
 _PERSIST_ATOM_CYPHER = """\

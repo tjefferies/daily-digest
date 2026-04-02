@@ -48,7 +48,7 @@ Three things make this hard:
 Assumptions
 ---------------------------------------------------------------------------
 
-The prototype is designed for a specific operational context and makes many simplifying assumptions:
+The prototype is designed for a small robotics hardware company and makes many simplifying assumptions:
 
 .. list-table::
    :header-rows: 1
