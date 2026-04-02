@@ -143,11 +143,12 @@ SET r.score = $score
 """
 
 _LOAD_DIGEST_RUN_CYPHER = """\
-MATCH (p:Person {user_id: $persona_id})-[:HAS_DIGEST]->(dr:DigestRun)
+MATCH (p:Person {user_id: $persona_id})
+      -[:HAS_DIGEST]->(dr:DigestRun)
+      -[:INCLUDES]->(a:Atom)
 WHERE dr.run_date = date($target_date)
 RETURN dr.sections_json AS sections_json,
-       dr.generated_at AS generated_at
-LIMIT 1
+       max(a.created_at) AS latest_atom_at
 """
 
 _LOAD_DIGEST_ATOMS_CYPHER = """\
@@ -400,7 +401,7 @@ class GraphClient:
         if record and record.get("sections_json"):
             return {
                 "sections_json": record["sections_json"],
-                "generated_at": record["generated_at"],
+                "generated_at": record["latest_atom_at"],
             }
         return None
 
