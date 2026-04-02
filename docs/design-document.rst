@@ -669,75 +669,10 @@ Production metrics: time-to-awareness (target: same-day), missed-signal rate
 (target: zero above critical threshold), engagement rate (target: 70%+),
 false positive rate in "Requires Action" (target: below 15%).
 
----------------------------------------------------------------------------
-11. Production Path
----------------------------------------------------------------------------
-
-11.1 Multi-Provider LLM
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-The ``AsyncLLMClient`` protocol supports additional adapters (OpenAI, Google,
-self-hosted via vLLM). Re-add when a second provider is needed. The protocol
-includes provider failover and model evaluation harness capabilities.
-
-11.2 Stakeholder Questions
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-These questions should be answered before production scoping:
-
-**IP classification:** Can Slack content be processed by cloud LLM, or is
-on-prem required? This is the highest-impact question.
-
-**PM tool integration:** Does the team use Jira/Linear for phase tracking?
-Automated phase detection eliminates manual toggles.
-
-**Multi-source ingestion:** Do decisions also occur in email, Google Docs,
-CAD comments, or PLM systems?
-
-**User research:** Concrete "I missed X and it cost us Y" stories are the
-best input for tuning extraction and scoring.
-
-11.3 Live Slack Integration
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Replace the fixture with real Slack API via OAuth bot token. Scopes:
-``channels:history``, ``channels:read``, ``users:read``. Implement
-incremental ingestion with high-water mark per channel. Handle message edits
-and deletes. Live Slack integration also enables deep-linking digest items
-back to their source messages. Each atom's ``source.channel`` and
-``source.thread_ts`` become clickable Slack URLs rather than static
-references.
-
-11.4 Scheduled Pipeline
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Replace the manual "Run Pipeline" button with daily scheduled execution
-(cron or Slack webhook trigger). Pre-cook digests for all personas before
-the workday starts.
-
-11.5 Adaptive Feedback Loop
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Track implicit signals (dismissals, pins, click-throughs, dwell time) to
-adjust per-user scoring weights over time. Exponential moving average with
-slow learning rate (alpha = 0.05). Guardrails: weights cannot deviate more than
-+/- 0.15 from defaults.
-
-11.6 Multi-Team Support
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Generalize from the 8-channel robotics team to arbitrary Slack workspaces.
-Requires dynamic channel discovery, workstream inference, and persona
-auto-detection from Slack metadata.
-
-11.7 Evaluation Framework
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Golden-set annotations with precision/recall metrics. Hallucination rate
-tracking. Graded scoring beyond binary valid/invalid.
+For the production roadmap, see :doc:`next-steps`.
 
 ---------------------------------------------------------------------------
-12. Complexity Analysis
+11. Complexity Analysis
 ---------------------------------------------------------------------------
 
 12.1 Pipeline Stage Complexity
@@ -859,7 +794,7 @@ insert would reduce round-trips for initial loads.
 vectors and D = 384 dimensions. Mitigated by cache-hit checks before add.
 
 ---------------------------------------------------------------------------
-13. Architecture Decision Records
+12. Architecture Decision Records
 ---------------------------------------------------------------------------
 
 **ADR-001: Batch over stream.** The target scale (300 to 500 msgs/day) does

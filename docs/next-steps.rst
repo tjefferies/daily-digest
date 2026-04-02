@@ -57,6 +57,9 @@ The tool becomes immediately useful instead of a demo.
 - Deduplicate on ``(channel_id, message_ts)`` composite key
 - The existing ``SlackMessage`` model and ingestion pipeline require
   zero changes. Only the data source switches from fixture to API.
+- Enables deep-linking: each digest item's ``source.channel`` and
+  ``source.thread_ts`` become clickable Slack URLs instead of static
+  references
 
 Priority 2: PLM / Enterprise Resource Planning Connectors
 ----------------------------------
