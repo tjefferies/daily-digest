@@ -1,4 +1,4 @@
-"""YAML configuration loader for EverCurrent.
+"""YAML configuration loader for Daily Digest Tool.
 
 Provides centralized access to all configuration values extracted
 from YAML files in the config/ directory.

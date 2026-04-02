@@ -1404,3 +1404,12 @@ PERSONA_SVG_COLORS=$(bd create \
   --description="In docs/_static/persona-model.svg: 1) Make all boxes surrounding 'Maya Chen' a single slate/neutral color, consistent with architecture.svg, data-flow.svg, and scoring-dimensions.svg theme. 2) Preserve the 'Maya Chen' box color as-is." \
   --silent)
 echo "    Persona SVG Colors:   $PERSONA_SVG_COLORS"
+
+# ─── TEST DIRECTORY REFACTOR ────────────────────────────────────────────────
+TEST_REFACTOR=$(bd create \
+  --title="Refactor tests/ into unit/ and integration/ subdirectories" \
+  --type=task --priority=1 \
+  --description="Move all unit tests under tests/unit/ and all integration tests under tests/integration/. Update Makefile, README.md, pyproject.toml, GitHub Actions, quality-gates.sh, loop-dev.txt, docs. Verify all 527 tests pass." \
+  --acceptance="1. tests/unit/ has all unit tests. 2. tests/integration/ has all integration tests. 3. No test files at tests/ root. 4. All references updated. 5. All tests pass. 6. All quality gates pass." \
+  --silent)
+echo "    Test Refactor:        $TEST_REFACTOR"

@@ -1,4 +1,4 @@
-"""FastAPI application for EverCurrent.
+"""FastAPI application for Daily Digest Tool.
 
 Configures the main application with CORS middleware for local
 frontend development and provides the digest pipeline endpoints.
@@ -55,7 +55,7 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(
-    title="EverCurrent",
+    title="Daily Digest Tool",
     description="Context-aware Slack daily digest for robotics hardware teams",
     version="0.1.0",
     lifespan=lifespan,

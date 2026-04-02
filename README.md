@@ -209,13 +209,17 @@ evercurrent/
 │   ├── smoke-test.sh              #   E2E 3-window smoke test
 │   └── smoke_test_runner.py       #   Smoke test Python runner
 ├── tests/                         # 527 tests
-│   ├── test_integration/          #   FAISS + Postgres roundtrip tests
-│   ├── test_db/                   #   SQLAlchemy model + repository tests
-│   ├── test_extraction/           #   Batch runner, rate limits, validation
-│   ├── test_ingestion/            #   Threads, continuations, embeddings, vectorstore
-│   ├── test_scoring/              #   5 scoring dimensions + calibration
-│   ├── test_generation/           #   Async digest generation
-│   └── ...                        #   Config, endpoints, graph, models, etc.
+│   ├── unit/                      #   506 unit tests
+│   │   ├── test_config/           #     Config loader tests
+│   │   ├── test_context/          #     Personas, phases, workstreams
+│   │   ├── test_dataset/          #     Message loading, schema, demo data
+│   │   ├── test_db/               #     SQLAlchemy models + repository
+│   │   ├── test_extraction/       #     Batch runner, validation, rate limits
+│   │   ├── test_generation/       #     Async digest generation
+│   │   ├── test_ingestion/        #     Threads, continuations, embeddings
+│   │   ├── test_scoring/          #     5 scoring dimensions + calibration
+│   │   └── ...                    #     App, endpoints, graph, models, etc.
+│   └── integration/               #   21 integration tests (FAISS, Postgres, Neo4j, Batch API)
 ├── RETRO_1.md                     # V2 retrospective (lessons learned)
 └── pyproject.toml                 # Project config (uv, ruff, pytest, radon)
 ```

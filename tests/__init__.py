@@ -1,1 +1,1 @@
-"""Test suite for EverCurrent."""
+"""Test suite for Daily Digest Tool."""

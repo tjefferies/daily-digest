@@ -26,7 +26,7 @@ if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
     exit 1
 fi
 
-printf "${YELLOW}▶ EverCurrent E2E Smoke Test${NC}\n"
+printf "${YELLOW}▶ Daily Digest Tool E2E Smoke Test${NC}\n"
 printf "  Testing 3 random windows through the full pipeline...\n\n"
 
 # ── Run the Python smoke test ─────────────────────────────────────────────────

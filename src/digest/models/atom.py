@@ -57,7 +57,7 @@ class AtomWorkstreams(BaseModel):
 class Atom(BaseModel):
     """An information atom extracted from Slack conversations.
 
-    Atoms are the fundamental unit of the EverCurrent extraction pipeline.
+    Atoms are the fundamental unit of the Daily Digest Tool extraction pipeline.
     Each atom represents a single piece of actionable information (a decision,
     spec change, blocker, etc.) with full provenance and scoring metadata.
 

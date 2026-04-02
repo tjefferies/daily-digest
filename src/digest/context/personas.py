@@ -42,7 +42,7 @@ def _build_personas() -> list[Persona]:
 
 
 DEMO_PERSONAS: list[Persona] = _build_personas()
-"""The three demo personas for the EverCurrent prototype."""
+"""The three demo personas for the Daily Digest Tool prototype."""
 
 _PERSONA_INDEX: dict[str, Persona] = {p.user_id: p for p in DEMO_PERSONAS}
 

@@ -44,8 +44,8 @@ For each piece of functionality in the issue:
 
 **3a. Write the test FIRST.**
 
-Place tests in `tests/` mirroring `src/` structure:
-- `src/evercurrent/ingestion/loader.py` -> `tests/test_ingestion/test_loader.py`
+Place tests in `tests/unit/` mirroring `src/` structure:
+- `src/digest/ingestion/loader.py` -> `tests/unit/test_ingestion/test_loader.py`
 
 Every test file must have:
 - Typed fixtures with explicit return types

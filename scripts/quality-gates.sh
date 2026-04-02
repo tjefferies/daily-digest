@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# quality-gates.sh - Full quality gate runner for EverCurrent
+# quality-gates.sh - Full quality gate runner for Daily Digest Tool
 # Used by pre-commit hook and manual invocation.
 # Exit codes: 0 = all pass, 1 = gate failed
 
@@ -41,7 +41,7 @@ if [ ! -d "src" ] && [ ! -d "tests" ]; then
 fi
 
 echo "═══════════════════════════════════════"
-echo "  EverCurrent Quality Gates"
+echo "  Daily Digest Tool Quality Gates"
 echo "═══════════════════════════════════════"
 echo ""
 

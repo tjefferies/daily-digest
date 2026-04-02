@@ -1,4 +1,4 @@
-"""Sphinx configuration for EverCurrent documentation."""
+"""Sphinx configuration for Daily Digest Tool documentation."""
 
 import sys
 from pathlib import Path

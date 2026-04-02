@@ -1,4 +1,4 @@
-"""Synthetic dataset schemas and fixtures for EverCurrent.
+"""Synthetic dataset schemas and fixtures for Daily Digest Tool.
 
 Defines the data contracts between the synthetic Slack dataset
 and the ingestion layer: raw message format, channel registry,

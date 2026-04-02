@@ -9,16 +9,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
-_REPO_ROOT = Path(__file__).resolve().parents[1]
+_REPO_ROOT = Path(__file__).resolve().parents[2]
 _ENV_SAMPLE = _REPO_ROOT / ".env.sample"
 
 # The canonical list of env vars used by this project.
 # Each tuple: (VAR_NAME, required: bool)
 _EXPECTED_VARS: list[tuple[str, bool]] = [
-    # LLM provider API keys (read implicitly by SDK constructors)
+    # LLM provider API key (Anthropic-only)
     ("ANTHROPIC_API_KEY", True),
-    ("OPENAI_API_KEY", False),
-    ("GOOGLE_API_KEY", False),
     # Neo4j knowledge graph connection
     ("NEO4J_URI", True),
     ("NEO4J_USER", True),

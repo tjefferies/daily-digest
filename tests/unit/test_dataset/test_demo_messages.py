@@ -13,7 +13,7 @@ import pytest
 
 from digest.dataset.schema import CHANNELS
 
-_DEMO_PATH = Path(__file__).resolve().parents[2] / "data" / "demo_messages.json"
+_DEMO_PATH = Path(__file__).resolve().parents[3] / "data" / "demo_messages.json"
 
 
 @pytest.fixture

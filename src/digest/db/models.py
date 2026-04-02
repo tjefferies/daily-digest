@@ -1,4 +1,4 @@
-"""SQLAlchemy async ORM models for the EverCurrent BCNF schema.
+"""SQLAlchemy async ORM models for the Daily Digest Tool BCNF schema.
 
 Maps the Postgres tables for messages, thread bundles, bundle
 memberships, and atoms. Uses JSONB for raw message payloads and

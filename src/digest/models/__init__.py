@@ -1,4 +1,4 @@
-"""Pydantic models for EverCurrent domain objects."""
+"""Pydantic models for Daily Digest Tool domain objects."""
 
 from digest.models.atom import Atom, AtomSource, AtomType, AtomWorkstreams
 from digest.models.digest import Digest, DigestSection, SectionType

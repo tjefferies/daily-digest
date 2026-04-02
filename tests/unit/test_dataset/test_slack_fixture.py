@@ -13,7 +13,7 @@ from pathlib import Path
 from digest.dataset.messages import load_messages
 from digest.dataset.schema import CHANNELS
 
-_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "data" / "slack_messages.json"
+_FIXTURE_PATH = Path(__file__).resolve().parents[3] / "data" / "slack_messages.json"
 
 
 class TestFixtureFileStructure:

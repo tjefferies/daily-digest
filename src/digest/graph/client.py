@@ -108,7 +108,7 @@ _ATOM_COUNT_CYPHER = "MATCH (a:Atom) RETURN count(a) AS count"
 
 
 class GraphClient:
-    """Async Neo4j client for the EverCurrent knowledge graph.
+    """Async Neo4j client for the Daily Digest Tool knowledge graph.
 
     Wraps the neo4j AsyncDriver to provide typed methods for
     persisting atoms and running temporal queries.

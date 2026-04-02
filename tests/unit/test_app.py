@@ -12,7 +12,7 @@ class TestAppSetup:
     def test_app_exists(self) -> None:
         """Verify the FastAPI app is created with the correct title."""
         assert app is not None
-        assert app.title == "EverCurrent"
+        assert app.title == "Daily Digest Tool"
 
     @pytest.mark.asyncio
     async def test_health_endpoint(self) -> None:

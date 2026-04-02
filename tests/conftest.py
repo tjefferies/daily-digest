@@ -1,1 +1,1 @@
-"""Shared pytest fixtures for EverCurrent tests."""
+"""Shared pytest fixtures for Daily Digest Tool tests."""
