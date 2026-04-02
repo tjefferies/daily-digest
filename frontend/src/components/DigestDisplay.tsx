@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { Digest, DigestSection, SectionType } from '../types'
 
 /** Visual config per section type: colors, icons, and emphasis. */
@@ -32,30 +33,50 @@ const SECTION_STYLES: Record<
 }
 
 function SectionCard({ section }: { section: DigestSection }) {
+  const [expanded, setExpanded] = useState(true)
   const style = SECTION_STYLES[section.section_type]
+  const itemCount = section.items?.length ?? 0
+
   return (
-    <div className={`rounded-lg border ${style.border} ${style.bg} p-4`}>
-      <h2
-        className={`text-sm font-semibold uppercase tracking-wide ${style.text} mb-3`}
+    <div className={`rounded-lg border ${style.border} ${style.bg}`}>
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className={`w-full flex items-center justify-between p-4 text-left cursor-pointer`}
       >
-        {style.icon} {section.title}
-      </h2>
-      {(!section.items || section.items.length === 0) ? (
-        <p className="text-sm text-gray-400 italic">No items in this section.</p>
-      ) : (
-        <ul className="space-y-3">
-          {section.items.map((item) => (
-            <li key={item.atom_id} className="bg-white rounded-md p-3 shadow-sm">
-              <p className="font-medium text-sm text-gray-900">
-                {item.headline}
-              </p>
-              <p className="text-sm text-gray-600 mt-1">{item.context}</p>
-              <span className="inline-block mt-1.5 text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
-                {item.source_channel}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <h2
+          className={`text-sm font-semibold uppercase tracking-wide ${style.text}`}
+        >
+          {style.icon} {section.title}
+          {itemCount > 0 && (
+            <span className="ml-2 text-xs font-normal opacity-70">
+              ({itemCount})
+            </span>
+          )}
+        </h2>
+        <span className={`text-sm ${style.text} transition-transform ${expanded ? 'rotate-0' : '-rotate-90'}`}>
+          ▼
+        </span>
+      </button>
+      {expanded && (
+        <div className="px-4 pb-4">
+          {itemCount === 0 ? (
+            <p className="text-sm text-gray-400 italic">No items in this section.</p>
+          ) : (
+            <ul className="space-y-3">
+              {section.items.map((item) => (
+                <li key={item.atom_id} className="bg-white rounded-md p-3 shadow-sm">
+                  <p className="font-medium text-sm text-gray-900">
+                    {item.headline}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">{item.context}</p>
+                  <span className="inline-block mt-1.5 text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                    {item.source_channel}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       )}
     </div>
   )
