@@ -55,4 +55,37 @@ autodoc_typehints = "description"
 # Intersphinx
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
+    "sqlalchemy": ("https://docs.sqlalchemy.org/en/20/", None),
+    "pydantic": ("https://docs.pydantic.dev/latest/", None),
 }
+
+# Suppress noisy warnings from third-party docstrings
+suppress_warnings = [
+    "ref.ref",       # Unknown cross-reference targets from SQLAlchemy
+    "ref.doc",       # Missing document references
+]
+
+# Nitpick: ignore unresolvable type references from third-party libs
+nitpick_ignore = [
+    ("py:class", "JsonValue"),
+    ("py:class", "SQLCoreOperations"),
+    ("py:class", "Mapper"),
+    ("py:class", "TableClause"),
+    ("py:class", "AsyncLLMClient"),
+    ("py:class", "Embedder"),
+    ("py:class", "ScoredAtom"),
+    ("py:class", "FilterResult"),
+    ("py:class", "SlackMessage"),
+    ("py:class", "ThreadBundle"),
+    ("py:class", "ContextWindow"),
+    ("py:class", "Atom"),
+    ("py:class", "Persona"),
+    ("py:class", "DigestSection"),
+    ("py:class", "BatchExtractionRunner"),
+    ("py:class", "PipelineResult"),
+]
+
+# Don't fail on unknown roles from SQLAlchemy docstrings
+rst_prolog = """
+.. role:: paramref
+"""
