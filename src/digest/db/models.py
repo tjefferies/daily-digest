@@ -79,19 +79,37 @@ class Message(Base):
 
     __tablename__ = "message"
 
-    message_ts: Mapped[str] = mapped_column(String, primary_key=True)
+    message_ts: Mapped[str] = mapped_column(
+        String,
+        primary_key=True,
+        comment="Slack message timestamp, unique ID within a channel",
+    )
     thread_ts: Mapped[str | None] = mapped_column(
         String,
         ForeignKey("message.message_ts", deferrable=True, initially="DEFERRED"),
         nullable=True,
+        comment="Parent thread timestamp; NULL for top-level messages",
     )
-    channel: Mapped[str] = mapped_column(String, nullable=False)
-    user_id: Mapped[str] = mapped_column(String, nullable=False)
-    raw: Mapped[dict] = mapped_column(JsonType, nullable=False)
+    channel: Mapped[str] = mapped_column(
+        String,
+        nullable=False,
+        comment="Slack channel name with # prefix (e.g. #chassis-design)",
+    )
+    user_id: Mapped[str] = mapped_column(
+        String,
+        nullable=False,
+        comment="Slack user ID of the message author (e.g. U001)",
+    )
+    raw: Mapped[dict] = mapped_column(
+        JsonType,
+        nullable=False,
+        comment="Full Slack API message payload as JSONB for replay/debugging",
+    )
 
     __table_args__ = (
         Index("idx_message_thread", "thread_ts"),
         Index("idx_message_channel", "channel"),
+        {"comment": "Raw Slack messages ingested from the API or fixture data"},
     )
 
 
@@ -110,16 +128,26 @@ class ThreadBundle(Base):
         String,
         ForeignKey("message.message_ts"),
         primary_key=True,
+        comment="Root message timestamp; also FK to message table",
     )
-    channel: Mapped[str] = mapped_column(String, nullable=False)
+    channel: Mapped[str] = mapped_column(
+        String,
+        nullable=False,
+        comment="Channel where this thread lives",
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(tz=UTC),
+        comment="When this bundle was first persisted to Postgres",
     )
 
     memberships: Mapped[list[BundleMembership]] = relationship(
         back_populates="bundle",
         cascade="all, delete-orphan",
+    )
+
+    __table_args__ = (
+        {"comment": "Thread bundles grouping related messages into conversational units"},
     )
 
 
@@ -140,28 +168,37 @@ class BundleMembership(Base):
         String,
         ForeignKey("message.message_ts"),
         primary_key=True,
+        comment="FK to message; a message belongs to exactly one bundle",
     )
     bundle_ts: Mapped[str] = mapped_column(
         String,
         ForeignKey("thread_bundle.root_message_ts"),
         nullable=False,
+        comment="FK to thread_bundle; which bundle this message belongs to",
     )
     role: Mapped[BundleRole] = mapped_column(
         Enum(BundleRole, name="bundle_role"),
         nullable=False,
+        comment="Role: root (thread starter), reply (explicit), or continuation (semantic match)",
     )
     confidence: Mapped[float] = mapped_column(
         Float,
         nullable=False,
         default=1.0,
+        comment="Match confidence: 1.0 for structural, cosine similarity for semantic",
     )
-    ordinal: Mapped[int] = mapped_column(Integer, nullable=False)
+    ordinal: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        comment="Position within the bundle (0-indexed, chronological)",
+    )
 
     bundle: Mapped[ThreadBundle] = relationship(back_populates="memberships")
 
     __table_args__ = (
         CheckConstraint("confidence > 0.0 AND confidence <= 1.0", name="ck_confidence"),
         Index("idx_membership_bundle", "bundle_ts"),
+        {"comment": "Maps messages to thread bundles with role, confidence, and ordering"},
     )
 
 
@@ -186,13 +223,28 @@ class ContextWindow(Base):
         String,
         ForeignKey("thread_bundle.root_message_ts"),
         primary_key=True,
+        comment="FK to thread_bundle; 1:1 relationship (one window per bundle)",
     )
-    channel: Mapped[str] = mapped_column(String, nullable=False)
-    compressed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    raw: Mapped[dict] = mapped_column(JsonType, nullable=False)
+    channel: Mapped[str] = mapped_column(
+        String,
+        nullable=False,
+        comment="Channel where the source thread lives",
+    )
+    compressed: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=False,
+        comment="Whether the window was compressed to fit within LLM token limits",
+    )
+    raw: Mapped[dict] = mapped_column(
+        JsonType,
+        nullable=False,
+        comment="Full context window as JSONB: thread_text, message_range, token estimate",
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(tz=UTC),
+        comment="When this context window was assembled",
     )
 
     bundle: Mapped[ThreadBundle] = relationship(backref="context_window")
@@ -202,6 +254,7 @@ class ContextWindow(Base):
         Index("idx_cw_channel", "channel"),
         Index("idx_cw_compressed", "compressed"),
         Index("idx_cw_created", "created_at"),
+        {"comment": "Assembled text windows sent to the LLM for atom extraction"},
     )
 
 
@@ -227,35 +280,54 @@ class Atom(Base):
         Uuid,
         primary_key=True,
         default=uuid.uuid4,
+        comment="UUID primary key; generated by the pipeline, not the LLM",
     )
     type: Mapped[AtomType] = mapped_column(
         Enum(AtomType, name="atom_type"),
         nullable=False,
+        comment="Atom type (8 types: DECISION, SPEC_CHANGE, etc.)",
     )
-    summary: Mapped[str] = mapped_column(Text, nullable=False)
-    detail: Mapped[str] = mapped_column(Text, nullable=False)
+    summary: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        comment="One-line summary of what happened",
+    )
+    detail: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        comment="Expanded explanation with context and implications",
+    )
     urgency: Mapped[UrgencyLevel] = mapped_column(
         Enum(UrgencyLevel, name="urgency_level"),
         nullable=False,
+        comment="Urgency: low, medium, high, or critical",
     )
     confidence: Mapped[float] = mapped_column(
         Float,
         nullable=False,
+        comment="LLM extraction confidence [0.0-1.0]; halved if validation fails",
     )
     implicit_decision: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
         default=False,
+        comment="Whether this decision was implicit (stated without formal agreement)",
     )
-    source: Mapped[dict] = mapped_column(JsonType, nullable=False)
+    source: Mapped[dict] = mapped_column(
+        JsonType,
+        nullable=False,
+        comment="Provenance JSONB: channel, thread_ts, message_range, key_participants",
+    )
     source_bundle_ts: Mapped[str] = mapped_column(
         String,
         ForeignKey("context_window.bundle_ts"),
         nullable=False,
+        comment="FK to context_window; which LLM input produced this atom",
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(tz=UTC),
+        comment="When this atom was extracted and persisted",
     )
 
     context_window: Mapped[ContextWindow] = relationship(back_populates="atoms")
@@ -268,6 +340,7 @@ class Atom(Base):
         Index("idx_atom_bundle", "source_bundle_ts"),
         Index("idx_atom_type", "type"),
         Index("idx_atom_created", "created_at"),
+        {"comment": "Extracted information atoms with LLM provenance and scoring metadata"},
     )
 
 
@@ -291,23 +364,56 @@ class BatchLog(Base):
 
     __tablename__ = "batch_log"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    batch_id: Mapped[str] = mapped_column(String, nullable=False)
-    stage: Mapped[str] = mapped_column(String, nullable=False)
-    request_count: Mapped[int] = mapped_column(Integer, nullable=False)
-    status: Mapped[str] = mapped_column(String, nullable=False, default="submitted")
-    request_body: Mapped[dict] = mapped_column(JsonType, nullable=False)
-    response_body: Mapped[dict | None] = mapped_column(JsonType, nullable=True)
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True,
+        comment="Auto-increment primary key",
+    )
+    batch_id: Mapped[str] = mapped_column(
+        String,
+        nullable=False,
+        comment="Anthropic batch ID (e.g. msgbatch_01...)",
+    )
+    stage: Mapped[str] = mapped_column(
+        String,
+        nullable=False,
+        comment="Pipeline stage: extraction_stage1, extraction_stage2, validation",
+    )
+    request_count: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        comment="Number of individual requests in this batch",
+    )
+    status: Mapped[str] = mapped_column(
+        String,
+        nullable=False,
+        default="submitted",
+        comment="Final batch status: submitted, processing, ended, canceled, errored",
+    )
+    request_body: Mapped[dict] = mapped_column(
+        JsonType,
+        nullable=False,
+        comment="Full JSON request body sent to Anthropic Batch API",
+    )
+    response_body: Mapped[dict | None] = mapped_column(
+        JsonType,
+        nullable=True,
+        comment="Full JSON response body from Anthropic; NULL until batch completes",
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(tz=UTC),
+        comment="When the batch was submitted to Anthropic",
     )
     completed_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
+        comment="When the batch finished processing; NULL if still running",
     )
 
     __table_args__ = (
         Index("idx_batch_log_batch_id", "batch_id"),
         Index("idx_batch_log_stage", "stage"),
+        {"comment": "Audit log for Anthropic Batch API requests/responses"},
     )
