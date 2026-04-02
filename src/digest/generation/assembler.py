@@ -72,11 +72,39 @@ class AsyncDigestAssembler:
         scored = score_atoms(atoms, persona)
         sections = await self._generator.generate(scored, persona)
 
+        # Use max source timestamp as "data as of" indicator
+        data_as_of = _max_source_timestamp(atoms)
+
         return {
             "persona_id": persona_id,
-            "generated_at": datetime.now(tz=UTC).isoformat(),
+            "generated_at": data_as_of,
             "sections": [s.model_dump() for s in sections],
         }
+
+
+def _max_source_timestamp(atoms: list[Atom]) -> str:
+    """Return the max source thread_ts as an ISO timestamp.
+
+    Converts Slack timestamps (epoch seconds as string) to datetime.
+    Falls back to current time if no valid timestamps found.
+
+    Args:
+        atoms: List of atoms with source.thread_ts fields.
+
+    Returns:
+        ISO 8601 timestamp string.
+    """
+    max_ts = 0.0
+    for atom in atoms:
+        try:
+            ts = float(atom.source.thread_ts)
+            if ts > max_ts:
+                max_ts = ts
+        except (ValueError, TypeError):
+            continue
+    if max_ts > 0:
+        return datetime.fromtimestamp(max_ts, tz=UTC).isoformat()
+    return datetime.now(tz=UTC).isoformat()
 
 
 def _apply_phase_override(
