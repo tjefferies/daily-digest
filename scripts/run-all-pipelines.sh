@@ -42,6 +42,12 @@ done
 echo "  ✓ Neo4j and Postgres are healthy"
 echo ""
 
+# ─── Step 2b: Create Postgres tables ────────────────────────────────────────
+echo "▶ Step 2b: Creating Postgres tables (alembic upgrade head)..."
+uv run alembic upgrade head
+echo "  ✓ Postgres tables created"
+echo ""
+
 # ─── Step 3: Run full dataset pipeline ──────────────────────────────────────
 echo "▶ Step 3: Running full dataset pipeline (slack_messages.json, 307 messages)..."
 echo "  Mode: batch extraction (50% cost savings)"
