@@ -5,8 +5,8 @@ interface DateSelectorProps {
 
 const DATE_OPTIONS = [
   { value: '', label: 'All dates' },
-  { value: '2026-04-01', label: 'Apr 1 — Full dataset' },
-  { value: '2026-04-02', label: 'Apr 2 — Demo dataset' },
+  { value: '2026-04-01', label: '2026-04-01' },
+  { value: '2026-04-02', label: '2026-04-02' },
 ]
 
 export default function DateSelector({
