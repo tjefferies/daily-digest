@@ -268,21 +268,26 @@ DVT while thermal is in late EVT. When the phase toggle shifts thermal
 from EVT to DVT, atom rankings change visibly.
 
 ---------------------------------------------------------------------------
-Live Demo
+Demo
 ---------------------------------------------------------------------------
 
-**Demo flow:**
+Generation Pipeline
+~~~~~~~~~~~~~~~~~~~~
+
+.. raw:: html
+
+   <video controls width="100%">
+     <source src="_static/pipeline.mov" type="video/quicktime">
+     Your browser does not support the video tag.
+   </video>
+
+Frontend
+~~~~~~~~~~~~~~~~~~~~
 
 1. **Three personas.** Maya, Elena, Ryan. Same data, different digests.
    Switch between them; preloaded from Neo4j cache, so it's instant.
 
-2. **Run the pipeline.** Click "Run Pipeline". Watch the progress bar
-   poll ``/pipeline/status`` every 2s with real Anthropic batch counts.
-
-3. **Phase toggle.** Switch thermal from EVT to DVT. Watch atom
-   rankings shift. At least 2 items change position.
-
-4. **Neo4j browser.** ``http://localhost:7474``
+2. **Neo4j browser.** ``http://localhost:7474``
 
    .. code-block:: cypher
 
