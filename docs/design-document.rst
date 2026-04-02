@@ -661,7 +661,129 @@ Golden-set annotations with precision/recall metrics. Hallucination rate
 tracking. Graded scoring beyond binary valid/invalid.
 
 ---------------------------------------------------------------------------
-12. Architecture Decision Records
+12. Complexity Analysis
+---------------------------------------------------------------------------
+
+12.1 Pipeline Stage Complexity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Let M = messages, B = bundles, R = avg replies per bundle, S = standalone
+messages, W = context windows, A = extracted atoms, V = validated atoms
+(DECISION + SPEC_CHANGE), P = personas.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 30 15 30
+
+   * - Stage
+     - Time Complexity
+     - LLM Calls
+     - Notes
+   * - Load messages
+     - O(M)
+     - 0
+     - JSON fixture or API
+   * - Group by thread
+     - O(M log R + B log B)
+     - 0
+     - Dict grouping + per-bundle sort
+   * - Detect continuations
+     - O(S x B)
+     - 1 (embed)
+     - Structural fast-path + semantic fallback
+   * - Assemble windows
+     - O(B x R log R)
+     - 0
+     - Compression sorts by reaction count
+   * - Extraction (batch)
+     - O(W + A)
+     - ceil(W/100) + ceil(A/100)
+     - Sub-batches of 100. 50% cost savings.
+   * - Extraction (async)
+     - O(W + A)
+     - W + A
+     - Per-window concurrent. Higher cost.
+   * - Validation
+     - O(V + A)
+     - 1
+     - Single batch for all DECISION/SPEC_CHANGE
+   * - Confidence filter
+     - O(A)
+     - 0
+     - Single-pass threshold check
+   * - Scoring
+     - O(P x A log A)
+     - 0
+     - Per-persona sort of all atoms
+   * - Generation
+     - O(P x max_items)
+     - P
+     - One LLM call per persona
+   * - Postgres persist
+     - O(B x R + A)
+     - 0
+     - Per-record merge (idempotent)
+   * - Neo4j persist
+     - O(A)
+     - 0
+     - Batch Cypher write
+
+12.2 LLM Call Budget
+~~~~~~~~~~~~~~~~~~~~
+
+For the target scale (M = 300-500 messages, B ~ 150 bundles, A ~ 300 atoms,
+P = 3 personas):
+
+.. code-block:: text
+
+   Batch mode (recommended):
+     Embedding:     1 call
+     Stage 1:       ceil(150/100) = 2 calls
+     Stage 2:       ceil(300/100) = 3 calls
+     Validation:    1 call
+     Generation:    3 calls
+     Total:         ~10 API calls
+
+   Async mode (demo only):
+     Embedding:     1 call
+     Stage 1:       150 calls (1 per window)
+     Stage 2:       300 calls (1 per atom)
+     Validation:    1 call
+     Generation:    3 calls
+     Total:         ~455 API calls
+
+Batch mode reduces API calls by ~45x and costs 50% less per call.
+
+12.3 Memory Footprint
+~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: text
+
+   Messages in memory:     O(M x msg_size)     ~5-10 MB for M=500
+   Embedding vectors:      O((B+S) x 384)      ~1-2 MB
+   Context windows:        O(W x window_size)   ~2-5 MB
+   Atoms (in-flight):      O(A x atom_size)     ~5-10 MB
+   FAISS index:            O(cached x 1.5 KB)   ~1-5 MB
+   Peak total:             ~20-40 MB
+
+12.4 Bottlenecks
+~~~~~~~~~~~~~~~~
+
+**LLM API latency** dominates wall-clock time. Batch API scheduling adds
+60-120s minimum overhead; async extraction completes in 30-90s for small
+datasets but costs more.
+
+**Scoring sort** is O(P x A log A) — the dominant CPU cost for large atom
+counts. Could be optimized to O(P x A) with heap-based top-K selection.
+
+**Postgres persistence** uses per-record merge for idempotency. Batch
+insert would reduce round-trips for initial loads.
+
+**FAISS rebuild** on duplicate key update is O(N x D) where N = cached
+vectors and D = 384 dimensions. Mitigated by cache-hit checks before add.
+
+---------------------------------------------------------------------------
+13. Architecture Decision Records
 ---------------------------------------------------------------------------
 
 **ADR-001: Batch over stream.** The target scale (300 to 500 msgs/day) does
