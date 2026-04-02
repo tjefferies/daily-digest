@@ -1413,3 +1413,51 @@ TEST_REFACTOR=$(bd create \
   --acceptance="1. tests/unit/ has all unit tests. 2. tests/integration/ has all integration tests. 3. No test files at tests/ root. 4. All references updated. 5. All tests pass. 6. All quality gates pass." \
   --silent)
 echo "    Test Refactor:        $TEST_REFACTOR"
+
+# ─── SPHINX AUTODOC WARNINGS CLEANUP ────────────────────────────────────────
+SPHINX_WARNINGS=$(bd create \
+  --title="Clean up Sphinx autodoc warnings (241 warnings)" \
+  --type=task --priority=3 \
+  --description="Running \`make docs-serve\` produces 241 warnings from sphinx-build. Three categories need fixing:
+
+1. **Unknown role/directive errors** - \`:paramref:\` roles and \`.. legacy::\` directive from SQLAlchemy docstrings leaking into autodoc output. Fix by adding intersphinx mapping for SQLAlchemy or suppressing these via \`suppress_warnings\` in conf.py.
+
+2. **Duplicate object descriptions** - Nearly every model field is documented twice (e.g. \`digest.db.models.Message.message_ts\` and \`digest.db.Message.message_ts\`). Caused by sphinx-apidoc generating both package-level and module-level rst files that both autodoc the same classes. Fix by either pruning redundant rst files or adding \`:no-index:\` to re-exported names in \`__init__.py\`.
+
+3. **Forward reference / cross-reference issues** - Pydantic \`JsonValue\`, SQLAlchemy \`SQLCoreOperations\`/\`Mapper\`/\`TableClause\` unresolvable types, ambiguous \`AsyncLLMClient\` cross-refs, undefined label \`orm_declarative_metadata\`, unknown target \`msgbatch\`, and orphaned \`presentation-guide.rst\` not in any toctree.
+
+Goal: zero warnings on \`make docs-serve\`." \
+  --silent)
+echo "    Sphinx Warnings:      $SPHINX_WARNINGS"
+
+# ─── ARCHITECTURE SVG TEXT OVERFLOW ─────────────────────────────────────────
+ARCH_SVG_TEXT=$(bd create \
+  --title="Fix architecture.svg: resize boxes so all text fits" \
+  --type=bug --priority=2 \
+  --description="In docs/_static/architecture.svg, some text overflows or is clipped by its containing box. Resize boxes (or adjust font size / text wrapping) so all labels and descriptions fit cleanly within their boxes. No content changes — layout/sizing only." \
+  --silent)
+echo "    Arch SVG Text:        $ARCH_SVG_TEXT"
+
+# ─── PERSONA-MODEL SVG EQUAL SPACING ───────────────────────────────────────
+PERSONA_SVG_SPACING=$(bd create \
+  --title="Fix persona-model.svg: equally space boxes around Maya Chen" \
+  --type=bug --priority=2 \
+  --description="In docs/_static/persona-model.svg, the surrounding boxes are not evenly spaced around the central 'Maya Chen' box. Adjust positioning so all surrounding boxes are equally spaced. No content changes — layout/spacing only." \
+  --silent)
+echo "    Persona SVG Spacing:  $PERSONA_SVG_SPACING"
+
+# ─── COMPLEXITY ANALYSIS IN PRESENTATION ────────────────────────────────────
+COMPLEXITY_ANALYSIS=$(bd create \
+  --title="Add Complexity Analysis section to docs/presentation.rst" \
+  --type=task --priority=2 \
+  --description="Deep-reason about the entire codebase to produce a Complexity Analysis section for docs/presentation.rst. Should cover: 1) Time/space complexity of key pipeline stages (ingestion, thread bundling, context windowing, extraction, scoring, generation). 2) Scaling characteristics — how does cost/latency grow with message count, thread count, persona count? 3) LLM call counts per pipeline run (Stage 1, Stage 2, validation) and how they scale. 4) Memory footprint analysis (in-memory atom store, FAISS index, embedding cache). 5) Bottleneck identification and Big-O characterization of critical paths. This requires reading every module under src/digest/ to trace data flow and identify algorithmic complexity at each stage." \
+  --silent)
+echo "    Complexity Analysis:  $COMPLEXITY_ANALYSIS"
+
+# ─── COMPLEXITY ANALYSIS IN DESIGN DOCUMENT ─────────────────────────────────
+COMPLEXITY_DESIGN=$(bd create \
+  --title="Add Complexity Analysis section to docs/design-document.rst" \
+  --type=task --priority=2 \
+  --description="Deep-reason about the entire codebase to produce a Complexity Analysis section for docs/design-document.rst. Should cover: 1) Time/space complexity of key pipeline stages (ingestion, thread bundling, context windowing, extraction, scoring, generation). 2) Scaling characteristics — how does cost/latency grow with message count, thread count, persona count? 3) LLM call counts per pipeline run (Stage 1, Stage 2, validation) and how they scale. 4) Memory footprint analysis (in-memory atom store, FAISS index, embedding cache). 5) Bottleneck identification and Big-O characterization of critical paths. This requires reading every module under src/digest/ to trace data flow and identify algorithmic complexity at each stage." \
+  --silent)
+echo "    Complexity Design:    $COMPLEXITY_DESIGN"
