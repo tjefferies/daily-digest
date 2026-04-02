@@ -9,6 +9,20 @@ Prerequisites
 - Node.js 22+ (for frontend development)
 - ``ANTHROPIC_API_KEY`` environment variable set
 
+Clone the repository:
+
+.. code-block:: bash
+
+   # SSH
+   git clone git@github.com:tjefferies/daily-digest.git
+   cd daily-digest
+
+   # Or HTTPS
+   git clone https://github.com/tjefferies/daily-digest.git
+   cd daily-digest
+
+Set your API key:
+
 .. code-block:: bash
 
    export ANTHROPIC_API_KEY=sk-ant-...
