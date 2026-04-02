@@ -52,7 +52,7 @@
   <rect x="280" y="68" width="340" height="62" rx="8" fill="url(#greenGrad)" stroke="#27ae60" stroke-width="1.5" filter="url(#shadow)"/>
   <text x="450" y="90" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a5e2a">React Frontend :5173</text>
   <text x="450" y="106" text-anchor="middle" font-size="10" fill="#2d6a3f">Preloads all 3 persona digests on mount | Instant persona switch</text>
-  <text x="450" y="120" text-anchor="middle" font-size="9" fill="#2d6a3f">PipelineRunner polls /pipeline/status | PhaseToggle for phase overrides</text>
+  <text x="450" y="120" text-anchor="middle" font-size="9" fill="#2d6a3f">PipelineRunner polls /pipeline/status </text>
 
   <!-- Arrow: Frontend -> Backend -->
   <line x1="450" y1="130" x2="450" y2="152" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>

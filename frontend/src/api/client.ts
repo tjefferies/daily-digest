@@ -53,6 +53,20 @@ export async function getPipelineStatus(): Promise<PipelineStatus> {
   return response.json()
 }
 
+export interface SourceThread {
+  channel: string
+  thread_ts: string
+  messages: { user_id: string; text: string; ts: string }[]
+}
+
+export async function getSourceThread(atomId: string): Promise<SourceThread> {
+  const response = await fetch(`${BASE_URL}/source/${atomId}`)
+  if (!response.ok) {
+    throw new Error(`Failed to fetch source: ${response.statusText}`)
+  }
+  return response.json()
+}
+
 export async function getDigestDates(): Promise<string[]> {
   const response = await fetch(`${BASE_URL}/digest/dates`)
   if (!response.ok) {

@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { getSourceThread, type SourceThread } from '../api/client'
 import type { Digest, DigestSection, SectionType } from '../types'
 
 /** Format a relative time string like "2 hours, 15 minutes ago". */
@@ -49,6 +50,105 @@ const SECTION_STYLES: Record<
   },
 }
 
+function SourceModal({
+  thread,
+  onClose,
+}: {
+  thread: SourceThread
+  onClose: () => void
+}) {
+  return (
+    <div
+      className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-4 py-3 border-b">
+          <h3 className="text-sm font-semibold text-gray-900">
+            {thread.channel}
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 text-lg"
+          >
+            &times;
+          </button>
+        </div>
+        <div className="overflow-y-auto p-4 space-y-3">
+          {thread.messages.map((msg, i) => (
+            <div key={i} className="text-sm">
+              <span className="font-medium text-gray-700">
+                {msg.user_id}
+              </span>
+              <p className="text-gray-600 mt-0.5 whitespace-pre-wrap">
+                {msg.text}
+              </p>
+            </div>
+          ))}
+          {thread.messages.length === 0 && (
+            <p className="text-sm text-gray-400 italic">
+              No source messages found.
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function DigestItem({
+  item,
+}: {
+  item: { headline: string; context: string; source_channel: string; atom_id: string }
+}) {
+  const [thread, setThread] = useState<SourceThread | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  const handleViewSource = useCallback(async () => {
+    if (!item.atom_id) return
+    setLoading(true)
+    try {
+      const data = await getSourceThread(item.atom_id)
+      setThread(data)
+    } catch {
+      // silently fail
+    } finally {
+      setLoading(false)
+    }
+  }, [item.atom_id])
+
+  return (
+    <>
+      <li className="bg-white rounded-md p-3 shadow-sm">
+        <p className="font-medium text-sm text-gray-900">
+          {item.headline}
+        </p>
+        <p className="text-sm text-gray-600 mt-1">{item.context}</p>
+        <div className="flex items-center gap-2 mt-1.5">
+          <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+            {item.source_channel}
+          </span>
+          {item.atom_id && (
+            <button
+              onClick={handleViewSource}
+              disabled={loading}
+              className="text-xs text-emerald-600 hover:text-emerald-700 hover:underline cursor-pointer"
+            >
+              {loading ? 'Loading...' : 'View source'}
+            </button>
+          )}
+        </div>
+      </li>
+      {thread && (
+        <SourceModal thread={thread} onClose={() => setThread(null)} />
+      )}
+    </>
+  )
+}
+
 function SectionCard({ section }: { section: DigestSection }) {
   const [expanded, setExpanded] = useState(true)
   const style = SECTION_STYLES[section.section_type]
@@ -81,15 +181,7 @@ function SectionCard({ section }: { section: DigestSection }) {
           ) : (
             <ul className="space-y-3">
               {section.items.map((item) => (
-                <li key={item.atom_id} className="bg-white rounded-md p-3 shadow-sm">
-                  <p className="font-medium text-sm text-gray-900">
-                    {item.headline}
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">{item.context}</p>
-                  <span className="inline-block mt-1.5 text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
-                    {item.source_channel}
-                  </span>
-                </li>
+                <DigestItem key={item.atom_id} item={item} />
               ))}
             </ul>
           )}

@@ -525,3 +525,59 @@ async def get_digest(
     client = create_async_llm_client()
     assembler = AsyncDigestAssembler(client)
     return await assembler.assemble(persona_id, atoms, phase_override)
+
+
+@app.get("/source/{atom_id}")
+async def get_source_thread(atom_id: str) -> dict[str, Any]:
+    """Return the source thread messages for an atom.
+
+    Looks up the atom's source channel and thread_ts in Neo4j,
+    then finds the matching thread in the loaded fixture data.
+
+    Args:
+        atom_id: UUID of the atom.
+
+    Returns:
+        Dict with channel, thread_ts, and messages list.
+    """
+    from digest.dataset.messages import _DEMO_PATH, _FIXTURE_PATH, _load_from_fixture
+
+    # Look up atom source from Neo4j
+    neo4j_cfg = get_config()["pipeline"]["neo4j"]
+    graph = GraphClient(
+        uri=neo4j_cfg["uri"],
+        user=neo4j_cfg["user"],
+        password=neo4j_cfg["password"],
+    )
+    try:
+        async with graph._driver.session() as session:
+            result = await session.run(
+                "MATCH (a:Atom {atom_id: $id}) "
+                "RETURN a.channel AS channel, a.thread_ts AS thread_ts",
+                id=atom_id,
+            )
+            record = await result.single()
+    finally:
+        await graph.close()
+
+    if not record:
+        raise HTTPException(status_code=404, detail=f"Atom not found: {atom_id}")
+
+    channel = record["channel"]
+    thread_ts = record["thread_ts"]
+
+    # Search both fixtures for the matching thread
+    all_messages = _load_from_fixture(_FIXTURE_PATH) + _load_from_fixture(_DEMO_PATH)
+    thread_msgs = [
+        {"user_id": m.user_id, "text": m.text, "ts": m.message_ts}
+        for m in all_messages
+        if m.channel == channel
+        and (m.message_ts == thread_ts or m.thread_ts == thread_ts)
+    ]
+    thread_msgs.sort(key=lambda m: m["ts"])
+
+    return {
+        "channel": channel,
+        "thread_ts": thread_ts,
+        "messages": thread_msgs,
+    }
