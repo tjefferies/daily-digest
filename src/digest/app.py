@@ -209,12 +209,17 @@ async def _persist_digest_to_neo4j(
     )
     try:
         await graph.persist_digest_run(
-            persona_id, run_date, sections_json, generated_at,
+            persona_id,
+            run_date,
+            sections_json,
+            generated_at,
         )
         await graph.persist_digest_includes(persona_id, run_date, scored_pairs)
     except Exception:
         logger.warning(
-            "Failed to persist digest to Neo4j for %s", persona_id, exc_info=True,
+            "Failed to persist digest to Neo4j for %s",
+            persona_id,
+            exc_info=True,
         )
     finally:
         await graph.close()
@@ -448,8 +453,7 @@ async def get_digest_dates() -> list[str]:
     try:
         async with graph._driver.session() as session:
             result = await session.run(
-                "MATCH (dr:DigestRun) "
-                "RETURN DISTINCT dr.run_date AS d ORDER BY d DESC",
+                "MATCH (dr:DigestRun) RETURN DISTINCT dr.run_date AS d ORDER BY d DESC",
             )
             return [str(r["d"]) for r in await result.data()]
     except Exception:

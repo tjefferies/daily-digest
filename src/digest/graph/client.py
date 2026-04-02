@@ -33,10 +33,8 @@ _SCHEMA_STATEMENTS: list[LiteralString] = [
     "CREATE INDEX channel_name IF NOT EXISTS FOR (c:Channel) ON (c.name)",
     "CREATE INDEX person_handle IF NOT EXISTS FOR (p:Person) ON (p.handle)",
     # Person + DigestRun model
-    "CREATE CONSTRAINT person_id IF NOT EXISTS"
-    " FOR (p:Person) REQUIRE p.user_id IS UNIQUE",
-    "CREATE INDEX digestrun_lookup IF NOT EXISTS"
-    " FOR (dr:DigestRun) ON (dr.user_id, dr.run_date)",
+    "CREATE CONSTRAINT person_id IF NOT EXISTS FOR (p:Person) REQUIRE p.user_id IS UNIQUE",
+    "CREATE INDEX digestrun_lookup IF NOT EXISTS FOR (dr:DigestRun) ON (dr.user_id, dr.run_date)",
 ]
 
 _PERSIST_ATOM_CYPHER = """\
