@@ -18,6 +18,9 @@
     <linearGradient id="tealGrad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#d1f2eb"/><stop offset="100%" stop-color="#a3e4d7"/>
     </linearGradient>
+    <linearGradient id="slateGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#eaecee"/><stop offset="100%" stop-color="#d5d8dc"/>
+    </linearGradient>
     <filter id="shadow" x="-2%" y="-2%" width="104%" height="108%">
       <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.12"/>
     </filter>
@@ -30,41 +33,41 @@
   <!-- Box widths: 138px each, gap: 10px, total = 5*138 + 4*10 = 730, start x = (760-730)/2 = 15 -->
 
   <!-- Dim 1: Workstream Proximity  x=15 -->
-  <rect x="15" y="45" width="138" height="70" rx="6" fill="url(#blueGrad)" stroke="#2980b9" stroke-width="1" filter="url(#shadow)"/>
-  <text x="84" y="66" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#1a4a6e">Workstream</text>
-  <text x="84" y="79" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#1a4a6e">Proximity</text>
-  <text x="84" y="93" text-anchor="middle" font-size="8.5" fill="#2c6690">weight: 0.30</text>
-  <text x="84" y="107" text-anchor="middle" font-size="7.5" fill="#5499c7">originating=1.0, affected=0.7</text>
+  <rect x="15" y="45" width="138" height="70" rx="6" fill="url(#slateGrad)" stroke="#7f8c8d" stroke-width="1" filter="url(#shadow)"/>
+  <text x="84" y="66" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#2c3e50">Workstream</text>
+  <text x="84" y="79" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#2c3e50">Proximity</text>
+  <text x="84" y="93" text-anchor="middle" font-size="8.5" fill="#5d6d7e">weight: 0.30</text>
+  <text x="84" y="107" text-anchor="middle" font-size="7.5" fill="#7f8c8d">originating=1.0, affected=0.7</text>
 
   <!-- Dim 2: Role-Type  x=163 -->
-  <rect x="163" y="45" width="138" height="70" rx="6" fill="url(#greenGrad)" stroke="#27ae60" stroke-width="1" filter="url(#shadow)"/>
-  <text x="232" y="72" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#1a5e2a">Role-Type</text>
-  <text x="232" y="89" text-anchor="middle" font-size="8.5" fill="#2d6a3f">weight: 0.20</text>
-  <text x="232" y="107" text-anchor="middle" font-size="7.5" fill="#2d6a3f">5x8 role-type affinity matrix</text>
+  <rect x="163" y="45" width="138" height="70" rx="6" fill="url(#slateGrad)" stroke="#7f8c8d" stroke-width="1" filter="url(#shadow)"/>
+  <text x="232" y="72" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#2c3e50">Role-Type</text>
+  <text x="232" y="89" text-anchor="middle" font-size="8.5" fill="#5d6d7e">weight: 0.20</text>
+  <text x="232" y="107" text-anchor="middle" font-size="7.5" fill="#7f8c8d">5x8 role-type affinity matrix</text>
 
   <!-- Dim 3: Phase Alignment  x=311 -->
-  <rect x="311" y="45" width="138" height="70" rx="6" fill="url(#orangeGrad)" stroke="#e67e22" stroke-width="1" filter="url(#shadow)"/>
-  <text x="380" y="72" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#7d4e00">Phase Alignment</text>
-  <text x="380" y="89" text-anchor="middle" font-size="8.5" fill="#9a6b1e">weight: 0.20</text>
-  <text x="380" y="107" text-anchor="middle" font-size="7.5" fill="#9a6b1e">graduated: 0=1.0, 1=0.75, 2=0.5…</text>
+  <rect x="311" y="45" width="138" height="70" rx="6" fill="url(#slateGrad)" stroke="#7f8c8d" stroke-width="1" filter="url(#shadow)"/>
+  <text x="380" y="72" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#2c3e50">Phase Alignment</text>
+  <text x="380" y="89" text-anchor="middle" font-size="8.5" fill="#5d6d7e">weight: 0.20</text>
+  <text x="380" y="107" text-anchor="middle" font-size="7.5" fill="#7f8c8d">graduated: 0=1.0, 1=0.75, 2=0.5</text>
 
   <!-- Dim 4: Urgency  x=459 -->
-  <rect x="459" y="45" width="138" height="70" rx="6" fill="url(#redGrad)" stroke="#c0392b" stroke-width="1" filter="url(#shadow)"/>
-  <text x="528" y="72" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#7b241c">Urgency</text>
-  <text x="528" y="89" text-anchor="middle" font-size="8.5" fill="#943126">weight: 0.15</text>
-  <text x="528" y="107" text-anchor="middle" font-size="7.5" fill="#943126">low=0.25 med=0.5 high=0.75 crit=1.0</text>
+  <rect x="459" y="45" width="138" height="70" rx="6" fill="url(#slateGrad)" stroke="#7f8c8d" stroke-width="1" filter="url(#shadow)"/>
+  <text x="528" y="72" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#2c3e50">Urgency</text>
+  <text x="528" y="89" text-anchor="middle" font-size="8.5" fill="#5d6d7e">weight: 0.15</text>
+  <text x="528" y="107" text-anchor="middle" font-size="7.5" fill="#7f8c8d">low=0.25 med=0.5 high=0.75 crit=1.0</text>
 
   <!-- Dim 5: Social Signal  x=607 -->
-  <rect x="607" y="45" width="138" height="70" rx="6" fill="url(#tealGrad)" stroke="#1abc9c" stroke-width="1" filter="url(#shadow)"/>
-  <text x="676" y="72" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#0e6655">Social Signal</text>
-  <text x="676" y="89" text-anchor="middle" font-size="8.5" fill="#148f77">weight: 0.15</text>
-  <text x="676" y="107" text-anchor="middle" font-size="7.5" fill="#148f77">collaborator graph proximity</text>
+  <rect x="607" y="45" width="138" height="70" rx="6" fill="url(#slateGrad)" stroke="#7f8c8d" stroke-width="1" filter="url(#shadow)"/>
+  <text x="676" y="72" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#2c3e50">Social Signal</text>
+  <text x="676" y="89" text-anchor="middle" font-size="8.5" fill="#5d6d7e">weight: 0.15</text>
+  <text x="676" y="107" text-anchor="middle" font-size="7.5" fill="#7f8c8d">collaborator graph proximity</text>
 
   <!-- ── Composite Score box (centered, below inputs) ── -->
   <!-- Score box: x=280, y=185, width=200, height=55; center-x=380, top=185 -->
-  <rect x="280" y="185" width="200" height="55" rx="8" fill="url(#purpleGrad)" stroke="#8e44ad" stroke-width="1.5" filter="url(#shadow)"/>
-  <text x="380" y="208" text-anchor="middle" font-size="13" font-weight="bold" fill="#512e5f">Composite Score</text>
-  <text x="380" y="226" text-anchor="middle" font-size="9" fill="#6c3483">relevance(a, p) = Sigma wi * di(a, p)</text>
+  <rect x="280" y="185" width="200" height="55" rx="8" fill="url(#blueGrad)" stroke="#2980b9" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="380" y="208" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a4a6e">Composite Score</text>
+  <text x="380" y="226" text-anchor="middle" font-size="9" fill="#2c6690">relevance(a, p) = Sigma wi * di(a, p)</text>
 
   <!-- ── Arrows from each input box bottom to score box top ── -->
   <!-- Score box top-center: (380, 185) -->
