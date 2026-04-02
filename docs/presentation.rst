@@ -298,6 +298,10 @@ Complexity Analysis
 Pipeline Costs
 ~~~~~~~~~~~~~~~
 
+**M** = messages, **B** = bundles, **S** = standalone messages,
+**W** = context windows, **A** = atoms, **V** = validated atoms
+(DECISION + SPEC_CHANGE), **P** = personas.
+
 .. list-table::
    :header-rows: 1
    :widths: 30 25 20 25
