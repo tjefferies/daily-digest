@@ -4,8 +4,6 @@ interface DateSelectorProps {
 }
 
 const DATE_OPTIONS = [
-  { value: '', label: 'All dates' },
-  { value: '2026-04-01', label: '2026-04-01' },
   { value: '2026-04-02', label: '2026-04-02' },
 ]
 

@@ -19,7 +19,7 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [phaseOverride, setPhaseOverride] = useState<string | null>(null)
-  const [dateFilter, setDateFilter] = useState<string | null>(null)
+  const [dateFilter, setDateFilter] = useState<string | null>('2026-04-02')
   const [cacheReady, setCacheReady] = useState(false)
 
   /** Preload digests for all 3 personas on mount. */
