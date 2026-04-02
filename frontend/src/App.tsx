@@ -5,7 +5,6 @@ import DigestDisplay from './components/DigestDisplay'
 import PersonaSelector, {
   DEMO_PERSONAS,
 } from './components/PersonaSelector'
-import PhaseToggle from './components/PhaseToggle'
 import type { Digest } from './types'
 
 /** Cache of preloaded digests keyed by persona_id. */
@@ -18,7 +17,6 @@ function App() {
   const [digest, setDigest] = useState<Digest | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [phaseOverride, setPhaseOverride] = useState<string | null>(null)
   const [dateFilter, setDateFilter] = useState<string | null>(null)
   const [availableDates, setAvailableDates] = useState<string[]>([])
   const [cacheReady, setCacheReady] = useState(false)
@@ -77,43 +75,12 @@ function App() {
 
   const handlePersonaSelect = (personaId: string) => {
     setSelectedPersona(personaId)
-    setPhaseOverride(null)
-    if (!dateFilter && digestCache[personaId]) {
-      setDigest(digestCache[personaId])
-    } else {
-      fetchDigest(personaId, null, dateFilter)
-    }
-  }
-
-  const handlePhaseApply = (override: string) => {
-    setPhaseOverride(override)
-    fetchDigest(selectedPersona, override, dateFilter)
-  }
-
-  const handlePhaseClear = () => {
-    setPhaseOverride(null)
-    fetchDigest(selectedPersona, null, dateFilter)
+    fetchDigest(personaId, null, dateFilter)
   }
 
   const handleDateSelect = (date: string | null) => {
     setDateFilter(date)
-    setPhaseOverride(null)
     fetchDigest(selectedPersona, null, date)
-  }
-
-  const handlePipelineComplete = () => {
-    // Invalidate cache and reload all digests
-    Object.keys(digestCache).forEach((k) => delete digestCache[k])
-    setCacheReady(false)
-    DEMO_PERSONAS.forEach((p) => {
-      getDigest(p.user_id).then((data) => {
-        digestCache[p.user_id] = data
-        if (p.user_id === selectedPersona) {
-          setDigest(data)
-        }
-      })
-    })
-    setCacheReady(true)
   }
 
   const currentPersona = DEMO_PERSONAS.find(
@@ -145,12 +112,6 @@ function App() {
           />
         </div>
 
-        <PhaseToggle
-          onApply={handlePhaseApply}
-          activeOverride={phaseOverride}
-          onClear={handlePhaseClear}
-          onPipelineComplete={handlePipelineComplete}
-        />
       </div>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
