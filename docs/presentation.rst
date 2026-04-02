@@ -292,6 +292,57 @@ Live Demo
       RETURN a.summary, w.name LIMIT 10
 
 ---------------------------------------------------------------------------
+Complexity Analysis
+---------------------------------------------------------------------------
+
+Pipeline Costs
+~~~~~~~~~~~~~~~
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 25 20 25
+
+   * - Stage
+     - Time
+     - LLM Calls
+     - Bottleneck
+   * - Ingestion
+     - O(M log M + S x B)
+     - 1 (embed)
+     - Continuation detection
+   * - Extraction (batch)
+     - O(W + A)
+     - ~5-10
+     - Batch API scheduling
+   * - Extraction (async)
+     - O(W + A)
+     - W + A (~450)
+     - Per-request rate limits
+   * - Validation
+     - O(V + A)
+     - 1
+     - Single batch
+   * - Scoring
+     - O(P x A log A)
+     - 0
+     - Per-persona sort
+   * - Generation
+     - O(P x max_items)
+     - P (~3)
+     - One LLM call/persona
+
+LLM Call Budget
+~~~~~~~~~~~~~~~~
+
+.. code-block:: text
+
+   Batch mode (production):   ~10 API calls, 50% batch discount
+   Async mode (demo):         ~455 API calls, full price, faster latency
+
+   Memory peak:               ~20-40 MB
+   Dominant cost:              LLM API latency, not CPU
+
+---------------------------------------------------------------------------
 Mapping to EverCurrent
 ---------------------------------------------------------------------------
 
