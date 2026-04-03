@@ -395,7 +395,7 @@ Mapping to EverCurrent
    * - This Prototype
      - EverCurrent Product
    * - Thread bundles + semantic continuations
-     - Knowledge graph connectivity across 100+ tools
+     - Knowledge graph connectivity across manufacturing tools
    * - Delta processing (skip unchanged bundles)
      - Change tracking ("what changed in the last 7 days?")
    * - 5-dimension persona scoring
@@ -410,5 +410,8 @@ Mapping to EverCurrent
 The hardest problem wasn't the LLM pipeline. It was making relevance
 *relational*. The same information means different things to different
 people depending on their role, their workstreams, and where their project
-is in the development lifecycle. **That's the core of what EverCurrent
-does.**
+is in the development lifecycle. Every layer in this pipeline exists because
+relevance is not a property of information. The graph, the scoring model,
+the per-persona generation. All of it flows from one idea: what matters
+depends on who is reading it. **That's a problem worth solving, and
+that's what I want to build at EverCurrent.**

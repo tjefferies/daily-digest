@@ -184,12 +184,12 @@ Bryce Codd Normal Form (BCNF) schema with 6 tables linked by foreign keys. SQLAl
 ORM with asyncpg driver. All tables and columns have SQL COMMENTs
 for self-documenting schema inspection.
 
-- **message** — raw Slack messages with JSONB payload
-- **thread_bundle** — thread groupings by root message
-- **bundle_membership** — message-to-bundle mapping with role and confidence
-- **context_window** — assembled LLM input text (1:1 with bundle)
-- **atom** — extracted information atoms with provenance JSONB
-- **batch_log** — full LLM request/response JSONB audit trail
+- **message**: raw Slack messages with JSONB payload
+- **thread_bundle**: thread groupings by root message
+- **bundle_membership**: message-to-bundle mapping with role and confidence
+- **context_window**: assembled LLM input text (1:1 with bundle)
+- **atom**: extracted information atoms with provenance JSONB
+- **batch_log**: full LLM request/response JSONB audit trail
 
 3.2.2 Neo4j
 ^^^^^^^^^^^^
@@ -784,7 +784,7 @@ Batch mode reduces API calls by ~45x and costs 50% less per call.
 60-120s minimum overhead; async extraction completes in 30-90s for small
 datasets but costs more.
 
-**Scoring sort** is O(P x A log A) — the dominant CPU cost for large atom
+**Scoring sort** is O(P x A log A) - the dominant CPU cost for large atom
 counts. Could be optimized to O(P x A) with heap-based top-K selection.
 
 **Postgres persistence** uses per-record merge for idempotency. Batch
