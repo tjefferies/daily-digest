@@ -454,7 +454,8 @@ async def get_digest_dates() -> list[str]:
     try:
         async with graph._driver.session() as session:
             result = await session.run(
-                "MATCH (dr:DigestRun) WHERE dr.run_date <= date('2026-04-02') RETURN DISTINCT dr.run_date AS d ORDER BY d DESC",
+                "MATCH (dr:DigestRun) WHERE dr.run_date <= date('2026-04-02')"
+                " RETURN DISTINCT dr.run_date AS d ORDER BY d DESC",
             )
             return [str(r["d"]) for r in await result.data()]
     except Exception:
