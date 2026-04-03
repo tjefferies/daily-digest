@@ -308,22 +308,12 @@ A few things to call out:
 Frontend
 ~~~~~~~~~~~~~~~~~~~~
 
-1. **Three personas.** Maya, Elena, Ryan. Same data, different digests.
-   Switch between them; preloaded from Neo4j cache, so it's instant.
+.. raw:: html
 
-2. **Neo4j browser.** ``http://localhost:7474``
-
-   .. code-block:: cypher
-
-      // Digest model: Person -> DigestRun -> Atom
-      MATCH (p:Person)-[:HAS_DIGEST]->(dr:DigestRun)
-            -[r:INCLUDES]->(a:Atom)
-      RETURN p.user_id, dr.run_date, a.summary, r.score
-      ORDER BY r.score DESC LIMIT 10
-
-      // Atom -> Workstream graph
-      MATCH (a:Atom)-[:ORIGINATES_IN]->(w:Workstream)
-      RETURN a.summary, w.name LIMIT 10
+   <video controls width="100%">
+     <source src="_static/frontend.mov" type="video/quicktime">
+     Your browser does not support the video tag.
+   </video>
 
 ---------------------------------------------------------------------------
 Complexity Analysis

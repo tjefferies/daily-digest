@@ -146,7 +146,7 @@ MATCH (p:Person {user_id: $persona_id})
       -[:INCLUDES]->(a:Atom)
 WHERE dr.run_date = date($target_date)
 RETURN dr.sections_json AS sections_json,
-       max(a.created_at) AS latest_atom_at
+       dr.generated_at AS latest_atom_at
 """
 
 _LOAD_DIGEST_ATOMS_CYPHER = """\
